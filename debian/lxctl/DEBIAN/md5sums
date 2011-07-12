@@ -1,0 +1,5 @@
+5dfbcb9cde486ceff6527d8849aaee12  usr/bin/lxctl
+f965f423d611e1a0fa8f3a7a6d74b76b  usr/lib/perl/5.10/Lxc.pm
+8a43d34f0d02658120980bd865495026  usr/share/doc/lxctl/TODO
+be9263cc2a68ac17f259fce18268ceca  usr/share/doc/lxctl/changelog.Debian.gz
+ab58f04b4639cebe849b14bfff2d3df7  usr/share/doc/lxctl/copyright

@@ -1,0 +1,15 @@
+Lxc::control:
+ * Write makefile
+ * Make normal tests
+ * Determine if and how we can make test to create container.
+ * Die on all errors, lxctl should use exceptions to handle this situation.
+ * Stop phisically deleted but running container.
+ * GHOST state detection.
+ 
+lxctl:
+ * Add depends on perl-doc in ubuntu/debian
+ * GHOST state detection.
+ * GHOST state fix ability.
+ * Check if container is running before destroying.
+ * Warkaround LVB bug with LV names (eg. if LV test exists, creating of test1 will fail).
+ * Check IP correctness.

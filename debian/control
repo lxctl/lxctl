@@ -1,0 +1,15 @@
+Source: lxctl
+Section: misc
+Priority: extra
+Maintainer: Pavel Potapenkov <oxcd8o@yandex-team.ru>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.9.1
+Homepage: http://crocodile.yandex.ru
+#Vcs-Git: git@crocodile.yandex.ru:lxctl.git
+#Vcs-Browser: http://crocodile.yandex.ru/gitweb?p=lxctl.git;a=summary
+
+Package: lxctl
+Architecture: all
+Depends: ${misc:Depends}, perl-doc, lxc (>= 0.7.4), lvm2, bridge-utils, libyaml-tiny-perl, bash-completion
+Description: vzctl-like utility for lxc
+ Utility to manage different aspects of linux containers.

@@ -1,0 +1,63 @@
+# bash completion for lxctl
+
+#have lxctl &&
+_lxctl()
+{
+    local cur command
+
+    COMPREPLY=()
+    cur=`_get_cword`
+    command=${COMP_WORDS[1]}
+
+    SET_CREATE_OPTS="--macaddr= --autostart= --ipaddr= --hostname= --userpasswd= --onboot= --nameserver= --searchdomain= --rootsz= --netmask= --defgw= --dns="
+    SET_OPTS="$SET_CREATE_OPTS --cpus= --cpu-shares= --mem= --io="
+    CREATE_OPTS="$SET_CREATE_OPTS --empty --debug --save --no-save"
+    MIGRATE_OPTS="$SET_OPTS --tohost= --remuser= --remport= --remname= --clone= --afterstart= "
+    VZ2LXC_OPTS="--rootsz= --cpus= --cpu-shares= --mem= --io= --fromhost= --remuser= --remport= --remname= --afterstart="    
+
+    case $COMP_CWORD in
+        1)
+            COMPREPLY=( $( compgen -W "create list destroy enter \
+                freeze unfreeze migrate set start stop --man --help --version\
+                vz2lxc" -- "$cur" ) )
+            ;;
+        2)
+            case $command in
+                list)
+			COMPREPLY=( $( compgen -W "--all --ipaddr --diskspace --hostname --mount --raw" -- "$cur" ) ) 
+                    ;;
+		vz2lxc)
+		   ;;
+		create)
+			COMPREPLY=( $( compgen -W "$CREATE_OPTS" -- "$cur" ) )
+		    ;;
+		*)
+			LIST=$(lxctl list --raw 2>/dev/null)
+			COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
+		esac
+            ;;
+	3)
+	    case $command in
+		vz2lxc)
+			COMPREPLY=( $( compgen -W "$VZ2LXC_OPTS" -- "$cur" ) )
+		    ;;
+		migrate)
+			COMPREPLY=( $( compgen -W "$MIGRATE_OPTS" -- "$cur" ) )
+		    ;;
+                set)
+                  	COMPREPLY=( $( compgen -W "$SET_OPTS" -- "$cur" ) )
+            	    ;;
+		*)
+		    ;;
+	    esac
+    esac
+} &&
+complete -F _lxctl $default lxctl
+
+# Local variables:
+# mode: shell-script
+# sh-basic-offset: 4
+# sh-indent-comment: t
+# indent-tabs-mode: nil
+# End:
+# ex: ts=4 sw=4 et filetype=sh
