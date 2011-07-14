@@ -4,9 +4,9 @@ Priority: extra
 Maintainer: Pavel Potapenkov <oxcd8o@yandex-team.ru>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
-Homepage: http://crocodile.yandex.ru
-#Vcs-Git: git@crocodile.yandex.ru:lxctl.git
-#Vcs-Browser: http://crocodile.yandex.ru/gitweb?p=lxctl.git;a=summary
+Homepage: http://lxc.tl
+Vcs-Git: git://github.com/lxctl/lxctl.git
+Vcs-Browser: https://github.com/lxctl/lxctl
 
 Package: lxctl
 Architecture: all

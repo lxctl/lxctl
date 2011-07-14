@@ -1,6 +1,6 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: lxctl
-Source: http://crocodile.yandex.ru
+Source: http://lxc.tl
 
 Files: *
 Copyright: 2011 Pavel Potapenkov <oxcd8o@yandex-team.ru>
