@@ -5,6 +5,9 @@ use warnings;
 
 sub fool_proof
 {
+	if (! -t STDIN || ! -t STDOUT) {
+		die "Non-interactive terminal.";
+	}
 	use Term::ANSIColor;
 	my ($self) = @_;
 	my $answer = "";
