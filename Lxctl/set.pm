@@ -209,7 +209,7 @@ sub do
 		or die "Name the container please!\n\n";
 
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
-		'onboot=s', 'nameserver=s', 'searchdomain=s', 'rootsz=s', 
+		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
 		'macaddr=s', 'autostart=s');
 
