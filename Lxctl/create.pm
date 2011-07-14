@@ -76,7 +76,7 @@ sub check_create_options
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'ostemplate=s', 
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
-		'save!', 'load=s', 'debug');
+		'save!', 'load=s', 'debug', 'searchdomain=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -97,7 +97,6 @@ sub check_create_options
 	$options{'ostemplate'} ||= "lucid_amd64";
 	$options{'config'} ||= "$self->{'LXC_CONF_DIR'}/$options{'contname'}";
 	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
-	$options{'hostname'} ||= "$options{'contname'}";
 	$options{'rootsz'} ||= "10G";
 	$options{'autostart'} ||= "0";
 	if (!defined($options{'empty'})) {
@@ -114,6 +113,10 @@ sub check_create_options
 			$options{'save'} = 1;
 		}
 	};
+
+	my @domain_tokens = split(/\./, $options{'contname'});
+	$options{'hostname'} ||= shift @domain_tokens;
+	$options{'searchdomain'} ||= join '.', @domain_tokens;
 
 	if ($options{'debug'}) {
 		foreach my $key (sort keys %options) {
@@ -235,6 +238,7 @@ sub do
 		$setter->set_defgw();
 		$setter->set_dns();
 		$setter->set_hostname();
+		$setter->set_searchdomain();
 	}
 
 	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");

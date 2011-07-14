@@ -38,7 +38,12 @@ sub set_hostname
 
 	close $hostname_file;
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "localhost $options{'hostname'}");
+	my $searchdomain = $options{'searchdomain'};
+	if (!defined($options{'searchdomain'})) {
+		$searchdomain = $self->{'helper'}->get_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
+	}
+
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
 
 	return;
 }
@@ -121,6 +126,10 @@ sub set_searchdomain
 	print "Setting search domain: $options{'searchdomain'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'search', $options{'searchdomain'});
+
+	my $hostname = $self->{'helper'}->get_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname", "");
+
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$hostname.$options{'searchdomain'} $hostname localhost");
 
 	return;
 }

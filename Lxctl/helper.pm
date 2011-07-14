@@ -98,6 +98,27 @@ sub modify_config
 	return $status;
 }
 
+sub get_config #(filename, searchstring)
+{
+	my ($self, $filename, $what) = @_;
+	$what ||= "";
+	open(my $file, '<', "$filename") or
+		die " Failed to open $filename!\n\n";
+
+	my @content = <$file>;
+
+	close $file;
+
+	for my $line (@content) {
+		if ($line =~ s/($what)\s*(.*)/$2/) {
+			chomp $line;
+			return $line;
+		}
+	}
+
+	return 0;
+}
+
 sub new
 {
 	my $class = shift;	
