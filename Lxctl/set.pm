@@ -38,6 +38,8 @@ sub set_hostname
 
 	close $hostname_file;
 
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "localhost $options{'hostname'}");
+
 	return;
 }
 
