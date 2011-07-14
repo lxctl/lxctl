@@ -19,11 +19,12 @@ sub migrate_get_opt
 		'onboot=s', 'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpu=s', 'mem=s', 
 		'io=s', 'tohost=s', 'remuser=s', 'remport=s', 'remname=s',
-		'clone=i', 'afterstart=i');
+		'clone=i', 'afterstart!');
 
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
 	$options{'remname'} ||= $options{'contname'};
+	$options{'afterstart'} ||= 0;
 }
 
 sub re_rsync

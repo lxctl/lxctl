@@ -16,7 +16,7 @@ sub migrate_get_opt
 	my $self = shift;
 
 	GetOptions(\%options, 'rootsz=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 'fromhost=s', 
-		'remuser=s', 'remport=s', 'remname=s', 'afterstart=i');
+		'remuser=s', 'remport=s', 'remname=s', 'afterstart!');
 
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
