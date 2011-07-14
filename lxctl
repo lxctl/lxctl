@@ -57,7 +57,8 @@ sub lets_rock
 		$action->import;
 		$class = new $action;
 	} or do {
-		die "Unsupported command!\n\n$@\n\n";
+		#die "Unsupported command!\n\n$@\n\n";
+		die "$@";
 	};
 
 	$class->do(@ARGV);

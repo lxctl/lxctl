@@ -28,20 +28,25 @@ sub fool_proof
 sub load_module
 {
 	my ($self, $module) = @_;
-	my $cnt = 0;
+	my $dest = "";
 	foreach my $path (@INC) {
-		eval {
-			require "$path/$module";
-			$cnt++;
-		};
-		last if ($cnt);
+		if (-e "$path/$module") {
+			$dest = "$path/$module";
+			last;
+		}
 	};
 
-	if ($cnt) {
-		return 1;
+	if (!$dest) {
+		die "Unsupported command!\n\n";
 	}
 
-	die "Can't find module $module in \@INC: @INC\n\n";
+	eval {
+		require $dest;
+	} or do {
+		die "$@\n\n";
+	};
+
+	return 1;
 }
 
 # Destructive change for config file.
