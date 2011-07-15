@@ -2,6 +2,7 @@ package Lxctl::destroy;
 
 use strict;
 use warnings;
+use Getopt::Long;
 
 use Lxc::object;
 use Lxctl::helper;
@@ -17,8 +18,9 @@ sub do
 	if ($self->{'lxc'}->status($options{'contname'}) ne 'STOPPED') {
 		die "Container $options{'contname'} is running!\n\n";
 	}
+	GetOptions(\%options, 'force');
 
-	$self->{'helper'}->fool_proof();
+	$self->{'helper'}->fool_proof() if (!$options{force});
 
 	system("umount /dev/$self->{'VG'}/$options{'contname'}");
 	system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
