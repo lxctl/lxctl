@@ -210,6 +210,18 @@ sub set_autostart
 	}
 }
 
+sub set_tz()
+{
+	my $self = shift;
+
+	defined($options{'tz'}) or return;
+
+	-e "/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
+
+	die "Failed to change timezone!\n\n"
+                if system("cp /usr/share/zoneinfo/$options{'tz'} /etc/localtime");
+}
+
 sub do
 {
 	my $self = shift;
@@ -220,7 +232,7 @@ sub do
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
-		'macaddr=s', 'autostart=s');
+		'macaddr=s', 'autostart=s', 'tz=s');
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
@@ -237,6 +249,7 @@ sub do
 	$self->set_userpasswd();
 	$self->set_rootsz();
 	$self->set_autostart();
+	$self->set_tz();
 	$self->set_cgroup('cpu-shares', 'cpu.shares');
 	$self->set_cgroup('cpus', 'cpuset.cpus');
 	$self->set_cgroup('mem', 'memory.limit_in_bytes');

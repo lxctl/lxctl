@@ -76,7 +76,7 @@ sub check_create_options
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'ostemplate=s', 
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
-		'save!', 'load=s', 'debug', 'searchdomain=s');
+		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -109,6 +109,7 @@ sub check_create_options
 		$options{'netmask'} || die "You MUST specify network mask!\n\n";
 		$options{'defgw'} || die "You MUST specify default gateway!\n\n";
 		$options{'dns'} || die "You MUST specify DNS!\n\n";
+		
 		if (!defined($options{'save'})) {
 			$options{'save'} = 1;
 		}
@@ -239,6 +240,7 @@ sub do
 		$setter->set_dns();
 		$setter->set_hostname();
 		$setter->set_searchdomain();
+		$setter->set_tz();
 	}
 
 	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
