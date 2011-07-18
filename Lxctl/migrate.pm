@@ -19,7 +19,7 @@ sub migrate_get_opt
 		'onboot=s', 'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpu=s', 'mem=s', 
 		'io=s', 'tohost=s', 'remuser=s', 'remport=s', 'remname=s',
-		'clone=i', 'afterstart!');
+		'clone', 'afterstart!');
 
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
@@ -41,7 +41,7 @@ sub re_rsync
 	return if $status ne 'RUNNING';
 
 	eval {
-		if ($options{'clone'} != 0) {
+		if ($options{'clone'}) {
 			print "Freezing container $options{'contname'}...\n";
 			$self->{'lxc'}->freeze($options{'contname'});
 		} else {
@@ -49,7 +49,7 @@ sub re_rsync
 			$self->{'lxc'}->stop($options{'contname'});
 		}
 	} or do {
-		if ($options{'clone'} != 0) {
+		if ($options{'clone'}) {
 			die "Failed to freeze container $options{'contname'}!\n\n";
 		} else {
 			die "Failed to stop container $options{'contname'}!\n\n";
@@ -62,12 +62,12 @@ sub re_rsync
 		if system("rsync -avz -e ssh /var/lxc/root/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:/var/lxc/root/$options{'remname'}/");
 
 	eval {
-		if ($options{'clone'} != 0) {
+		if ($options{'clone'}) {
 			print "Unfreezing container $options{'contname'}...\n";
 			$self->{'lxc'}->unfreeze($options{'contname'});
 		}
 	} or do {
-		if ($options{'clone'} != 0) {
+		if ($options{'clone'}) {
 			die "Failed to unfreeze container $options{'contname'}!\n\n";
 		}
 	};
