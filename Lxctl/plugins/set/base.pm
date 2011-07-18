@@ -7,13 +7,21 @@ use Getopt::Long;
 use Digest::SHA qw(sha1_hex);
 
 use Lxc::object;
+use UNIVERSAL::require;
 
 use Lxctl::helpers::_general;
 use Lxctl::helpers::_config;
 
-my %options = ();
-
 sub _order { 99 }
+
+my %options;
+
+sub require
+{
+	my $proto = shift;
+	my $class = ref $proto || $proto;
+	return $class->SUPER::require;
+}
 
 sub mac_create
 {
@@ -106,9 +114,8 @@ sub set_rootsz
 
 sub set_cgroup
 {
-	my $self = shift;
+	my ($self, $name, $value) = @_;
 
-	my ($name, $value) = @_;
 	defined($options{$name}) or return;
 
 	print "Setting $name: $options{$name}\n";
@@ -148,7 +155,8 @@ sub set_autostart
 
 sub new
 {
-	my $class = shift;	
+	my $class = shift;
+	my $options_ref = shift;
 	my $self = {};
 	bless $self, $class;
 
@@ -159,7 +167,7 @@ sub new
 	$self->{'VG'} = $self->{'lxc'}->get_vg();
 	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
 
-	%options = @_;
+	%options = %$options_ref;
 
 	return $self;
 }

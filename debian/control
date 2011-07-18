@@ -10,6 +10,7 @@ Vcs-Browser: https://github.com/lxctl/lxctl
 
 Package: lxctl
 Architecture: all
-Depends: ${misc:Depends}, perl-doc, lxc (>= 0.7.4), lvm2, bridge-utils, libyaml-tiny-perl, bash-completion
+Depends: ${misc:Depends}, perl-doc, lxc (>= 0.7.4), lvm2, bridge-utils, libyaml-tiny-perl, bash-completion,
+libuniversal-require-perl, perl-modules (>= 5.10) | libmodule-pluggable-perl
 Description: vzctl-like utility for lxc
  Utility to manage different aspects of linux containers.

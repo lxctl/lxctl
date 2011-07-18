@@ -4,11 +4,11 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use Module::Pluggable::Ordered search_path => ['Lxctl::plugins::set'];
 
 use Lxc::object;
 
 use Lxctl::helpers::_config;
+use Lxctl::helpers::_plugins search_path => ['Lxctl::plugins::set'], instantiate => "new";
 
 my %options = ();
 
@@ -24,13 +24,13 @@ sub do
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
-		'macaddr=s', 'autostart=s', 'tz=s');
+		'macaddr=s', 'autostart=s', 'tz=s', 'debug!');
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
 	}
 
-	# Dirty hack. set_macaddr used from create and should be able to work without --maccaddr option.
+	# Dirty hack. set_macaddr used from create and should be able to work without --macaddr option.
 	$self->set_macaddr() if defined($options{'macaddr'});
 	$self->set_ipadd();
 	$self->set_netmask();
@@ -60,47 +60,21 @@ sub AUTOLOAD
 	if ($function eq "DESTROY") {
 		return;
 	}
-#	my @plugins;
-#	print "Function $function not found, trying to find in plugins...\n";
-	for my $plugin ($self->plugins_ordered(%options)) {
+
+	for my $plugin ($self->plugins_ordered(\%options)) {
 		eval {
 			$plugin->$function(@_);
-			print "Called $plugin $function\n";
+
+			if ($options{'debug'}) {
+				print "Called $plugin->$function\n";
+			}
 		}
 	}
-
-#	print "Found:";
-#	foreach my $val (@plugins) {
-#		print " $val";
-#	}
-#	print "\n";
-
-#	my %call_stack;
-#	for my $plugin ($self->plugins(%options)) {
-#		my $order = 50;
-#		eval {
-#			$order = $plugin->_order;
-#		};
-#		$call_stack{$order} .= '%%' . $plugin;
-#	}
-#	foreach my $plugin_order (sort keys %call_stack) {
-#		my @plugin_list = split(/%%/, $call_stack{$plugin_order});
-#		foreach my $plugin (@plugin_list) {
-#			next if (!defined $plugin || $plugin eq "");
-#			eval {
-#				print "Called: $plugin $function\n";
-#
-#				$plugin->$function(@_);
-#			} or do {
-#				print "Failed with $@\n";
-#			}
-#		}
-#	}
 }
 
 sub new
 {
-	my $class = shift;	
+	my $class = shift;
 	my $self = {};
 	bless $self, $class;
 

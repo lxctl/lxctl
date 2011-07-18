@@ -11,9 +11,16 @@ use Lxc::object;
 use Lxctl::helpers::_general;
 use Lxctl::helpers::_config;
 
-my %options = ();
-
 sub _order { 70 }
+
+my %options;
+
+sub require
+{
+	my $proto = shift;
+	my $class = ref $proto || $proto;
+	return $class->SUPER::require;
+}
 
 sub set_hostname
 {
@@ -82,16 +89,16 @@ sub set_defgw
 
 sub set_tz()
 {
-        my $self = shift;
+	my $self = shift;
 
-        defined($options{'tz'}) or return;
+	defined($options{'tz'}) or return;
 
-        print "Setting timesone: $options{'tz'}...\n";
+	print "Setting timesone: $options{'tz'}...\n";
 
-        -e "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
+	-e "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
 
-        die "Failed to change timezone!\n\n"
-                if system("cp $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/localtime");
+	die "Failed to change timezone!\n\n"
+		if system("cp $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/localtime");
 }
 
 sub new
@@ -107,7 +114,8 @@ sub new
 	$self->{'VG'} = $self->{'lxc'}->get_vg();
 	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
 
-	%options = @_;
+	my $options_ref = shift;
+	%options = %$options_ref;
 
 	return $self;
 }
