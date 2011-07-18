@@ -1,31 +1,28 @@
-package Lxctl::_getters;
+package Lxctl::commands::freeze;
 
 use strict;
 use warnings;
 
 use Lxc::object;
 
-sub get_ip{
-        my ($self, $name) = @_;
-        my $subname = (caller(0))[3];
+my %options = ();
 
-        if (!defined($name)) {
-                die "$subname: No vmname is given\n";
-        }
+sub do
+{
+	my $self = shift;
 
-        my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
-        $path = $path . "/etc/network/interfaces";
+	$options{'contname'} = shift
+		or die "Name the container please!\n\n";
 
-        open my $config_file, '<', "$path" or return "N/A";
+	eval {
+		$self->{'lxc'}->freeze($options{'contname'});
+	} or do {
+		print "$@";
+		die "Cannot freeze $options{'contname'}!\n\n";
+	};
 
-        my @interfaces = <$config_file>;
-        my @ip = grep { /address / } @interfaces;
-        $ip[0] =~ s/  address //;
-        chop($ip[0]);
-
-        close($config_file);
-
-        return "$ip[0]";
+	print "Successfuly frozen!\n";
+	return;
 }
 
 sub new
@@ -41,14 +38,19 @@ sub new
 
 1;
 __END__
-
 =head1 NAME
 
-Lxctl::_getters - temporary module, until we split all distro-specific functions to plugins.
+Lxctl::destroy
 
 =head1 SYNOPSIS
 
-Can get IP from debian/ubuntu containers.
+TODO
+
+=head1 DESCRIPTION
+
+TODO
+
+Man page by Capitan Obvious.
 
 =head2 EXPORT
 

@@ -1,4 +1,4 @@
-package Lxctl::stop;
+package Lxctl::commands::stop;
 
 use strict;
 use warnings;

@@ -1,4 +1,4 @@
-package Lxctl::set;
+package Lxctl::commands::set;
 
 use strict;
 use warnings;
@@ -8,8 +8,8 @@ use Digest::SHA qw(sha1_hex);
 
 use Lxc::object;
 
-use Lxctl::helper;
-use Lxctl::_config;
+use Lxctl::helpers::_general;
+use Lxctl::helpers::_config;
 
 my %options = ();
 
@@ -257,7 +257,7 @@ sub do
 	$self->set_cgroup('mem', 'memory.limit_in_bytes');
 	$self->set_cgroup('io', 'blkio.weight');
 
-	my $config = new Lxctl::_config;
+	my $config = new Lxctl::helpers::_config;
 	$config->change_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
 
 	return;
@@ -270,7 +270,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = Lxctl::helper->new;
+	$self->{'helper'} = Lxctl::helpers::_general->new;
 
 	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
 	$self->{'VG'} = $self->{'lxc'}->get_vg();

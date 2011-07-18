@@ -1,11 +1,11 @@
-package Lxctl::destroy;
+package Lxctl::commands::destroy;
 
 use strict;
 use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-use Lxctl::helper;
+use Lxctl::helpers::_general;
 
 my %options = ();
 
@@ -53,7 +53,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = new Lxctl::helper;
+	$self->{'helper'} = new Lxctl::helpers::_general;
 
 	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
 	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();

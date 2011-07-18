@@ -1,4 +1,4 @@
-package Lxctl::helper;
+package Lxctl::helpers::_general;
 
 use strict;
 use warnings;
@@ -37,7 +37,7 @@ sub load_module
 	};
 
 	if (!$dest) {
-		die "Unsupported command!\n\n";
+		die "Module not found!";
 	}
 
 	eval {

@@ -1,4 +1,4 @@
-package Lxctl::create;
+package Lxctl::plugins::create::base;
 
 use strict;
 use warnings;
@@ -7,13 +7,15 @@ use Getopt::Long;
 
 use Lxc::object;
 
-use Lxctl::set;
-use Lxctl::_config;
+use Lxctl::commands::set;
+use Lxctl::helpers::_config;
 
 
-my $config = new Lxctl::_config;
+my $config = new Lxctl::helpers::_config;
 
 my %options = ();
+
+sub _order { 99 }
 
 sub check_existance
 {
@@ -227,7 +229,7 @@ sub do
 	$self->create_root();
 	$self->create_lxc_conf();
 
-	my $setter = Lxctl::set->new(%options);
+	my $setter = Lxctl::commands::set->new(%options);
 	$setter->set_macaddr();
 
 	if ($options{'empty'} == 0) {
@@ -264,6 +266,7 @@ sub new
 	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
 	$self->{'VG'} = $self->{'lxc'}->get_vg();
 
+	print "Lxctl::plugins::create::base initialized\n";
 
 	return $self;
 }

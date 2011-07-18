@@ -1,4 +1,4 @@
-package Lxctl::migrate;
+package Lxctl::commands::migrate;
 
 use strict;
 use warnings;
@@ -7,7 +7,7 @@ use Getopt::Long;
 
 use Lxc::object;
 
-use Lxctl::_config;
+use Lxctl::helpers::_config;
 
 my %options = ();
 
@@ -79,7 +79,7 @@ sub copy_config
 
 	print "Configuring $options{'remname'}...\n";
 
-	my $config = new Lxctl::_config;
+	my $config = new Lxctl::helpers::_config;
 
 	my $tmp = $config->load_file($self->{'lxc'}->get_config_path()."/$options{'remname'}.yaml");
 	my %conf_hash = %$tmp;

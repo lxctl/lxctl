@@ -1,4 +1,4 @@
-package Lxctl::vz2lxc;
+package Lxctl::commands::vz2lxc;
 
 use strict;
 use warnings;
@@ -6,8 +6,6 @@ use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-
-use Lxctl::_config;
 
 my %options = ();
 

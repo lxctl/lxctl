@@ -1,4 +1,4 @@
-package Lxctl::unfreeze;
+package Lxctl::commands::start;
 
 use strict;
 use warnings;
@@ -15,13 +15,11 @@ sub do
 		or die "Name the container please!\n\n";
 
 	eval {
-		$self->{'lxc'}->unfreeze($options{'contname'});
+		$self->{'lxc'}->start($options{'contname'});
 	} or do {
 		print "$@";
-		die "Cannot unfreeze $options{'contname'}!\n\n";
+		die "Cannot start $options{'contname'}!\n\n";
 	};
-
-	print "Successfuly unfrozen!\n";
 	return;
 }
 
@@ -31,7 +29,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'lxc'} = new Lxc::object;
+	$self->{'lxc'} = Lxc::object->new;
 
 	return $self;
 }

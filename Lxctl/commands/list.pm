@@ -1,4 +1,4 @@
-package Lxctl::list;
+package Lxctl::commands::list;
 
 use strict;
 use warnings;
@@ -6,7 +6,7 @@ use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-use Lxctl::_getters;
+use Lxctl::helpers::_getters;
 
 sub vsepsimply {
 	my ($self, $val) = @_;
@@ -107,7 +107,7 @@ sub do
 	my $countvm = 0;
 	my $raw = 0;
 	my $cols = MIN_COL;
-	my $getters = new Lxctl::_getters;
+	my $getters = new Lxctl::helpers::_getters;
 	GetOptions('ipaddr' => \$ipaddr, 'hostname' => \$hostname, 'cgroup' => \$cgroup, 'diskspace' => \$disk_space, 'mount' => \$mount_point,
 'raw' => \$raw, 'all' => \$all);
 

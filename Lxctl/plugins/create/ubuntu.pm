@@ -1,54 +1,34 @@
-package Lxctl::freeze;
+package Lxctl::plugins::create::ubuntu;
+use base qw(Lxctl::plugins::create::base);
 
 use strict;
 use warnings;
 
-use Lxc::object;
-
-my %options = ();
-
-sub do
-{
-	my $self = shift;
-
-	$options{'contname'} = shift
-		or die "Name the container please!\n\n";
-
-	eval {
-		$self->{'lxc'}->freeze($options{'contname'});
-	} or do {
-		print "$@";
-		die "Cannot freeze $options{'contname'}!\n\n";
-	};
-
-	print "Successfuly frozen!\n";
-	return;
-}
+use Getopt::Long;
 
 sub new
 {
 	my $class = shift;
-	my $self = {};
-	bless $self, $class;
+	my $self = $class->SUPER::new();
 
-	$self->{'lxc'} = new Lxc::object;
-
+	print "Lxctl::plugins::create::ubuntu initialized\n";
 	return $self;
 }
 
 1;
 __END__
+
 =head1 NAME
 
-Lxctl::destroy
+Lxctl::create
 
 =head1 SYNOPSIS
 
-TODO
+Basic create command. Should be sufficient for all needs
 
 =head1 DESCRIPTION
 
-TODO
+Basic create command. Should be sufficient for all needs
 
 Man page by Capitan Obvious.
 

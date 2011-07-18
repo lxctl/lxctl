@@ -1,28 +1,31 @@
-package Lxctl::enter;
+package Lxctl::helpers::_getters;
 
 use strict;
 use warnings;
 
 use Lxc::object;
 
-my %options = ();
+sub get_ip{
+        my ($self, $name) = @_;
+        my $subname = (caller(0))[3];
 
-sub do
-{
-	my $self = shift;
+        if (!defined($name)) {
+                die "$subname: No vmname is given\n";
+        }
 
-	$options{'contname'} = shift
-		or die "Name the container please!\n\n";
+        my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
+        $path = $path . "/etc/network/interfaces";
 
-	eval {
-		print "Warning! All processes you'll start from here will ignore cgroup limits!\n";
-		$self->{'lxc'}->attach($options{'contname'});
-	} or do {
-		print "$@";
-		die "Cannot attach to $options{'contname'}!\n\n";
-	};
+        open my $config_file, '<', "$path" or return "N/A";
 
-	return;
+        my @interfaces = <$config_file>;
+        my @ip = grep { /address / } @interfaces;
+        $ip[0] =~ s/  address //;
+        chop($ip[0]);
+
+        close($config_file);
+
+        return "$ip[0]";
 }
 
 sub new
@@ -38,19 +41,14 @@ sub new
 
 1;
 __END__
+
 =head1 NAME
 
-Lxctl::destroy
+Lxctl::_getters - temporary module, until we split all distro-specific functions to plugins.
 
 =head1 SYNOPSIS
 
-TODO
-
-=head1 DESCRIPTION
-
-TODO
-
-Man page by Capitan Obvious.
+Can get IP from debian/ubuntu containers.
 
 =head2 EXPORT
 
