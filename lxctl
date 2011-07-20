@@ -138,6 +138,20 @@ B<Optional arguments:>
 
 	--hostname - sets the hostname of the machine, by default <container name> is used
 
+	--macaddr - set the custom mac adress if the machine
+
+	--autostart - autostart container each reboot host machine
+
+	--no-save - do not save yaml config for new container, by default $CONF_PATH/vmname.yaml is used
+
+	--load - create container from yaml config
+
+	--debug - show more information about install process
+
+	--tz - set custom timezone (Europe/Moscow, UTC, etc)
+
+	--empty - create a clear container for migrate here
+
 =item B<set>
 
 Changes container parameters.
@@ -160,9 +174,13 @@ B<Optional arguments:>
 
 	--hostname - sets the hostname of the machine
 
+        --macaddr - set the custom mac adress if the machine
+
 	--userpasswd user:passwd - sets password for given user
 
 	--onboot {yes,no} - makes containet [do not] start at boot
+
+        --tz - set custom timezone (Europe/Moscow, UTC, etc)
 
 	--cpu - sets the CPU share of the container
 
