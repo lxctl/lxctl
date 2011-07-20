@@ -49,15 +49,15 @@ sub set_hostname
 	return;
 }
 
-sub set_ipadd
+sub set_ipaddr
 {
 	my $self = shift;
 
-	defined($options{'ipadd'}) or return;
+	defined($options{'ipaddr'}) or return;
 
-	print "Setting IP: $options{'ipadd'}\n";
+	print "Setting IP: $options{'ipaddr'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipadd'});
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipaddr'});
 
 	return;
 }
@@ -243,7 +243,7 @@ sub do
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
 
-	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
+	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
 		'macaddr=s', 'autostart=s', 'tz=s');
@@ -254,7 +254,7 @@ sub do
 
 	# Dirty hack. set_macaddr used from create and should be able to work without --maccaddr option.
 	$self->set_macaddr() if defined($options{'macaddr'});
-	$self->set_ipadd();
+	$self->set_ipaddr();
 	$self->set_netmask();
 	$self->set_defgw();
 	$self->set_dns();

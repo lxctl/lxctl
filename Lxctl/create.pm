@@ -73,7 +73,7 @@ sub check_create_options
 {
 	my $self = shift;
 
-	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'ostemplate=s', 
+	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s');
@@ -105,7 +105,7 @@ sub check_create_options
 	$options{'debug'} ||= 0;
 
 	if ($options{'empty'} == 0) {
-		$options{'ipadd'} || die "You MUST specify IP address!\n\n";
+		$options{'ipaddr'} || die "You MUST specify IP address!\n\n";
 		$options{'netmask'} || die "You MUST specify network mask!\n\n";
 		$options{'defgw'} || die "You MUST specify default gateway!\n\n";
 		$options{'dns'} || die "You MUST specify DNS!\n\n";
@@ -234,7 +234,7 @@ sub do
 		$self->deploy_template();
 		$self->create_ssh_keys();
 
-		$setter->set_ipadd();
+		$setter->set_ipaddr();
 		$setter->set_netmask();
 		$setter->set_defgw();
 		$setter->set_dns();
