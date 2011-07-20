@@ -116,9 +116,9 @@ B<Required arguments:>
 
 	vmname - name of the container
 
-	--ipaddr - IP address if the machine
+	--ipaddr - IP address of the machine
 
-	--netmask - network mask of the machine
+	--mask/netmask - network mask of the machine
 
 	--defgw - default gateway of the machine
 
@@ -138,7 +138,9 @@ B<Optional arguments:>
 
 	--hostname - sets the hostname of the machine, by default <container name> is used
 
-	--macaddr - set the custom mac adress if the machine
+	--searchdomain - set a custom searchdomain in /etc/resolv.conf
+
+	--macaddr - set the custom mac adress of the container
 
 	--autostart - autostart container each reboot host machine
 
@@ -166,13 +168,15 @@ B<Optional arguments:>
 
 	--ipaddr - IP address if the machine
 
-	--netmask - network mask of the machine
+	--mask/netmask - network mask of the machine
 
 	--defgw - default gateway of the machine
 
 	--dns - primary DNS server
 
 	--hostname - sets the hostname of the machine
+
+        --searchdomain - set a custom searchdomain in /etc/resolv.conf
 
         --macaddr - set the custom mac adress if the machine
 
@@ -182,7 +186,9 @@ B<Optional arguments:>
 
         --tz - set custom timezone (Europe/Moscow, UTC, etc)
 
-	--cpu - sets the CPU share of the container
+	--cpu-shares - sets the CPU share of the container
+
+	--cpus - sets the CPU cores of the container
 
 	--mem - sets the memory share of the container (in bytes!)
 
@@ -215,8 +221,6 @@ B<Optional arguments:>
 	--hostname - display with hostname.
 	
 	--cgroup - display with cgroup
-
-	--ipaddr - display with ip
 		
 	--mount - display with mount point for rootfs
 
