@@ -9,11 +9,11 @@ _lxctl()
     cur=`_get_cword`
     command=${COMP_WORDS[1]}
 
-    SET_CREATE_OPTS="--macaddr= --autostart= --ipaddr= --hostname= --userpasswd= --onboot= --nameserver= --searchdomain= --rootsz= --netmask= --defgw= --dns="
+    SET_CREATE_OPTS="--macaddr= --autostart= --ipaddr= --macaddr= --config= --root= --pkgset= --hostname= --userpasswd= --onboot= --nameserver= --searchdomain= --ostemplate= --rootsz= --netmask= --mask= --defgw= --gw= --dns= --load= --tz="
     SET_OPTS="$SET_CREATE_OPTS --cpus= --cpu-shares= --mem= --io="
     CREATE_OPTS="$SET_CREATE_OPTS --empty --debug --save --no-save"
     MIGRATE_OPTS="$SET_OPTS --tohost= --remuser= --remport= --remname= --clone= --afterstart= "
-    VZ2LXC_OPTS="--rootsz= --cpus= --cpu-shares= --mem= --io= --fromhost= --remuser= --remport= --remname= --afterstart="    
+    VZ2LXC_OPTS="--rootsz= --cpus= --cpu-shares= --mem= --io= --fromhost= --remuser= --remport= --remname= --afterstart="
 
     case $COMP_CWORD in
         1)
@@ -24,7 +24,7 @@ _lxctl()
         2)
             case $command in
                 list)
-			COMPREPLY=( $( compgen -W "--all --ipaddr --diskspace --hostname --mount --raw" -- "$cur" ) ) 
+			COMPREPLY=( $( compgen -W "--all --ipaddr --diskspace --hostname --mount --cgroup --raw" -- "$cur" ) ) 
                     ;;
 		vz2lxc)
 		   ;;
