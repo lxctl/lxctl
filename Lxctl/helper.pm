@@ -37,7 +37,7 @@ sub load_module
 	};
 
 	if (!$dest) {
-		die "Unsupported command!\n Usage:\n lxctl [action] [vmname] [options]\n\n See lxctl --man or lxctl --help for more info\n";
+		die "Unsupported command!\nUsage:\nlxctl [action] [vmname] [options]\n\nSee lxctl --man or lxctl --help for more info\n";
 	}
 
 	eval {
