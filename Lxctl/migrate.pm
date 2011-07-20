@@ -86,11 +86,11 @@ sub copy_config
 
 	my $set = "lxctl set $options{'remname'}";
 
-	for my $key (%options) {
+	for my $key (sort keys %options) {
 		$conf_hash{$key} = $options{$key};
 	}
 
-	for my $key (%conf_hash) {
+	for my $key (sort keys %conf_hash) {
 		$set = "$set --$key '$conf_hash{$key}'" if defined($conf_hash{$key});
 	}
 

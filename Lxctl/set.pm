@@ -5,6 +5,7 @@ use warnings;
 
 use Getopt::Long;
 use Digest::SHA qw(sha1_hex);
+use Linux::LVM;
 
 use Lxc::object;
 
@@ -48,15 +49,15 @@ sub set_hostname
 	return;
 }
 
-sub set_ipaddr
+sub set_ipadd
 {
 	my $self = shift;
 
-	defined($options{'ipaddr'}) or return;
+	defined($options{'ipadd'}) or return;
 
-	print "Setting IP: $options{'ipaddr'}\n";
+	print "Setting IP: $options{'ipadd'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipaddr'});
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipadd'});
 
 	return;
 }
@@ -154,10 +155,21 @@ sub set_rootsz
 
 	defined($options{'rootsz'}) or return;
 
+	my %lvm_info = get_lv_info("/dev/$self->{'VG'}/$options{'contname'}");
+
+	my $tmp = $lvm_info{'size'} . $lvm_info{'size_unit'};
+
+	my ($size) = $tmp =~ m/\d+[bBsSkKmMgGtTpPeE]/;
+
 	print "Setting root size: $options{'rootsz'}\n";
 
-	$options{'rootsz'} =~ m/^\+\d+[bBsSkKmMgGtTpPeE]$/ or
+	($tmp) = $options{'rootsz'} =~ m/^\d+[bBsSkKmMgGtTpPeE]$/ or
 		die "Bad size!\n\n";
+
+	if (lc($tmp) eq lc($size)) {
+		print "Already desired size, exiting...\n";
+		return;
+	}
 
 	die "Failed to resize root LV!\n\n"
 		if system("lvextend -L $options{'rootsz'} /dev/$self->{'VG'}/$options{'contname'}");
@@ -231,7 +243,7 @@ sub do
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
 
-	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
+	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
 		'macaddr=s', 'autostart=s', 'tz=s');
@@ -242,7 +254,7 @@ sub do
 
 	# Dirty hack. set_macaddr used from create and should be able to work without --maccaddr option.
 	$self->set_macaddr() if defined($options{'macaddr'});
-	$self->set_ipaddr();
+	$self->set_ipadd();
 	$self->set_netmask();
 	$self->set_defgw();
 	$self->set_dns();
