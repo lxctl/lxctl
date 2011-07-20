@@ -6,7 +6,7 @@ perl program to control lxc-based containers in vzctl-like way.
 Contributing
 ------------
 
-http://www.lxc.tl/bugtrack/
+http://bugs.lxc.tl/
 
 Installation
 -----------
@@ -26,8 +26,11 @@ Contributing
 ------------
 
 Feel free to contact us via email:
+
 Anatoly Burtsev, anatolyburtsev@yandex.ru
+
 Pavel Potapenkov, ppotapenkov@gmail.com
+
 Vladimir Smirnov, civil.over@gmail.com
 
 Copyrighting and License
