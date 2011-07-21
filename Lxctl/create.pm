@@ -43,10 +43,14 @@ sub create_root
 		die "Failed to create logical volume $options{'contname'}!\n\n"
 			if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $self->{'VG'} 1>/dev/null");
 
-		print "Creating ext4 FS: /dev/$self->{'VG'}/$options{'contname'}\n";
+		my $msg = "";
+		if ($options{'mkfsopts'} ne "") {
+			$msg = " with options $options{'mkfsopts'}";
+		}
+		print "Creating $options{'fs'} FS$msg: /dev/$self->{'VG'}/$options{'contname'}\n";
 
 		die "Failed to create FS for $options{'contname'}!\n\n"
-			if system("mkfs.ext4 /dev/$self->{'VG'}/$options{'contname'} 1>/dev/null");
+			if system("mkfs.$options{'fs'} /dev/$self->{'VG'}/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
 	}
 
 	print "Creating directory: $self->{'ROOTS_PATH'}/$options{'contname'}\n";
@@ -76,7 +80,8 @@ sub check_create_options
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
-		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s');
+		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
+		'fs=s', 'mkfsopts=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -124,6 +129,8 @@ sub check_create_options
 			print "options{$key} = $options{$key} \n";
 		};
 	}
+	$options{'fs'} ||= "ext4";
+	$options{'mkfsopts'} ||= "";
 
 	return;
 }
