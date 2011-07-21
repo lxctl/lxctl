@@ -26,7 +26,8 @@ sub do
 	system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
 	system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}");
 	system("rm -r $self->{'LXC_CONF_DIR'}/$options{'contname'}");
-
+	system("rm /etc/lxctl/$options{'contname'}.yaml");
+	
 	open(my $fstab_file, '<', "/etc/fstab") or
 		die " Failed to open /etc/fstab for reading!\n\n";
 
