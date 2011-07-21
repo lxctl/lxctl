@@ -62,7 +62,7 @@ sub create_root
 		print "Fixing fstab...\n";
 
 		die "Failed to add fstab entry for $options{'contname'}!\n\n"
-			if system("echo '/dev/$self->{'VG'}/$options{'contname'} $self->{'ROOTS_PATH'}/$options{'contname'} ext4 defaults 0 0' >> /etc/fstab");
+			if system("echo '/dev/$self->{'VG'}/$options{'contname'} $self->{'ROOTS_PATH'}/$options{'contname'} $options{'fs'} $options{'mountoptions'} 0 0' >> /etc/fstab");
 
 		print "Mounting FS...\n";
 
@@ -81,7 +81,7 @@ sub check_create_options
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
-		'fs=s', 'mkfsopts=s');
+		'fs=s', 'mkfsopts=s', 'mountoptions=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -131,6 +131,12 @@ sub check_create_options
 	}
 	$options{'fs'} ||= "ext4";
 	$options{'mkfsopts'} ||= "";
+	
+	if ($options{'fs'} eq "ext4") {
+		$options{'mountoptions'} ||= "defaults,noatime";
+	} else {
+		$options{'mountoptions'} ||= "defaults";
+	}
 
 	return;
 }
