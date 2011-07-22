@@ -22,6 +22,16 @@ sub require
 	return $class->SUPER::require;
 }
 
+sub moduleversion
+{
+	my $self = shift;
+	my @status;
+	$status[0] = 0;
+	$status[1] = "Plugin: \"Ubuntu\" version 0.1\n";
+	
+	return @status;
+}
+
 sub set_hostname
 {
 	my $self = shift;

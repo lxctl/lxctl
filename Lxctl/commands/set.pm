@@ -28,6 +28,18 @@ sub do
 		'macaddr=s', 'autostart=s', 'tz=s', 'debug!');
 	$Getopt::Long::passthrough = 0;
 
+	# Maybe it's a bit magical, but I can't make getopt to parse all options.
+	# Should be used by plugins to parse unknown options.
+	foreach my $cmd (@ARGV) {
+		my ($call) = $cmd =~ m/--([^=]*)/;
+		if (defined($call)) {
+			print "DEBUG: $cmd\n";
+			print "CALL: \"$call\"\n";
+			$self->$call;
+		}
+		#$self->$call;
+	}
+
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
 	}

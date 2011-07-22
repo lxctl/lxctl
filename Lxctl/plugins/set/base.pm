@@ -23,6 +23,16 @@ sub require
 	return $class->SUPER::require;
 }
 
+sub moduleversion
+{
+	my $self = shift;
+	my @status;
+	$status[0] = 0;
+	$status[1] = "Plugin: \"Base\" version 0.1\n";
+	
+	return @status;
+}
+
 sub mac_create
 {
 	my ($self, $data) = @_;
