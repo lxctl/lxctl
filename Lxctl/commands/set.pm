@@ -21,10 +21,12 @@ sub do
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
 
+	$Getopt::Long::passthrough = 1;
 	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
 		'macaddr=s', 'autostart=s', 'tz=s', 'debug!');
+	$Getopt::Long::passthrough = 0;
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
@@ -57,17 +59,32 @@ sub AUTOLOAD
 {
 	my $self = shift;
 	my ($function) = $AUTOLOAD =~ m/.*::(.*)$/;
+	my @result;
+	$result[0] = 0;
+	$result[1] = "";
 	if ($function eq "DESTROY") {
 		return;
 	}
 
 	for my $plugin ($self->plugins_ordered(\%options)) {
 		eval {
-			$plugin->$function(@_);
+			@result = $plugin->$function(@_);
+		};
 
-			if ($options{'debug'}) {
-				print "Called $plugin->$function\n";
-			}
+		if ($options{'debug'}) {
+			print "Called $plugin->$function\n";
+		}
+
+		if ($result[1] ne "") {
+			print "$result[1]";
+		}
+
+		if ($result[0] eq "1") {
+			return;
+		}
+
+		if ($result[0] eq "2") {
+			die "Fatal error";
 		}
 	}
 }

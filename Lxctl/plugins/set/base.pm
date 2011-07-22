@@ -35,38 +35,50 @@ sub mac_create
 sub set_macaddr
 {
 	my $self = shift;
+	my @status;
+	my $mac;
+	push(@status, 0);
+	push(@status, "");
 
 	if (defined($options{'macaddr'})) {
-		print "Setting MAC: $options{'macaddr'}\n";
-		$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $options{'macaddr'});
-		return;	
-	}
-	defined($options{'contname'}) or return;
+		$mac = $options{'macaddr'};	
+	} else {
+		defined($options{'contname'}) or return @status;
 	
-	my $mac = $self->mac_create($options{'contname'}) . ":01";
+		$mac = $self->mac_create($options{'contname'}) . ":01";
+	}
+
 	print "Setting MAC: $mac\n";
 	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
-	return;
+
+	return @status;
 } 
 
 sub set_dns
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'dns'}) or return;
+	defined($options{'dns'}) or return @status;
 
 	print "Setting DNS: $options{'dns'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'nameserver', $options{'dns'});
 
-	return;
+	return @status;
 }
 
 sub set_searchdomain
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'searchdomain'}) or return;
+
+	defined($options{'searchdomain'}) or return @status;
 
 	print "Setting search domain: $options{'searchdomain'}\n";
 
@@ -76,47 +88,68 @@ sub set_searchdomain
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$hostname.$options{'searchdomain'} $hostname localhost");
 
-	return;
+	return @status;
 }
 
 sub set_userpasswd
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'userpasswd'}) or return;
+	defined($options{'userpasswd'}) or return @status;
 
 	print "Setting password for user: $options{'userpasswd'}\n";
 
-	die "Failed to change password!\n\n"
-		if system("echo '$options{'userpasswd'}' | chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ chpasswd");
+	if (system("echo '$options{'userpasswd'}' | chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ chpasswd")) {
+		$status[1] = "Failed to change password!\n\n";
+		$status[0] = 2;
+	}
 
-	return;
+	return @status;
 }
 
 sub set_rootsz
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'rootsz'}) or return;
+	defined($options{'rootsz'}) or return @status;
 
 	print "Setting root size: $options{'rootsz'}\n";
 
-	$options{'rootsz'} =~ m/^\+\d+[bBsSkKmMgGtTpPeE]$/ or
-		die "Bad size!\n\n";
+	$options{'rootsz'} =~ m/^\+\d+[bBsSkKmMgGtTpPeE]$/ or do {
+		$status[1] = "Bad size!\n\n";
+		$status[0] = 2;
+		return @status;
+	};
 
-	die "Failed to resize root LV!\n\n"
-		if system("lvextend -L $options{'rootsz'} /dev/$self->{'VG'}/$options{'contname'}");
-	die "Failed to resize root filesystem!\n\n"
-		if system("resize2fs /dev/$self->{'VG'}/$options{'contname'}");
+	if (system("lvextend -L $options{'rootsz'} /dev/$self->{'VG'}/$options{'contname'}")) {
+		$status[0] = 2;
+		$status[1] = "Failed to resize root LV!\n\n";
+		return @status;
+	}
+	
+	if (system("resize2fs /dev/$self->{'VG'}/$options{'contname'}")) {
+		$status[0] = 2;
+		$status[1] = "Failed to resize root filesystem!\n\n";
+		return @status;
+	}
 
-	return;
+	return @status;
 }
 
 sub set_cgroup
 {
 	my ($self, $name, $value) = @_;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{$name}) or return;
+	defined($options{$name}) or return @status;
 
 	print "Setting $name: $options{$name}\n";
 
@@ -129,18 +162,21 @@ sub set_cgroup
 
 		$self->{'lxc'}->set_conf($options{'contname'}, "lxc.cgroup." . $value, $options{$name});
 	} or do {
-		print "$@";
-		die "Failed to change $name share!\n\n";
+		$status[1] = "$@";
+		$status[0] = 2;
 	};
 
-	return;
+	return @status;
 }
 
 sub set_autostart
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'autostart'}) or return;
+	defined($options{'autostart'}) or return @status;
 	my $autostart = $options{'autostart'};
 	my $name = $options{'contname'};
 
@@ -151,6 +187,7 @@ sub set_autostart
 		print "Adding $name to autostart\n";
 		$self->{'helper'}->modify_config("/etc/default/lxc", "CONTAINERS", "\"\$", " $name\"");
 	}
+	return @status;
 }
 
 sub new

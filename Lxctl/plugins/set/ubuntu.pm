@@ -25,12 +25,18 @@ sub require
 sub set_hostname
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'hostname'}) or return;
+	defined($options{'hostname'}) or return @status;
 	print "Setting hostname: $options{'hostname'}\n";
 
-	open(my $hostname_file, '>', "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname") or
-		die " Failed to open $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname!\n\n";
+	open(my $hostname_file, '>', "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname") or do {
+		$status[1] = " Failed to open $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname!\n\n";
+		$status[0] = 2;
+		return @status;
+	};
 
 	seek $hostname_file,0,0;
 
@@ -45,60 +51,76 @@ sub set_hostname
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
 
-	return;
+	return @status;
 }
 
 sub set_ipadd
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'ipadd'}) or return;
+	defined($options{'ipadd'}) or return @status;
 
 	print "Setting IP: $options{'ipadd'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipadd'});
 
-	return;
+	return @status;
 }
 
 sub set_netmask
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'netmask'}) or return;
+	defined($options{'netmask'}) or return @status;
 
 	print "Setting netmask: $options{'netmask'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'netmask', $options{'netmask'});
 
-	return;
+	return @status;
 }
 
 sub set_defgw
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'defgw'}) or return;
+	defined($options{'defgw'}) or return @status;
 
 	print "Setting gateway: $options{'defgw'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'gateway', $options{'defgw'});
 
-	return;
+	return @status;
 }
 
 sub set_tz()
 {
 	my $self = shift;
+	my @status;
+	push(@status, 0);
+	push(@status, "");
 
-	defined($options{'tz'}) or return;
+	defined($options{'tz'}) or return @status;
 
 	print "Setting timesone: $options{'tz'}...\n";
 
 	-e "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
 
-	die "Failed to change timezone!\n\n"
-		if system("cp $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/localtime");
+	if (system("cp $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/localtime")) {
+			$status[1] = "Failed to change timezone!\n\n";
+			$status[0] = 2;
+	}
+
+	return @status;
 }
 
 sub new
