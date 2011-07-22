@@ -32,6 +32,34 @@ sub load_main
 	return;
 }
 
+sub load_plugin_blacklist
+{
+	my $self = shift;
+	my %blacklist;
+	my $tmp;
+	# @config_paths should be hardcoded.
+	my @config_paths = ("/etc/lxctl", "/etc", ".");
+	foreach my $path (@config_paths) {
+		if ( -f "$path/lxctl.yaml" ) {
+			my $yaml = YAML::Tiny->new;
+			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
+			$tmp = $yaml->[0]->{'plugins'}->{'blacklist'};
+			if (!defined($tmp)) {
+				$tmp = '';
+			}
+# TODO: Optimize this.
+			$tmp =~ s/([A-Za-z0-9_-])([ ]*)(,)/$1=1$2$3/g;
+			$tmp =~ s/ //g;
+			$tmp .= "=1";
+			last;
+		}
+	}
+
+	%blacklist = split(/[,=]/, $tmp);
+
+	return \%blacklist;
+}
+
 # hash_ref, filename
 #  ex: $config->save_hash("abrakadabra.yaml", \%options);
 sub save_hash

@@ -72,6 +72,11 @@ sub AUTOLOAD
 	my $self = shift;
 	my ($function) = $AUTOLOAD =~ m/.*::(.*)$/;
 	my @result;
+
+	my $config = new Lxctl::helpers::_config;
+	my $blacklist_ref = $config->load_plugin_blacklist();
+	my %blacklist = %$blacklist_ref;
+
 	$result[0] = 0;
 	$result[1] = "";
 	if ($function eq "DESTROY") {
@@ -79,6 +84,9 @@ sub AUTOLOAD
 	}
 
 	for my $plugin ($self->plugins_ordered(\%options)) {
+		my ($plugin_name) = $plugin =~ m/plugins::set::(.*)=.*/;
+		next if (defined($blacklist{$plugin_name}));
+
 		eval {
 			@result = $plugin->$function(@_);
 		};
