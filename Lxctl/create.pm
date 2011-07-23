@@ -81,7 +81,7 @@ sub check_create_options
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
-		'fs=s', 'mkfsopts=s', 'mountoptions=s');
+		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -254,6 +254,7 @@ sub do
 		$setter->set_hostname();
 		$setter->set_searchdomain();
 		$setter->set_tz();
+		$setter->set_mtu();
 	}
 
 	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");

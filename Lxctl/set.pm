@@ -92,6 +92,19 @@ sub set_netmask
 	return;
 }
 
+sub set_mtu
+{
+	my $self = shift;
+
+	defined($options{'mtu'}) or return;
+
+	print "Setting mtu: $options{'mtu'}\n";
+
+	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'mtu', $options{'mtu'});
+
+	return;
+}
+
 sub set_defgw
 {
 	my $self = shift;
@@ -246,7 +259,7 @@ sub do
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
-		'macaddr=s', 'autostart=s', 'tz=s');
+		'macaddr=s', 'autostart=s', 'tz=s', 'mtu=i');
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
@@ -264,6 +277,7 @@ sub do
 	$self->set_rootsz();
 	$self->set_autostart();
 	$self->set_tz();
+	$self->set_mtu();
 	$self->set_cgroup('cpu-shares', 'cpu.shares');
 	$self->set_cgroup('cpus', 'cpuset.cpus');
 	$self->set_cgroup('mem', 'memory.limit_in_bytes');
