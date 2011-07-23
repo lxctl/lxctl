@@ -103,7 +103,7 @@ sub check_create_options
 	$options{'config'} ||= "$self->{'LXC_CONF_DIR'}/$options{'contname'}";
 	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
 	$options{'rootsz'} ||= "10G";
-	$options{'autostart'} ||= "0";
+	$options{'autostart'} ||= "1";
 	if (!defined($options{'empty'})) {
 		$options{'empty'} = 0;
 	}
