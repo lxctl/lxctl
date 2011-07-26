@@ -218,7 +218,7 @@ sub create_ssh_keys
 
 	print "Regenerating SSH keys...\n";
 
-	die "Failed to delete old ssh keys!\n\n"
+	print "Failed to delete old ssh keys!\n\n"
 		if system("rm $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/ssh/ssh_host_*");
 
 	die "Failed to generete RSA key!\n\n"
