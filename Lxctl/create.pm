@@ -192,6 +192,7 @@ lxc.network.type = veth
 lxc.network.flags = up
 lxc.network.link = br0
 lxc.network.name = eth0
+lxc.network.mtu = 1500
 ";
 
 	my $fstab = "\

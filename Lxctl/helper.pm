@@ -70,6 +70,8 @@ sub change_config #(filename, searchstring, newvalue)
 		print $file $line;
 	}
 
+	print $file "$what $newval\n" if $status == 0;
+
 	close $file;
 
 	return $status;
