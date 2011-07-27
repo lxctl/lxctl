@@ -101,6 +101,7 @@ sub set_mtu
 	print "Setting mtu: $options{'mtu'}\n";
 
 	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'mtu', $options{'mtu'});
+	$self->{'helper'}->change_config("/var/lib/lxc/$options{'contname'}/config", 'lxc.network.mtu = ', $options{'mtu'});
 
 	return;
 }
