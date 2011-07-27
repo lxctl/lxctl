@@ -6,6 +6,7 @@ use Getopt::Long;
 
 use Lxc::object;
 use Lxctl::helper;
+use Lxctl::set;
 
 my %options = ();
 
@@ -21,6 +22,10 @@ sub do
 	GetOptions(\%options, 'force');
 
 	$self->{'helper'}->fool_proof() if (!$options{force});
+
+	$options{'autostart'} = 0;
+	my $setter = Lxctl::set->new(%options);
+	$setter->set_autostart();
 
 	system("umount /dev/$self->{'VG'}/$options{'contname'}");
 	system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
