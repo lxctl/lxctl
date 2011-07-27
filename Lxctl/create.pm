@@ -81,7 +81,8 @@ sub check_create_options
 		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
-		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s');
+		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
+		'pkgopt=s', 'addpkg=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -228,19 +229,22 @@ sub create_ssh_keys
 		if system("ssh-keygen -q -t dsa -f $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/ssh/ssh_host_dsa_key -N ''");
 }
 
-#sub deploy_packets
-#{
-#        my $self = shift;
-#
-#        defined($options{'addpkg'}) or return;
-#
-#        print "Adding packages: $options{'addpkg'}\n";
-#
-#        die "Failed to change password!\n\n"
-#                if system("echo '$options{'userpasswd'}' | chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ chpasswd");
-#
-#        return;
-#}
+sub deploy_packets
+{
+        my $self = shift;
+
+        defined($options{'addpkg'}) or return;
+	$options{'pkgopt'} ||= "";
+
+	$options{'addpkg'} =~ s/,/ /g;
+
+        print "Adding packages: $options{'addpkg'}\n";
+
+        die "Failed to install packets!\n\n"
+                if system("chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
+
+        return;
+}
 
 
 sub do
@@ -272,6 +276,8 @@ sub do
 		$setter->set_tz();
 		$setter->set_mtu();
 		$setter->set_userpasswd();
+
+		$self->deploy_packets();
 	}
 
 	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
