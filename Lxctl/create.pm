@@ -105,20 +105,22 @@ sub check_create_options
 	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
 	$options{'rootsz'} ||= "10G";
 	$options{'autostart'} ||= "1";
+	
 	if (!defined($options{'empty'})) {
 		$options{'empty'} = 0;
 	}
+
 	$options{'debug'} ||= 0;
 
+	if (!defined($options{'save'})) {
+		$options{'save'} = 1;
+	}
+
 	if ($options{'empty'} == 0) {
-		$options{'ipaddr'} || die "You MUST specify IP address!\n\n";
-		$options{'netmask'} || die "You MUST specify network mask!\n\n";
-		$options{'defgw'} || die "You MUST specify default gateway!\n\n";
-		$options{'dns'} || die "You MUST specify DNS!\n\n";
-		
-		if (!defined($options{'save'})) {
-			$options{'save'} = 1;
-		}
+		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
+		$options{'netmask'} || print "You did not specify network mask! Using default.\n";
+		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
+		$options{'dns'} || print "You did not specify DNS! Using default.\n";
 	};
 
 	my @domain_tokens = split(/\./, $options{'contname'});
