@@ -202,51 +202,57 @@ sub check {
 	}
 
 	if (!$self->{'skip_conf_check'}) {
-		# 2-dim array with kernel's config options.
+		# 5-dim array with kernel's config options.
 		# 1-st - option name
 		# 2-nd - is it required or optional
+		# 3-5 is kernel version, when this option was removed from config.
 		# if optional CONFIG is missing it'll result in warning
 		my @config_opts = (
-			["CONFIG_NAMESPACES", 1],
-			["CONFIG_UTS_NS", 1],
-			["CONFIG_IPC_NS", 1],
-			["CONFIG_PID_NS", 1],
-			["CONFIG_USER_NS", 0],
-			["CONFIG_NET_NS", 0],
-			["DEVPTS_MULTIPLE_INSTANCES", 0],
-			["CONFIG_CGROUPS", 1],
-			["CONFIG_CGROUP_NS", 0],
-			["CONFIG_CGROUP_DEVICE", 0],
-			["CONFIG_CGROUP_SCHED", 0],
-			["CONFIG_CGROUP_CPUACCT", 0],
-			["CONFIG_CGROUP_MEM_RES_CTLR", 0],
-			["CONFIG_CPUSETS", 0],
-			["CONFIG_VETH", 0],
-			["CONFIG_MACVLAN", 0],
-			["CONFIG_VLAN_8021Q", 0]
+			["CONFIG_NAMESPACES", 1, 99, 99, 99],
+			["CONFIG_UTS_NS", 1, 99, 99, 99],
+			["CONFIG_IPC_NS", 1, 99, 99, 99],
+			["CONFIG_PID_NS", 1, 99, 99, 99],
+			["CONFIG_USER_NS", 0, 99, 99, 99],
+			["CONFIG_NET_NS", 0, 99, 99, 99],
+			["DEVPTS_MULTIPLE_INSTANCES", 0, 99, 99, 99],
+			["CONFIG_CGROUPS", 1, 99, 99, 99],
+			["CONFIG_CGROUP_NS", 0, 3, 0, 0],
+			["CONFIG_CGROUP_DEVICE", 0, 99, 99, 99],
+			["CONFIG_CGROUP_SCHED", 0, 99, 99, 99],
+			["CONFIG_CGROUP_CPUACCT", 0, 99, 99, 99],
+			["CONFIG_CGROUP_MEM_RES_CTLR", 0, 99, 99, 99],
+			["CONFIG_CPUSETS", 0, 99, 99, 99],
+			["CONFIG_VETH", 0, 99, 99, 99],
+			["CONFIG_MACVLAN", 0, 99, 99, 99],
+			["CONFIG_VLAN_8021Q", 0, 99, 99, 99]
 		);
 		my $kver = `uname -r`;
 		chop($kver);
+		my ($kver_1, $kver_2, $kver_3) = $kver =~ m/(\d+)\.(\d+)\.*(\d*)/;
+		my $kver_big = $kver_3 + $kver_2 * 1000 + $kver_1*1000*1000;
 
 		my $headers_config = "/lib/modules/$kver/build/.config";
 		my $config = "/boot/config-$kver";
 
 
 		foreach my $opt (@config_opts) {
-			if ($self->is_inconfig($config, @$opt[0]) != 0) {
-				if (@$opt[1] == 0) {
-					print color 'bold yellow';
-					print "Warning: @$opt[0] not supported\n";
-					print color 'reset';
-					$warns++;
-				} else {
-					print color 'bold red';
-					print "Error: @$opt[0] not supported\n";
-					print color 'reset';
-					$errors++;
+			my $test_ver_big = @$opt[4] + @$opt[3]*1000 + @$opt[2]*1000*1000;
+			if ($test_ver_big > $kver_big) {
+				if ($self->is_inconfig($config, @$opt[0]) != 0) {
+					if (@$opt[1] == 0) {
+						print color 'bold yellow';
+						print "Warning: @$opt[0] not supported\n";
+						print color 'reset';
+						$warns++;
+					} else {
+						print color 'bold red';
+						print "Error: @$opt[0] not supported\n";
+						print color 'reset';
+						$errors++;
+					}
 				}
 			}
-		}
+}
 	}
 
 	if ($warns != 0 || $errors != 0) {
