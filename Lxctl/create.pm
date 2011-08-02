@@ -282,6 +282,8 @@ sub do
 		$self->deploy_packets();
 	}
 
+	$setter->set_autostart();
+
 	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
 
 	print "\nDone! Run 'lxctl start $options{'contname'}' to try it now.\n";

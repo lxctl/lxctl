@@ -116,6 +116,8 @@ B<Required arguments:>
 
 	vmname - name of the container
 
+B<Optional arguments:>
+
 	--ipaddr - IP address of the machine
 
 	--mask/netmask - network mask of the machine
@@ -124,15 +126,15 @@ B<Required arguments:>
 
 	--dns - primary DNS server
 
-B<Optional arguments:>
-
 	--ostemplate - template name, by default it is 'lucid_amd64'
 
 	--config - path to configuration file, by default /etc/lxc/<container name> is used
 
 	--root - path to root file system, by default /var/lxc/<container name> is used
 
-	--pkgset - list of additional packages
+	--addpkg - list of additional packages (comma-separated)
+
+	--pkgopt - list of additional packet manager options (space-separated, but as one argument)
 
 	--rootsz - size of logical volume for root FS, by default it is 10G
 
@@ -229,6 +231,84 @@ B<Optional arguments:>
 	--all - display all information
 
 	--raw - display only vmnames
+
+=item B<migrate>
+
+Migrate container from localhost to remote host.
+
+B<Required arguments>
+
+	--vmname - container name
+
+	--tohost - to which host we should migrate
+
+B<Optional arguments>
+
+	--remuser - remote username for ssh
+
+	--remport - remote port for ssh
+
+	--remname - remote container name
+
+	--onboot - start on boot? 1 or 0
+
+	--userpasswd - 'user:password' formatted password for user
+
+	--clone - cloning, a little bit faster and softer then simple migration
+
+	--rootsz - remote root fs size
+
+	--afterstart - start local container again after migration
+
+	--cpus - cpus allocated to container
+
+	--cpu-shares - cpu time share of the container
+
+	--mem - memory limit of the container
+
+	--io - IO throughput
+
+	--ipaddr - IP of the remote container
+
+	--searchdomain - DNS search domain of the container
+
+	--netmask - network mask
+
+	--defgw - default gateway
+
+	--dns - DNS server
+
+=item B<vz2lxc>
+
+Migrate VZ-container from remote host to local LXC container.
+
+B<Required arguments>
+
+	--vmname - container name
+
+	--fromhost - from which host we should migrate
+
+	--remname - remote container name
+
+B<Optional arguments>
+
+	--remuser - remote username for ssh
+
+	--remport - remote port for ssh
+
+	--onboot - start on boot? 1 or 0
+
+	--rootsz - remote root fs size
+
+	--afterstart - start local container again after migration
+
+	--cpus - cpus allocated to container
+
+	--cpu-shares - cpu time share of the container
+
+	--mem - memory limit of the container
+
+	--io - IO throughput
 
 =back
 
