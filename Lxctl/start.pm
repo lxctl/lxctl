@@ -27,6 +27,7 @@ sub do
 		if ($status eq "STOPPED") {
 			$self->_actual_start(0);
 		}
+		print "It seems that \"$options{'contname'}\" was started.\n";
 	} or do {
 		print "$@";
 		die "Cannot start $options{'contname'}!\n\n";

@@ -16,6 +16,7 @@ sub do
 
 	eval {
 		$self->{'lxc'}->stop($options{'contname'});
+		print "It seems that \"$options{'contname'}\" is stopped now\n";
 	} or do {
 		print "$@";
 		die "Cannot stop $options{'contname'}!\n\n";
