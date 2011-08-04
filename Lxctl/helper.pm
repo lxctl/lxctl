@@ -85,7 +85,7 @@ sub modify_config
 {
 	my ($self, $filename, $option, $what, $newvalue) = @_;
 	open(my $file, '<', "$filename") or
-		die " Failed to open $_[0]!\n\n";
+		die " Failed to open $filename!\n\n";
 
 	my @content = <$file>;
 	my $status = 0;

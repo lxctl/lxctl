@@ -7,6 +7,12 @@ use Lxc::object;
 
 my %options = ();
 
+sub _actual_start
+{
+	my ($self, $daemon) = @_;
+	$self->{'lxc'}->start($options{'contname'}, $daemon, $self->{'lxc_conf_path'}."/".$options{'contname'}."/config");
+}
+
 sub do
 {
 	my $self = shift;
@@ -15,7 +21,12 @@ sub do
 		or die "Name the container please!\n\n";
 
 	eval {
-		$self->{'lxc'}->start($options{'contname'});
+		$self->_actual_start(1);
+		sleep(1);
+		my $status = $self->{'lxc'}->status($options{'contname'});
+		if ($status eq "STOPPED") {
+			$self->_actual_start(0);
+		}
 	} or do {
 		print "$@";
 		die "Cannot start $options{'contname'}!\n\n";
@@ -30,6 +41,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
+	$self->{'lxc_conf_path'} = $self->{'lxc'}->get_config_path();
 
 	return $self;
 }

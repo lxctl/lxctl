@@ -55,7 +55,7 @@ sub set_config_path {
 		die "$subname: No parameter is given\n"; 
 	}
 
-	$self->{LXC_CONF_DIR} = $confdir;
+	$self->{CONFIG_PATH} = $confdir;
 	return 1;
 }
 
@@ -391,9 +391,10 @@ sub Kill {
 # Start container of NAME=$1
 # Config file is $2 (optional)
 # Write all output to $3 (optional)
-# Return 0 on success, NO_NAME or output on failure
-sub start {
-	my ($self, $name, $file, $log) = @_;
+# Return 0 on success, dies on failure
+sub start #(name, daemon, config_file, log_file)
+{
+	my ($self, $name, $daemon, $file, $log) = @_;
 	my $subname = (caller(0))[3];
 	if (!defined($name)) {
 		die "$subname: No vmname is given\n";
@@ -407,13 +408,21 @@ sub start {
 		}
 	}
 
+	if (defined($daemon)) {
+		if ($daemon == 1) {
+			$myarg = $myarg . " -d";
+		}
+	} else {
+		$myarg = $myarg . " -d";
+	}
+
 	if (defined($log)) {
 		if ($log ne "") {
 			$myarg = $myarg . " -c $log";
 		}
 	}
 
-	my $status = `lxc-start $myarg -d 2>&1`;
+	my $status = `lxc-start $myarg 2>&1`;
 	chop($status);
 	if ($status eq "") {
 		return 1;
@@ -524,8 +533,8 @@ sub get_cgroup{
 		die "$subname: No cgroup is given\n";
 	}
 
-	if ( -f "/cgroup/$name/$group" ) {
-		open my $cgroup_file, "<", "/cgroup/$name/$group" or die "Can't open file";
+	if ( -f "$self->{CGROUP_PATH}/$name/$group" ) {
+		open my $cgroup_file, "<", "$self->{CGROUP_PATH}/$name/$group" or die "Can't open file";
 		$result = <$cgroup_file>;
 		close ($cgroup_file);
 	} else {
