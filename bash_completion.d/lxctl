@@ -36,7 +36,7 @@ _lxctl()
 			COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
 		esac
             ;;
-	3)
+	*)
 	    case $command in
 		vz2lxc)
 			COMPREPLY=( $( compgen -W "$VZ2LXC_OPTS" -- "$cur" ) )
@@ -47,6 +47,10 @@ _lxctl()
                 set)
                   	COMPREPLY=( $( compgen -W "$SET_OPTS" -- "$cur" ) )
             	    ;;
+		create)
+			COMPREPLY=( $( compgen -W "$CREATE_OPTS" -- "$cur" ) )
+		    ;;
+
 		*)
 		    ;;
 	    esac
