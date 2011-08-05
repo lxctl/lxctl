@@ -100,6 +100,10 @@ sub check_create_options
 		%options = %opts_new;
 	};
 
+	if (!defined($options{'contname'})) {
+		die "No container name specified\n\n";
+	}
+
 	$options{'ostemplate'} ||= "lucid_amd64";
 	$options{'config'} ||= "$self->{'LXC_CONF_DIR'}/$options{'contname'}";
 	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
@@ -253,8 +257,15 @@ sub do
 {
 	my $self = shift;
 
-	$options{'contname'} = shift
+	$options{'contname'} = $_[0]
 		or die "Name the container please!\n\n";
+
+	if ( $options{'contname'} =~ m/^-/ ) {
+		print "Command specified instead of container name, trying to parse...\n";
+		undef($options{'contname'});
+	} else {
+		shift;
+	}
 
 	$self->check_create_options();
 	$self->check_existance();
