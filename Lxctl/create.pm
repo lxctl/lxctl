@@ -38,19 +38,38 @@ sub create_root
 	my $self = shift;
 
 	if ($options{'rootsz'} ne 'share') {
-		print "Creating root logical volume: /dev/$self->{'VG'}/$options{'contname'}\n";
+		if (lc($options{'roottype'}) eq 'lvm') {
+			print "Creating root logical volume: /dev/$self->{'VG'}/$options{'contname'}\n";
 
-		die "Failed to create logical volume $options{'contname'}!\n\n"
-			if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $self->{'VG'} 1>/dev/null");
+			die "Failed to create logical volume $options{'contname'}!\n\n"
+					if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $self->{'VG'} 1>/dev/null");
 
-		my $msg = "";
-		if ($options{'mkfsopts'} ne "") {
-			$msg = " with options $options{'mkfsopts'}";
+			my $msg = "";
+			if ($options{'mkfsopts'} ne "") {
+				$msg = " with options $options{'mkfsopts'}";
+			}
+			print "Creating $options{'fs'} FS$msg: /dev/$self->{'VG'}/$options{'contname'}\n";
+
+			die "Failed to create FS for $options{'contname'}!\n\n"
+				if system("mkfs.$options{'fs'} /dev/$self->{'VG'}/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
+		} elsif (lc($options{'roottype'}) eq 'file') {
+			print "Creating root in file: $self->{'ROOTS_PATH'}/$options{'contname'}.raw\n";
+
+			my $bs = 4096;
+			my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
+
+			die "Failed to create file $options{'contname'}.raw!\n\n"
+				if system("dd if=/dev/zero of=\"$self->{'ROOTS_PATH'}/$options{'contname'}.raw\" bs=$bs count=$count");
+
+			my $msg = "";
+			if ($options{'mkfsopts'} ne "") {
+				$msg = " with options $options{'mkfsopts'}";
+			}
+			print "Creating $options{'fs'} FS$msg: $self->{'ROOTS_PATH'}/$options{'contname'}.raw\n";
+
+			die "Failed to create FS for $options{'contname'}!\n\n"
+				if system("yes | mkfs.$options{'fs'} $self->{'ROOTS_PATH'}/$options{'contname'}.raw $options{'mkfsopts'} 1>/dev/null");
 		}
-		print "Creating $options{'fs'} FS$msg: /dev/$self->{'VG'}/$options{'contname'}\n";
-
-		die "Failed to create FS for $options{'contname'}!\n\n"
-			if system("mkfs.$options{'fs'} /dev/$self->{'VG'}/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
 	}
 
 	print "Creating directory: $self->{'ROOTS_PATH'}/$options{'contname'}\n";
@@ -61,8 +80,16 @@ sub create_root
 	if ($options{'rootsz'} ne 'share') {
 		print "Fixing fstab...\n";
 
+		my $what_to_mount = "";
+		my $additional_opts = "";
+		if (lc($options{'roottype'}) eq 'lvm') {
+			$what_to_mount = "/dev/$self->{'VG'}/$options{'contname'}";
+		} elsif (lc($options{'roottype'}) eq 'file') {
+			$what_to_mount = "$self->{'ROOTS_PATH'}/$options{'contname'}.raw";
+			$additional_opts=",loop";
+		}
 		die "Failed to add fstab entry for $options{'contname'}!\n\n"
-			if system("echo '/dev/$self->{'VG'}/$options{'contname'} $self->{'ROOTS_PATH'}/$options{'contname'} $options{'fs'} $options{'mountoptions'} 0 0' >> /etc/fstab");
+			if system("echo '$what_to_mount $self->{'ROOTS_PATH'}/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
 
 		print "Mounting FS...\n";
 
@@ -78,7 +105,7 @@ sub check_create_options
 	my $self = shift;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
-		'config=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
+		'config=s', 'roottype=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
@@ -109,6 +136,7 @@ sub check_create_options
 	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
 	$options{'rootsz'} ||= "10G";
 	$options{'autostart'} ||= "1";
+	$options{'roottype'} ||= "lvm";
 	
 	if (!defined($options{'empty'})) {
 		$options{'empty'} = 0;

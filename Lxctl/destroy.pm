@@ -7,6 +7,7 @@ use Getopt::Long;
 use Lxc::object;
 use Lxctl::helper;
 use Lxctl::set;
+use Lxctl::_config;
 
 my %options = ();
 
@@ -19,19 +20,39 @@ sub do
 	if ($self->{'lxc'}->status($options{'contname'}) ne 'STOPPED') {
 		die "Container $options{'contname'} is running!\n\n";
 	}
-	GetOptions(\%options, 'force');
+	GetOptions(\%options, 'force', 'debug');
 
 	$self->{'helper'}->fool_proof() if (!$options{force});
+
+	my $old_conf_ref = $self->{'config'}->load_file("$self->{LXC_CONF_DIR}/$options{'contname'}.yaml");
+	my %old_conf = %$old_conf_ref;
+
+	$old_conf{'roottype'} ||= 'lvm';
+	my $mounted_path = "/dev/$self->{'VG'}/$options{'contname'}";
+
+	if (lc($old_conf{'roottype'}) eq 'file') {
+		$mounted_path = "$self->{'ROOTS_PATH'}/$options{'contname'}.raw";
+	}
+
+	if (defined($options{'debug'})) {
+		foreach my $key (sort keys %old_conf) {
+			print "$key = $old_conf{$key}\n";
+		}
+	}
 
 	$options{'autostart'} = 0;
 	my $setter = Lxctl::set->new(%options);
 	$setter->set_autostart();
 
-	system("umount /dev/$self->{'VG'}/$options{'contname'}");
-	system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
+	system("umount $mounted_path");
+	if (lc($old_conf{'roottype'}) eq 'file') {
+		system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}.raw");
+	} elsif (lc($old_conf{'roottype'}) eq 'lvm') {
+		system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
+	}
 	system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}");
 	system("rm -r $self->{'LXC_CONF_DIR'}/$options{'contname'}");
-	system("rm /etc/lxctl/$options{'contname'}.yaml");
+	system("rm $self->{'LXC_CONF_DIR'}/$options{'contname'}.yaml");
 	
 	open(my $fstab_file, '<', "/etc/fstab") or
 		die " Failed to open /etc/fstab for reading!\n\n";
@@ -43,7 +64,7 @@ sub do
 		die " Failed to open /etc/fstab for writing!\n\n";
 
 	for my $line (@fstab) {
-		$line = "" if $line =~ m/^\/dev\/$self->{'VG'}\/$options{'contname'}/mxs;
+		$line = "" if $line =~ m#^$mounted_path#xs;
 		print $fstab_file $line;
 	}
 
@@ -60,6 +81,7 @@ sub new
 
 	$self->{'lxc'} = Lxc::object->new;
 	$self->{'helper'} = new Lxctl::helper;
+	$self->{'config'} = new Lxctl::_config;
 
 	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
 	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
