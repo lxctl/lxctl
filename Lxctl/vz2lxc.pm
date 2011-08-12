@@ -45,7 +45,7 @@ sub re_rsync
 	print "Re-rsyncing container $options{'contname'}...\n";
 
 	die "Failed to re-rsync root filesystem!\n\n"
-		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ /var/lxc/root/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	print "Unmounting VZ container $options{'remname'}...\n";
 	die "Failed to unmount VZ container $options{'remname'}!\n\n"
@@ -63,7 +63,7 @@ sub vz_migrate
 	print "Rsync'ing VZ container...\n";
 
 	die "Failed to rsync root filesystem!\n\n"
-		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ /var/lxc/root/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	$self->re_rsync();
 
@@ -90,6 +90,10 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
+	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
+	$self->{'TEMPLATES_PATH'} = $self->{'lxc'}->get_template_path();
+	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
+	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
 	return $self;
 }
 

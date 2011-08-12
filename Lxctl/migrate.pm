@@ -59,7 +59,7 @@ sub re_rsync
 	print "Re-rsyncing container $options{'contname'}...\n";
 
 	die "Failed to re-rsync root filesystem!\n\n"
-		if system("rsync -avz -e ssh /var/lxc/root/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:/var/lxc/root/$options{'remname'}/");
+		if system("rsync -avz -e ssh $self->{'ROOTS_PATH'}/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:$self->{'ROOTS_PATH'}/$options{'remname'}/");
 
 	eval {
 		if ($options{'clone'}) {
@@ -109,7 +109,7 @@ sub remote_deploy
 		if system("ssh $options{'remuser'}\@$options{'tohost'} 'lxctl create $options{'remname'} --empty --save'");
 
 	die "Failed to rsync root filesystem!\n\n"
-		if system("rsync -avz -e ssh /var/lxc/root/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:/var/lxc/root/$options{'remname'}/");
+		if system("rsync -avz -e ssh $self->{'ROOTS_PATH'}/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:$self->{'ROOTS_PATH'}/$options{'remname'}/");
 
 	$self->re_rsync();
 
@@ -138,6 +138,10 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
+	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
+	$self->{'TEMPLATES_PATH'} = $self->{'lxc'}->get_template_path();
+	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
+	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
 	return $self;
 }
 
