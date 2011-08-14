@@ -45,7 +45,7 @@ sub re_rsync
 	print "Re-rsyncing container $options{'contname'}...\n";
 
 	die "Failed to re-rsync root filesystem!\n\n"
-		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	print "Unmounting VZ container $options{'remname'}...\n";
 	die "Failed to unmount VZ container $options{'remname'}!\n\n"
@@ -63,7 +63,7 @@ sub vz_migrate
 	print "Rsync'ing VZ container...\n";
 
 	die "Failed to rsync root filesystem!\n\n"
-		if system("rsync -avz --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	$self->re_rsync();
 
