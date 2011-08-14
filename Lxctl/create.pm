@@ -15,11 +15,11 @@ my $config = new Lxctl::_config;
 
 my %options = ();
 
-my yaml_conf_dir;
-my lxc_conf_dir;
-my root_mount_path;
-my templates_path;
-my vg;
+my $yaml_conf_dir;
+my $lxc_conf_dir;
+my $root_mount_path;
+my $templates_path;
+my $vg;
 
 
 sub check_existance

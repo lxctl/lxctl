@@ -11,11 +11,11 @@ use Lxctl::_config;
 
 my %options = ();
 
-my yaml_conf_dir;
-my lxc_conf_dir;
-my root_mount_path;
-my templates_path;
-my vg;
+my $yaml_conf_dir;
+my $lxc_conf_dir;
+my $root_mount_path;
+my $templates_path;
+my $vg;
 
 sub do
 {
@@ -57,7 +57,7 @@ sub do
 		system("echo y | lvremove /dev/$vg/$options{'contname'}");
 	}
 	system("rm -r $root_mount_path/$options{'contname'}");
-	system("rm -r $self->{'LXC_CONF_DIR'}/$options{'contname'}");
+	system("rm -r $lxc_conf_dir/$options{'contname'}");
 	if (defined($options{'configs'})) {
 		system("rm $yaml_conf_dir/$options{'contname'}.yaml");
 	}
