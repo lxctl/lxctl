@@ -26,8 +26,10 @@ sub check_existance
 	die "Container root logical volume /dev/$self->{'VG'}/$options{'contname'} already exists!\n\n"
 		if -e "/dev/$self->{'VG'}/$options{'contname'}";
 
-	if (! -e "$self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz") {
-		die "Ther is no such template: $self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz\n\n";
+	if ($options{'empty'} == 0) {
+		if (! -e "$self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz") {
+			die "Ther is no such template: $self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz\n\n";
+		}
 	}
 
 	return;
