@@ -42,7 +42,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'lxc_conf_path'} = $self->{'lxc'}->get_config_path();
+	$self->{'lxc_conf_path'} = $self->{'lxc'}->get_lxc_conf_dir();
 
 	return $self;
 }

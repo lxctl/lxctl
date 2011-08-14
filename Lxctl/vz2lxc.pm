@@ -21,8 +21,8 @@ sub migrate_get_opt
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
 	$options{'afterstart'} ||= 0;
-	$options{'rootsz'} ||= '10G';
-	
+	$options{'rootsz'} ||= (`echo -n \$(ssh $options{'remuser'}\@$options{'fromhost'} "egrep DISKSPACE /etc/vz/conf/$options{'remname'}.conf | cut -d= -f2 | cut -d: -f1 | cut -d'\\"' -f2")`) . "K";
+
 	defined($options{'remname'})
 		or die "You should specify the name of the VZ container!\n\n";
 
@@ -73,6 +73,14 @@ sub vz_migrate
 	}
 }
 
+sub migrate_configuration
+{
+	my $self = shift;
+
+	die "Failed to migrate MTU!\n\n"
+		if system("lxctl set $options{'contname'} --mtu \$(ssh $options{'remuser'}\@$options{'fromhost'} \"sed -n 's/^[\\t ]\\+mtu[\\t ]\\+\\([0-9]\\+\\)/\\1/p' /var/lib/vz/private/$options{'remname'}/etc/network/interfaces | awk '{print \$2}'\")");
+}
+
 sub do
 {
 	my $self = shift;
@@ -82,6 +90,7 @@ sub do
 
 	$self->migrate_get_opt();
 	$self->vz_migrate();
+	$self->migrate_configuration();
 }
 
 sub new

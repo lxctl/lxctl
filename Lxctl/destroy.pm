@@ -24,7 +24,7 @@ sub do
 
 	$self->{'helper'}->fool_proof() if (!$options{force});
 
-	my $old_conf_ref = $self->{'config'}->load_file("$self->{LXC_CONF_DIR}/$options{'contname'}.yaml");
+	my $old_conf_ref = $self->{'config'}->load_file("$self->{CONFIG_PATH}/$options{'contname'}.yaml");
 	my %old_conf = %$old_conf_ref;
 
 	$old_conf{'roottype'} ||= 'lvm';
@@ -52,7 +52,7 @@ sub do
 	}
 	system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}");
 	system("rm -r $self->{'LXC_CONF_DIR'}/$options{'contname'}");
-	system("rm $self->{'LXC_CONF_DIR'}/$options{'contname'}.yaml");
+	system("rm $self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
 	
 	open(my $fstab_file, '<', "/etc/fstab") or
 		die " Failed to open /etc/fstab for reading!\n\n";
@@ -83,6 +83,7 @@ sub new
 	$self->{'helper'} = new Lxctl::helper;
 	$self->{'config'} = new Lxctl::_config;
 
+	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
 	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
 	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
 	$self->{'VG'} = $self->{'lxc'}->get_vg();
