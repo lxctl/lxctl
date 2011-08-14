@@ -48,6 +48,9 @@ my %signals = (
 
 # sets path to container storage
 # returns 0 if success
+
+
+#For compatibility. Remove later
 sub set_config_path {
 	my ($self, $confdir) = @_;
 	my $subname = (caller(0))[3];
@@ -55,14 +58,14 @@ sub set_config_path {
 		die "$subname: No parameter is given\n"; 
 	}
 
-	$self->{CONFIG_PATH} = $confdir;
+	$self->{YAML_CONFIG_PATH} = $confdir;
 	return 1;
 }
 
 sub get_config_path {
 	my ($self) = @_;
 
-	return $self->{CONFIG_PATH};
+	return $self->{YAML_CONFIG_PATH};
 }
 
 sub set_roots_path {
@@ -72,14 +75,49 @@ sub set_roots_path {
 		die "$subname: No parameter is given\n"; 
 	}
 
-	$self->{ROOTS_PATH} = $confdir;
+	$self->{ROOT_MOUNT_PATH} = $confdir;
 	return 1;
 }
 
 sub get_roots_path {
 	my ($self) = @_;
 
-	return $self->{ROOTS_PATH};
+	return $self->{ROOT_MOUNT_PATH};
+}
+
+# New setters getters for local configs.
+sub set_yaml_config_path {
+	my ($self, $confdir) = @_;
+	my $subname = (caller(0))[3];
+	if (!defined($confdir)) {
+		die "$subname: No parameter is given\n"; 
+	}
+
+	$self->{YAML_CONFIG_PATH} = $confdir;
+	return 1;
+}
+
+sub get_yaml_config_path {
+	my ($self) = @_;
+
+	return $self->{YAML_CONFIG_PATH};
+}
+
+sub set_root_mount_path {
+	my ($self, $confdir) = @_;
+	my $subname = (caller(0))[3];
+	if (!defined($confdir)) {
+		die "$subname: No parameter is given\n"; 
+	}
+
+	$self->{ROOT_MOUNT_PATH} = $confdir;
+	return 1;
+}
+
+sub get_root_mount_path {
+	my ($self) = @_;
+
+	return $self->{ROOT_MOUNT_PATH};
 }
 
 sub set_template_path {

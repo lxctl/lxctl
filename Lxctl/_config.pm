@@ -7,18 +7,42 @@ use YAML::Tiny qw(DumpFile LoadFile);
 
 use Lxc::object;
 
+sub print_warn #(message)
+{
+	use Term::ANSIColor;
+	my ($self, $message) = @_;
+	print color 'bold yellow';
+	print "Warning:";
+	print color 'reset';
+	print " $message";
+	return 1;
+}
+
 sub load_main
 {
-	my $self = shift;
+	my ($self) = @_;
 	# @config_paths should be hardcoded.
 	my @config_paths = ("/etc/lxctl", "/etc", ".");
 	foreach my $path (@config_paths) {
 		if ( -f "$path/lxctl.yaml" ) {
 			my $yaml = YAML::Tiny->new;
 			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
+			# For compatibility reasons. Remove somewhere in 0.3+
+			eval {
+				$self->{'lxc'}->set_roots_path($yaml->[0]->{'paths'}->{'ROOTS_PATH'});
+				$self->print_warn("$path/lxctl.yaml: ROOTS_PATH is deprecated. Please rename to ROOT_MOUNT_PATH\n");
+			} or do {
+				$self->{'lxc'}->set_root_mount_path($yaml->[0]->{'paths'}->{'ROOT_MOUNT_PATH'});
+			};
+
+			eval {
+				$self->{'lxc'}->set_config_path($yaml->[0]->{'paths'}->{'CONFIG_PATH'});
+				$self->print_warn("$path/lxctl.yaml: CONFIG_PATH is deprecated. Please rename to YAML_CONFIG_PATH\n");
+			} or do {
+				$self->{'lxc'}->set_yaml_config_path($yaml->[0]->{'paths'}->{'YAML_CONFIG_PATH'});
+			};
+
 			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
-			$self->{'lxc'}->set_roots_path($yaml->[0]->{'paths'}->{'ROOTS_PATH'});
-			$self->{'lxc'}->set_config_path($yaml->[0]->{'paths'}->{'CONFIG_PATH'});
 			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
 			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
 			my $skip_check = $yaml->[0]->{'check'}->{'skip_kernel_config_check'};

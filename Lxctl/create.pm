@@ -15,20 +15,27 @@ my $config = new Lxctl::_config;
 
 my %options = ();
 
+my yaml_conf_dir;
+my lxc_conf_dir;
+my root_mount_path;
+my templates_path;
+my vg;
+
+
 sub check_existance
 {
 	my $self = shift;
 
-	die "Container lxc conf directory $self->{'LXC_CONF_DIR'}/$options{'contname'} already exists!\n\n" 
-		if -e "$self->{'LXC_CONF_DIR'}/$options{'contname'}";
-	die "Container root directory $self->{'ROOTS_PATH'}/$options{'contname'} already exists!\n\n"
-		if -e "$self->{'ROOTS_PATH'}/$options{'contname'}";
-	die "Container root logical volume /dev/$self->{'VG'}/$options{'contname'} already exists!\n\n"
-		if -e "/dev/$self->{'VG'}/$options{'contname'}";
+	die "Container lxc conf directory $lxc_conf_dir/$options{'contname'} already exists!\n\n" 
+		if -e "$lxc_conf_dir/$options{'contname'}";
+	die "Container root directory $root_mount_path/$options{'contname'} already exists!\n\n"
+		if -e "$root_mount_path/$options{'contname'}";
+	die "Container root logical volume /dev/$vg/$options{'contname'} already exists!\n\n"
+		if -e "/dev/$vg/$options{'contname'}";
 
 	if ($options{'empty'} == 0) {
-		if (! -e "$self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz") {
-			die "Ther is no such template: $self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz\n\n";
+		if (! -e "$templates_path/$options{'ostemplate'}.tar.gz") {
+			die "There is no such template: $templates_path/$options{'ostemplate'}.tar.gz\n\n";
 		}
 	}
 
@@ -41,43 +48,43 @@ sub create_root
 
 	if ($options{'rootsz'} ne 'share') {
 		if (lc($options{'roottype'}) eq 'lvm') {
-			print "Creating root logical volume: /dev/$self->{'VG'}/$options{'contname'}\n";
+			print "Creating root logical volume: /dev/$vg/$options{'contname'}\n";
 
 			die "Failed to create logical volume $options{'contname'}!\n\n"
-					if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $self->{'VG'} 1>/dev/null");
+					if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $vg 1>/dev/null");
 
 			my $msg = "";
 			if ($options{'mkfsopts'} ne "") {
 				$msg = " with options $options{'mkfsopts'}";
 			}
-			print "Creating $options{'fs'} FS$msg: /dev/$self->{'VG'}/$options{'contname'}\n";
+			print "Creating $options{'fs'} FS$msg: /dev/$vg/$options{'contname'}\n";
 
 			die "Failed to create FS for $options{'contname'}!\n\n"
-				if system("mkfs.$options{'fs'} /dev/$self->{'VG'}/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
+				if system("mkfs.$options{'fs'} /dev/$vg/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
 		} elsif (lc($options{'roottype'}) eq 'file') {
-			print "Creating root in file: $self->{'ROOTS_PATH'}/$options{'contname'}.raw\n";
+			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
 			my $bs = 4096;
 			my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
 
 			die "Failed to create file $options{'contname'}.raw!\n\n"
-				if system("dd if=/dev/zero of=\"$self->{'ROOTS_PATH'}/$options{'contname'}.raw\" bs=$bs count=$count");
+				if system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
 
 			my $msg = "";
 			if ($options{'mkfsopts'} ne "") {
 				$msg = " with options $options{'mkfsopts'}";
 			}
-			print "Creating $options{'fs'} FS$msg: $self->{'ROOTS_PATH'}/$options{'contname'}.raw\n";
+			print "Creating $options{'fs'} FS$msg: $root_mount_path/$options{'contname'}.raw\n";
 
 			die "Failed to create FS for $options{'contname'}!\n\n"
-				if system("yes | mkfs.$options{'fs'} $self->{'ROOTS_PATH'}/$options{'contname'}.raw $options{'mkfsopts'} 1>/dev/null");
+				if system("yes | mkfs.$options{'fs'} $root_mount_path/$options{'contname'}.raw $options{'mkfsopts'} 1>/dev/null");
 		}
 	}
 
-	print "Creating directory: $self->{'ROOTS_PATH'}/$options{'contname'}\n";
+	print "Creating directory: $root_mount_path/$options{'contname'}\n";
 
-	die "Failed to create directory $self->{'ROOTS_PATH'}/$options{'contname'}!\n\n"
-		if system("mkdir -p $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs 1>/dev/null");
+	die "Failed to create directory $root_mount_path/$options{'contname'}!\n\n"
+		if system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
 
 	if ($options{'rootsz'} ne 'share') {
 		print "Fixing fstab...\n";
@@ -85,18 +92,18 @@ sub create_root
 		my $what_to_mount = "";
 		my $additional_opts = "";
 		if (lc($options{'roottype'}) eq 'lvm') {
-			$what_to_mount = "/dev/$self->{'VG'}/$options{'contname'}";
+			$what_to_mount = "/dev/$vg/$options{'contname'}";
 		} elsif (lc($options{'roottype'}) eq 'file') {
-			$what_to_mount = "$self->{'ROOTS_PATH'}/$options{'contname'}.raw";
+			$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
 			$additional_opts=",loop";
 		}
 		die "Failed to add fstab entry for $options{'contname'}!\n\n"
-			if system("echo '$what_to_mount $self->{'ROOTS_PATH'}/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
+			if system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
 
 		print "Mounting FS...\n";
 
 		die "Failed to mount FS for $options{'contname'}!\n\n"
-			if system("mount $self->{'ROOTS_PATH'}/$options{'contname'} 1>/dev/null");
+			if system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
 	}
 
 	return;
@@ -134,8 +141,8 @@ sub check_create_options
 	}
 
 	$options{'ostemplate'} ||= "lucid_amd64";
-	$options{'config'} ||= "$self->{'LXC_CONF_DIR'}/$options{'contname'}";
-	$options{'root'} ||= "$self->{'ROOTS_PATH'}/$options{'contname'}";
+	$options{'config'} ||= "$lxc_conf_dir/$options{'contname'}";
+	$options{'root'} ||= "$root_mount_path/$options{'contname'}";
 	$options{'rootsz'} ||= "10G";
 	$options{'autostart'} ||= "1";
 	$options{'roottype'} ||= "lvm";
@@ -182,11 +189,11 @@ sub deploy_template
 {
 	my $self = shift;
 
-	my $template = "$self->{'TEMPLATES_PATH'}/$options{'ostemplate'}.tar.gz";
+	my $template = "$templates_path/$options{'ostemplate'}.tar.gz";
 	print "Deploying template: $template\n";
 
 	die "Failed to untar template!\n\n"
-		if system("tar xf $template -C $self->{'ROOTS_PATH'}/$options{'contname'} 1>/dev/null");
+		if system("tar xf $template -C $root_mount_path/$options{'contname'} 1>/dev/null");
 
 	return;
 }
@@ -195,18 +202,18 @@ sub create_lxc_conf
 {
 	my $self = shift;
 
-	print "Creating lxc configuration file: $self->{'LXC_CONF_DIR'}/$options{'contname'}/config\n";	
+	print "Creating lxc configuration file: $lxc_conf_dir/$options{'contname'}/config\n";	
 
-	die "Failed to create directory $self->{'LXC_CONF_DIR'}/$options{'contname'}!\n\n"
-		if system("mkdir -p $self->{'LXC_CONF_DIR'}/$options{'contname'} 1>/dev/null");
+	die "Failed to create directory $lxc_conf_dir/$options{'contname'}!\n\n"
+		if system("mkdir -p $lxc_conf_dir/$options{'contname'} 1>/dev/null");
 
 	my $conf = "\
 lxc.utsname = $options{'contname'}
 
 lxc.tty = 4
 lxc.pts = 1024
-lxc.rootfs = $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs
-lxc.mount  = $self->{'LXC_CONF_DIR'}/$options{'contname'}/fstab
+lxc.rootfs = $root_mount_path/$options{'contname'}/rootfs
+lxc.mount  = $lxc_conf_dir/$options{'contname'}/fstab
 
 lxc.cgroup.devices.deny = a
 # /dev/null and zero
@@ -233,17 +240,17 @@ lxc.network.mtu = 1500
 ";
 
 	my $fstab = "\
-proc            $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/proc         proc    nodev,noexec,nosuid 0 0
-sysfs           $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/sys          sysfs defaults  0 0
+proc            $root_mount_path/$options{'contname'}/rootfs/proc         proc    nodev,noexec,nosuid 0 0
+sysfs           $root_mount_path/$options{'contname'}/rootfs/sys          sysfs defaults  0 0
 ";
 
-	open my $config_file, '>', "$self->{'LXC_CONF_DIR'}/$options{'contname'}/config" or
-		die "Failed to create $self->{'LXC_CONF_DIR'}/$options{'contname'}/config!\n\n";
+	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config" or
+		die "Failed to create $lxc_conf_dir/$options{'contname'}/config!\n\n";
 	print $config_file $conf;
 	close($config_file);
 
-	open my $fstab_file, '>', "$self->{'LXC_CONF_DIR'}/$options{'contname'}/fstab" or
-		die "Failed to create $self->{'LXC_CONF_DIR'}/$options{'contname'}/fstab!\n\n";
+	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab" or
+		die "Failed to create $lxc_conf_dir/$options{'contname'}/fstab!\n\n";
 	print $fstab_file $fstab;
 	close($fstab_file);
 
@@ -257,12 +264,12 @@ sub create_ssh_keys
 	print "Regenerating SSH keys...\n";
 
 	print "Failed to delete old ssh keys!\n\n"
-		if system("rm $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/ssh/ssh_host_*");
+		if system("rm $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_*");
 
 	die "Failed to generete RSA key!\n\n"
-		if system("ssh-keygen -q -t rsa -f $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/ssh/ssh_host_rsa_key -N ''");
+		if system("ssh-keygen -q -t rsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_rsa_key -N ''");
 	die "Failed to generete DSA key!\n\n"
-		if system("ssh-keygen -q -t dsa -f $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/ssh/ssh_host_dsa_key -N ''");
+		if system("ssh-keygen -q -t dsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_dsa_key -N ''");
 }
 
 sub deploy_packets
@@ -277,7 +284,7 @@ sub deploy_packets
         print "Adding packages: $options{'addpkg'}\n";
 
         die "Failed to install packets!\n\n"
-                if system("chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
+                if system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
 
         return;
 }
@@ -325,7 +332,7 @@ sub do
 
 	$setter->set_autostart();
 
-	$options{'save'} && $config->save_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
+	$options{'save'} && $config->save_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 
 	print "\nDone! Run 'lxctl start $options{'contname'}' to try it now.\n";
 
@@ -340,11 +347,11 @@ sub new
 
 	$self->{'lxc'} = Lxc::object->new;
 
-	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
-	$self->{'TEMPLATES_PATH'} = $self->{'lxc'}->get_template_path();
-	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
-	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
-	$self->{'VG'} = $self->{'lxc'}->get_vg();
+	$root_mount_path = $self->{'lxc'}->get_roots_path();
+	$templates_path = $self->{'lxc'}->get_template_path();
+	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
+	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+	$vg = $self->{'lxc'}->get_vg();
 
 
 	return $self;

@@ -11,6 +11,12 @@ use Lxctl::_config;
 
 my %options = ();
 
+my yaml_conf_dir;
+my lxc_conf_dir;
+my root_mount_path;
+my templates_path;
+my vg;
+
 sub do
 {
 	my $self = shift;
@@ -20,18 +26,18 @@ sub do
 	if ($self->{'lxc'}->status($options{'contname'}) ne 'STOPPED') {
 		die "Container $options{'contname'} is running!\n\n";
 	}
-	GetOptions(\%options, 'force', 'debug');
+	GetOptions(\%options, 'force', 'debug', 'configs');
 
 	$self->{'helper'}->fool_proof() if (!$options{force});
 
-	my $old_conf_ref = $self->{'config'}->load_file("$self->{CONFIG_PATH}/$options{'contname'}.yaml");
+	my $old_conf_ref = $self->{'config'}->load_file("$yaml_conf_dir/$options{'contname'}.yaml");
 	my %old_conf = %$old_conf_ref;
 
 	$old_conf{'roottype'} ||= 'lvm';
-	my $mounted_path = "/dev/$self->{'VG'}/$options{'contname'}";
+	my $mounted_path = "/dev/$vg/$options{'contname'}";
 
 	if (lc($old_conf{'roottype'}) eq 'file') {
-		$mounted_path = "$self->{'ROOTS_PATH'}/$options{'contname'}.raw";
+		$mounted_path = "$root_mount_path/$options{'contname'}.raw";
 	}
 
 	if (defined($options{'debug'})) {
@@ -46,13 +52,15 @@ sub do
 
 	system("umount $mounted_path");
 	if (lc($old_conf{'roottype'}) eq 'file') {
-		system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}.raw");
+		system("rm -r $root_mount_path/$options{'contname'}.raw");
 	} elsif (lc($old_conf{'roottype'}) eq 'lvm') {
-		system("echo y | lvremove /dev/$self->{'VG'}/$options{'contname'}");
+		system("echo y | lvremove /dev/$vg/$options{'contname'}");
 	}
-	system("rm -r $self->{'ROOTS_PATH'}/$options{'contname'}");
+	system("rm -r $root_mount_path/$options{'contname'}");
 	system("rm -r $self->{'LXC_CONF_DIR'}/$options{'contname'}");
-	system("rm $self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
+	if (defined($options{'configs'})) {
+		system("rm $yaml_conf_dir/$options{'contname'}.yaml");
+	}
 	
 	open(my $fstab_file, '<', "/etc/fstab") or
 		die " Failed to open /etc/fstab for reading!\n\n";
@@ -83,10 +91,10 @@ sub new
 	$self->{'helper'} = new Lxctl::helper;
 	$self->{'config'} = new Lxctl::_config;
 
-	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
-	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
-	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
-	$self->{'VG'} = $self->{'lxc'}->get_vg();
+	$root_mount_path = $self->{'lxc'}->get_roots_path();
+	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
+	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+	$vg = $self->{'lxc'}->get_vg();
 
 	return $self;
 }
