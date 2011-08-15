@@ -7,6 +7,9 @@ use YAML::Tiny qw(DumpFile LoadFile);
 
 use Lxc::object;
 
+# @main_config_paths should be hardcoded, at least for now.
+my @main_config_paths = ("/etc/lxctl", "/etc", ".");
+
 sub print_warn #(message)
 {
 	use Term::ANSIColor;
@@ -21,9 +24,8 @@ sub print_warn #(message)
 sub load_main
 {
 	my ($self) = @_;
-	# @config_paths should be hardcoded.
-	my @config_paths = ("/etc/lxctl", "/etc", ".");
-	foreach my $path (@config_paths) {
+
+	foreach my $path (@main_config_paths) {
 		if ( -f "$path/lxctl.yaml" ) {
 			my $yaml = YAML::Tiny->new;
 			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
@@ -55,6 +57,26 @@ sub load_main
 
 	return;
 }
+
+sub get_option_from_main
+{
+	my ($self, $section, $option_name) = @_;
+	my $result = '';
+	foreach my $path (@main_config_paths) {
+		if ( -f "$path/lxctl.yaml" ) {
+			my $yaml = YAML::Tiny->new;
+			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
+
+			eval {
+				$result = $yaml->[0]->{"$section"}->{"$option_name"};
+			};
+			last;
+		}
+	}
+
+	return $result;
+}
+
 
 # hash_ref, filename
 #  ex: $config->save_hash("abrakadabra.yaml", \%options);

@@ -14,6 +14,12 @@ use Lxctl::_config;
 
 my %options = ();
 
+my $yaml_conf_dir;
+my $lxc_conf_dir;
+my $root_mount_path;
+my $templates_path;
+my $vg;
+
 sub mac_create
 {
 	my ($self, $data) = @_;
@@ -30,8 +36,8 @@ sub set_hostname
 	defined($options{'hostname'}) or return;
 	print "Setting hostname: $options{'hostname'}\n";
 
-	open(my $hostname_file, '>', "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname") or
-		die " Failed to open $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname!\n\n";
+	open(my $hostname_file, '>', "$root_mount_path/$options{'contname'}/rootfs/etc/hostname") or
+		die " Failed to open $root_mount_path/$options{'contname'}/rootfs/etc/hostname!\n\n";
 
 	seek $hostname_file,0,0;
 
@@ -41,10 +47,10 @@ sub set_hostname
 
 	my $searchdomain = $options{'searchdomain'};
 	if (!defined($options{'searchdomain'})) {
-		$searchdomain = $self->{'helper'}->get_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
+		$searchdomain = $self->{'helper'}->get_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
 	}
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
 
 	return;
 }
@@ -57,7 +63,7 @@ sub set_ipaddr
 
 	print "Setting IP: $options{'ipaddr'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipaddr'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'address', $options{'ipaddr'});
 
 	return;
 }
@@ -87,7 +93,7 @@ sub set_netmask
 
 	print "Setting netmask: $options{'netmask'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'netmask', $options{'netmask'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'netmask', $options{'netmask'});
 
 	return;
 }
@@ -100,8 +106,8 @@ sub set_mtu
 
 	print "Setting mtu: $options{'mtu'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'mtu', $options{'mtu'});
-	$self->{'helper'}->change_config("$self->{LXC_CONF_DIR}/$options{'contname'}/config", 'lxc.network.mtu = ', $options{'mtu'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'mtu', $options{'mtu'});
+	$self->{'helper'}->change_config("$lxc_conf_dir/$options{'contname'}/config", 'lxc.network.mtu = ', $options{'mtu'});
 
 	return;
 }
@@ -114,7 +120,7 @@ sub set_defgw
 
 	print "Setting gateway: $options{'defgw'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/network/interfaces", 'gateway', $options{'defgw'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'gateway', $options{'defgw'});
 
 	return;
 }
@@ -127,7 +133,7 @@ sub set_dns
 
 	print "Setting DNS: $options{'dns'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'nameserver', $options{'dns'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'nameserver', $options{'dns'});
 
 	return;
 }
@@ -140,11 +146,11 @@ sub set_searchdomain
 
 	print "Setting search domain: $options{'searchdomain'}\n";
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/resolv.conf", 'search', $options{'searchdomain'});
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'search', $options{'searchdomain'});
 
-	my $hostname = $self->{'helper'}->get_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hostname", "");
+	my $hostname = $self->{'helper'}->get_config("$root_mount_path/$options{'contname'}/rootfs/etc/hostname", "");
 
-	$self->{'helper'}->change_config("$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$hostname.$options{'searchdomain'} $hostname localhost");
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$hostname.$options{'searchdomain'} $hostname localhost");
 
 	return;
 }
@@ -158,7 +164,7 @@ sub set_userpasswd
 	print "Setting password for user: $options{'userpasswd'}\n";
 
 	die "Failed to change password!\n\n"
-		if system("echo '$options{'userpasswd'}' | chroot $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ chpasswd");
+		if system("echo '$options{'userpasswd'}' | chroot $root_mount_path/$options{'contname'}/rootfs/ chpasswd");
 
 	return;
 }
@@ -168,8 +174,14 @@ sub set_rootsz
 	my $self = shift;
 
 	defined($options{'rootsz'}) or return;
+	
+	$options{'roottype'} ||= 'lvm';
+	if (lc($options{'roottype'}) eq 'file') {
+		print "set rootsz is unsupported for root in file\n\n";
+		return;
+	}
 
-	my %lvm_info = get_lv_info("/dev/$self->{'VG'}/$options{'contname'}");
+	my %lvm_info = get_lv_info("/dev/$vg/$options{'contname'}");
 
 	my $tmp = $lvm_info{'size'} . $lvm_info{'size_unit'};
 
@@ -186,9 +198,9 @@ sub set_rootsz
 	}
 
 	die "Failed to resize root LV!\n\n"
-		if system("lvextend -L $options{'rootsz'} /dev/$self->{'VG'}/$options{'contname'}");
+		if system("lvextend -L $options{'rootsz'} /dev/$vg/$options{'contname'}");
 	die "Failed to resize root filesystem!\n\n"
-		if system("resize2fs /dev/$self->{'VG'}/$options{'contname'}");
+		if system("resize2fs /dev/$vg/$options{'contname'}");
 
 	return;
 }
@@ -244,10 +256,10 @@ sub set_tz()
 
         print "Setting timesone: $options{'tz'}...\n";
 
-        -e "$self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
+        -e "$root_mount_path/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
 
         die "Failed to change timezone!\n\n"
-                if system("cp $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/etc/localtime");
+                if system("cp $root_mount_path/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $root_mount_path/$options{'contname'}/rootfs/etc/localtime");
 }
 
 sub do
@@ -285,7 +297,7 @@ sub do
 	$self->set_cgroup('io', 'blkio.weight');
 
 	my $config = new Lxctl::_config;
-	$config->change_hash(\%options, "$self->{'CONFIG_PATH'}/$options{'contname'}.yaml");
+	$config->change_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 
 	return;
 }
@@ -299,10 +311,11 @@ sub new
 	$self->{'lxc'} = Lxc::object->new;
 	$self->{'helper'} = Lxctl::helper->new;
 
-	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
-	$self->{'VG'} = $self->{'lxc'}->get_vg();
-	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
-	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
+	$root_mount_path = $self->{'lxc'}->get_roots_path();
+	$templates_path = $self->{'lxc'}->get_template_path();
+	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
+	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+	$vg = $self->{'lxc'}->get_vg();
 
 	%options = @_;
 

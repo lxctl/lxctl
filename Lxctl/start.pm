@@ -7,10 +7,12 @@ use Lxc::object;
 
 my %options = ();
 
+my $lxc_conf_dir;
+
 sub _actual_start
 {
 	my ($self, $daemon) = @_;
-	$self->{'lxc'}->start($options{'contname'}, $daemon, $self->{'lxc_conf_path'}."/".$options{'contname'}."/config");
+	$self->{'lxc'}->start($options{'contname'}, $daemon, $lxc_conf_dir."/".$options{'contname'}."/config");
 }
 
 sub do
@@ -42,7 +44,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'lxc_conf_path'} = $self->{'lxc'}->get_lxc_conf_dir();
+	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
 
 	return $self;
 }

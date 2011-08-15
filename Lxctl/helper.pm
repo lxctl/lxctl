@@ -5,19 +5,25 @@ use warnings;
 
 sub fool_proof
 {
-	if (! -t STDIN || ! -t STDOUT) {
-		die "Non-interactive terminal.";
-	}
 	use Term::ANSIColor;
+	if (! -t STDIN || ! -t STDOUT) {
+		print color 'bold red';
+		print "Warning! Non-interactive terminal. You have 5 seconds to cancel\n";
+		print color 'reset';
+		sleep 5;
+		return 1;
+	}
+	
 	my ($self) = @_;
+	my $expected_answer = "Yes, all harm from this operation will be a result of my stupidity";
 	my $answer = "";
 	print color 'bold red';
 	print "WARNING! ";
 	print color 'reset';
 	print "You are about to do something really terrible. This action may cause massive data loss.\n";
-	print "If you are sure, please enter: \"Yes, all harm from this operation will be a result of my stupidity\" (without quotes, case sensetive)\n";
+	print "If you are sure, please enter: \"$expected_answer\" (without quotes, case sensetive)\n";
 	chomp($answer = <STDIN>);
-	if ("$answer" eq "Yes, all harm from this operation will be a result of my stupidity") {
+	if ("$answer" eq "$expected_answer") {
 		print "Have a lot of fun...\n";
 	} else {
 		die "Aborted!";

@@ -11,6 +11,15 @@ use Lxctl::_config;
 
 my %options = ();
 
+my $yaml_conf_dir;
+my $lxc_conf_dir;
+my $root_mount_path;
+my $templates_path;
+my $vg;
+
+my $rsync_opts;
+my $config;
+
 sub migrate_get_opt
 {
 	my $self = shift;
@@ -45,7 +54,7 @@ sub re_rsync
 	print "Re-rsyncing container $options{'contname'}...\n";
 
 	die "Failed to re-rsync root filesystem!\n\n"
-		if system("rsync -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync $rsync_opts -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $root_mount_path/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	print "Unmounting VZ container $options{'remname'}...\n";
 	die "Failed to unmount VZ container $options{'remname'}!\n\n"
@@ -57,13 +66,16 @@ sub vz_migrate
 {
 	my $self = shift;
 
+	$rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
+	$rsync_opts ||= "-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*'";
+
 	die "Failed to create container!\n\n"
 		if system("lxctl create $options{'contname'} --empty --rootsz $options{'rootsz'} --save");
 
 	print "Rsync'ing VZ container...\n";
 
 	die "Failed to rsync root filesystem!\n\n"
-		if system("rsync -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $self->{'ROOTS_PATH'}/$options{'contname'}/rootfs/ 1>/dev/null");
+		if system("rsync $rsync_opts -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $root_mount_path/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	$self->re_rsync();
 
@@ -99,10 +111,13 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
-	$self->{'ROOTS_PATH'} = $self->{'lxc'}->get_roots_path();
-	$self->{'TEMPLATES_PATH'} = $self->{'lxc'}->get_template_path();
-	$self->{'CONFIG_PATH'} = $self->{'lxc'}->get_config_path();
-	$self->{'LXC_CONF_DIR'} = $self->{'lxc'}->get_lxc_conf_dir();
+	$root_mount_path = $self->{'lxc'}->get_roots_path();
+	$templates_path = $self->{'lxc'}->get_template_path();
+	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
+	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+	$vg = $self->{'lxc'}->get_vg();
+	
+	$config = new Lxctl::_config;
 	return $self;
 }
 
