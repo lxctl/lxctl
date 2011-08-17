@@ -159,7 +159,9 @@ sub check_create_options
 
 	if ($options{'empty'} == 0) {
 		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
-		$options{'netmask'} || print "You did not specify network mask! Using default.\n";
+		if (! $options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
+			$options{'netmask'} || print "You did not specify network mask! Using default.\n";
+		}
 		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
 		$options{'dns'} || print "You did not specify DNS! Using default.\n";
 	};

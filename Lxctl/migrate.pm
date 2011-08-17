@@ -24,7 +24,7 @@ sub migrate_get_opt
 {
 	my $self = shift;
 
-	GetOptions(\%options, 'ipadd|ipaddr=s', 'hostname=s', 'userpasswd=s', 
+	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'onboot=s', 'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpu=s', 'mem=s', 
 		'io=s', 'tohost=s', 'remuser=s', 'remport=s', 'remname=s',

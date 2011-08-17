@@ -60,6 +60,10 @@ sub set_ipaddr
 	my $self = shift;
 
 	defined($options{'ipaddr'}) or return;
+	if ($options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/(\d+)/ ) {
+		my $netmask = $self->{'helper'}->cidr2ip($1);
+		$options{'netmask'} = $netmask;
+	}
 
 	print "Setting IP: $options{'ipaddr'}\n";
 

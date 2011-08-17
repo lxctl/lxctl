@@ -132,9 +132,21 @@ sub get_config #(filename, searchstring)
 	return 0;
 }
 
+sub cidr2ip #(cidr_bits)
+{
+	my ($self, $bits) = @_;
+
+	$bits = 2**32 - 2**(32-$bits);
+	return dec2ip($bits);
+}
+
+sub dec2ip ($) {
+    join('.', unpack('C4', pack('N', shift)));
+}
+
 sub new
 {
-	my $class = shift;	
+	my $class = shift;
 	my $self = {};
 	bless $self, $class;
 
