@@ -55,6 +55,31 @@ sub load_module
 	return 1;
 }
 
+# Delete from config file.
+sub delete_config #(filename, option_name)
+{
+	my ($self, $filename, $what) = @_;
+	open(my $file, '<', "$filename") or
+		die " Failed to open $filename!\n\n";
+
+	my @content = <$file>;
+	my $status = 0;
+
+	close $file;
+
+	@content = grep(!/^$what/, @content);
+
+	open($file, '>', "$filename") or
+		die " Failed to open $filename!\n\n";
+
+	print $file @content;
+
+	close $file;
+
+	return $status;
+}
+
+
 # Destructive change for config file.
 # Changes OPT="what ever" to OPT=newval
 sub change_config #(filename, searchstring, newvalue)

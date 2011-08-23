@@ -634,10 +634,15 @@ sub set_cgroup{
 	return 1;
 }
 
-sub convert_size{
-	my ($self, $from, $to) = @_;
+sub convert_size #(from, to, postfixed)
+{
+	my ($self, $from, $to, $postfixed) = @_;
 	my $subname = (caller(0))[3];
 
+	if (!defined($postfixed)) {
+		$postfixed = 1;
+	}
+	
 	my %convert = (
 		'b' => 0, '' => 0,
 		'k' => 1, 'kib' => 1, 'kb' => 1,
@@ -664,7 +669,7 @@ sub convert_size{
 	}
 
 
-	my ($value, $postfix) = $from =~ m/(\d+)([a-z]*)/ms;
+	my ($value, $postfix) = $from =~ m/(\d+[.]?\d*)([a-z]*)/ms;
 	if (!defined($postfix)) {
 		$postfix = "b";
 	}
@@ -675,7 +680,7 @@ sub convert_size{
 
 	my $tmp = POSIX::pow(1024, $convert{$postfix}-$convert{$to}) * $value;
 
-	if ($to ne 'b') {
+	if ($to ne 'b' && $postfixed == 1) {
 		$tmp = $tmp . $to;
 	}
 

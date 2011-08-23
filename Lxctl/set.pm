@@ -185,24 +185,42 @@ sub set_rootsz
 		return;
 	}
 
+	$options{'rootsz'} =~ m/^[+-]?\d+[.]?\d*[bBsSkKmMgGtTpPeE]/ or die "Bad size!";
+
 	my %lvm_info = get_lv_info("/dev/$vg/$options{'contname'}");
+	my $desired_size;
 
-	my $tmp = $lvm_info{'size'} . $lvm_info{'size_unit'};
+	my $tmp = $lvm_info{'size'};
+	if ($options{'rootsz'} =~ m/^[+](.+)+/) {
+		print "SET: $1\n";
+		$desired_size = $self->{'lxc'}->convert_size($1, $lvm_info{'size_unit'}, 0);
+		$desired_size += $lvm_info{'size'};
+	} elsif ($options{'rootsz'} =~ m/^-(.*)+/) {
+		print "Shrinking is not supported yet\n";
+		$desired_size = $self->{'lxc'}->convert_size($1, $lvm_info{'size_unit'}, 0);
+		$desired_size = $lvm_info{'size'} - $desired_size;
+		if ($desired_size <= 0) {
+			print "Can't resize this much!\n";
+			return;
+		}
+	} else {
+		$desired_size = $self->{'lxc'}->convert_size($options{'rootsz'}, $lvm_info{'size_unit'}, 0);
+	}
 
-	my ($size) = $tmp =~ m/\d+[bBsSkKmMgGtTpPeE]/;
-
-	print "Setting root size: $options{'rootsz'}\n";
-
-	($tmp) = $options{'rootsz'} =~ m/^\d+[bBsSkKmMgGtTpPeE]$/ or
-		die "Bad size!\n\n";
-
-	if (lc($tmp) eq lc($size)) {
+	if ($desired_size == $lvm_info{'size'}) {
 		print "Already desired size, exiting...\n";
+		return;
+	} elsif ($desired_size < $lvm_info{'size'}) {
+		print "Shrinking is not supported yet\n";
 		return;
 	}
 
+	$desired_size .= $lvm_info{'size_unit'};
+
+	print "Setting root size: $desired_size\n";
+
 	die "Failed to resize root LV!\n\n"
-		if system("lvextend -L $options{'rootsz'} /dev/$vg/$options{'contname'}");
+		if system("lvextend -L $desired_size /dev/$vg/$options{'contname'}");
 	die "Failed to resize root filesystem!\n\n"
 		if system("resize2fs /dev/$vg/$options{'contname'}");
 
