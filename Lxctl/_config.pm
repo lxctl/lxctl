@@ -14,10 +14,10 @@ sub print_warn #(message)
 {
 	use Term::ANSIColor;
 	my ($self, $message) = @_;
-	print color 'bold yellow';
-	print "Warning:";
-	print color 'reset';
-	print " $message";
+	print STDERR color 'bold yellow';
+	print STDERR "Warning:";
+	print STDERR color 'reset';
+	print STDERR " $message";
 	return 1;
 }
 

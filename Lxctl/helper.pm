@@ -7,9 +7,9 @@ sub fool_proof
 {
 	use Term::ANSIColor;
 	if (! -t STDIN || ! -t STDOUT) {
-		print color 'bold red';
-		print "Warning! Non-interactive terminal. You have 5 seconds to cancel\n";
-		print color 'reset';
+		print STDERR color 'bold red';
+		print STDERR "Warning! Non-interactive terminal. You have 5 seconds to cancel\n";
+		print STDERR color 'reset';
 		sleep 5;
 		return 1;
 	}
