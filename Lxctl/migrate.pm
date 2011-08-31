@@ -118,12 +118,12 @@ sub remote_deploy
 	die "Failed to create container!\n\n"
 		if system("ssh $options{'remuser'}\@$options{'tohost'} 'lxctl create $options{'remname'} --empty --save'");
 
+	$self->copy_config();
+
 	die "Failed to rsync root filesystem!\n\n"
 		if system("rsync $rsync_opts -e ssh $root_mount_path/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/");
 
 	$self->re_rsync();
-
-	$self->copy_config();
 
 	if ($options{'afterstart'} != 0) {
 		die "Failed to start remote container!\n\n"

@@ -167,7 +167,8 @@ sub check_create_options
 	};
 
 	my @domain_tokens = split(/\./, $options{'contname'});
-	$options{'hostname'} ||= shift @domain_tokens;
+	my $tmp_hostname = shift @domain_tokens;
+	$options{'hostname'} ||= $tmp_hostname;
 	$options{'searchdomain'} ||= join '.', @domain_tokens;
 
 	if ($options{'debug'}) {
