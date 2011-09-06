@@ -294,7 +294,7 @@ sub do
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
-		'macaddr=s', 'autostart=s', 'tz=s', 'mtu=i');
+		'macaddr=s', 'autostart=s', 'tz|timezone=s', 'mtu=i');
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");

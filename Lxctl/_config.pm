@@ -47,6 +47,7 @@ sub load_main
 			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
 			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
 			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
+
 			my $skip_check = $yaml->[0]->{'check'}->{'skip_kernel_config_check'};
 			if (defined($skip_check)) {
 				$self->{'lxc'}->set_conf_check($skip_check);
@@ -58,7 +59,7 @@ sub load_main
 	return;
 }
 
-sub get_option_from_main
+sub get_option_from_main #($section, $option_name)
 {
 	my ($self, $section, $option_name) = @_;
 	my $result = '';
@@ -79,7 +80,7 @@ sub get_option_from_main
 
 
 # hash_ref, filename
-#  ex: $config->save_hash("abrakadabra.yaml", \%options);
+#  ex: $config->save_hash(\%options, "abrakadabra.yaml");
 sub save_hash
 {
 	my $self = shift;

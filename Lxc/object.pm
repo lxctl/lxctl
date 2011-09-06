@@ -566,7 +566,8 @@ sub set_conf {
 	return 1;
 }
 
-sub get_cgroup{
+sub get_cgroup #(vmname, group)
+{
 	my ($self, $name, $group) = @_;
 	my $subname = (caller(0))[3];
 	my $result;

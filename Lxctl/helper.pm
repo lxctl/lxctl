@@ -148,7 +148,7 @@ sub get_config #(filename, searchstring)
 	close $file;
 
 	for my $line (@content) {
-		if ($line =~ s/($what)\s*(.*)/$2/) {
+		if ($line =~ s/($what)\s*=*\s*(.+)/$2/) {
 			chomp $line;
 			return $line;
 		}

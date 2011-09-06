@@ -3,12 +3,13 @@ package Lxctl::create;
 use strict;
 use warnings;
 
-use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray);
 
 use Lxc::object;
 
 use Lxctl::set;
 use Lxctl::_config;
+use Data::UUID;
 
 
 my $config = new Lxctl::_config;
@@ -21,6 +22,7 @@ my $root_mount_path;
 my $templates_path;
 my $vg;
 
+my @args;
 
 sub check_existance
 {
@@ -112,6 +114,7 @@ sub create_root
 sub check_create_options
 {
 	my $self = shift;
+	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
 		'config=s', 'roottype=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
@@ -139,6 +142,9 @@ sub check_create_options
 	if (!defined($options{'contname'})) {
 		die "No container name specified\n\n";
 	}
+
+	my $ug = new Data::UUID;
+	$options{'uuid'} = $ug->create_str();
 
 	$options{'ostemplate'} ||= "lucid_amd64";
 	$options{'config'} ||= "$lxc_conf_dir/$options{'contname'}";
@@ -185,7 +191,7 @@ sub check_create_options
 		$options{'mountoptions'} ||= "defaults";
 	}
 
-	return;
+	return $options{'uuid'};
 }
 
 sub deploy_template
@@ -295,7 +301,7 @@ sub deploy_packets
 
 sub do
 {
-	my $self = shift;
+	my ($self) = shift;
 
 	$options{'contname'} = $_[0]
 		or die "Name the container please!\n\n";
@@ -348,7 +354,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'lxc'} = Lxc::object->new;
+	$self->{'lxc'} = new Lxc::object;
 
 	$root_mount_path = $self->{'lxc'}->get_roots_path();
 	$templates_path = $self->{'lxc'}->get_template_path();

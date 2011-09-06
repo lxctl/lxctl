@@ -7,6 +7,8 @@ use Getopt::Long;
 
 use Lxc::object;
 use Lxctl::_getters;
+use Lxctl::_config;
+use Data::UUID;
 
 sub vsepsimply {
 	my ($self, $val) = @_;
@@ -74,6 +76,68 @@ sub fancy_size {
 	$val =~ s/$to_lc//;
 	$val = sprintf ("%.2f", $val);
 	return $val;
+}
+
+sub get_cpus
+{
+	my ($self, $name) = @_;
+	my $cpu_cnt = 0;
+	eval {
+		my $cpus = $self->{lxc}->get_cgroup($name, "cpuset.cpus");
+		my @splited = split(/,/, $cpus);
+
+		foreach my $part (@splited) {
+			if ($part =~ m/(\d+)-(\d+)/) {
+				$cpu_cnt += (int($2) - int($1) + 1);
+			} else {
+				$cpu_cnt += int($part);
+			}
+		}
+		1;
+	} or do {
+		$cpu_cnt = 2;
+	};
+	return $cpu_cnt;
+}
+
+sub get_all_info
+{
+	my $self = shift;
+	my @vms = $self->{lxc}->ls();
+	my @vms_result;
+	my $cnt = 0;
+	my $lxc_conf_dir = $self->{lxc}->get_lxc_conf_dir();
+	my $yaml_conf_dir = $self->{lxc}->get_yaml_config_path();
+	my $config_reader = new Lxctl::_config;
+	my $vm_option_ref;
+	my %vm_option;
+	foreach my $vm (@vms) {
+		my %info;
+		eval {
+			$vm_option_ref = $config_reader->load_file("$yaml_conf_dir/$vm.yaml");
+			%vm_option = %$vm_option_ref;
+			if (!defined($vm_option{'uuid'})) {
+				my $ug = new Data::UUID;
+				$vm_option{'uuid'} = $ug->create_str();
+				$config_reader->save_hash(\%vm_option, "$yaml_conf_dir/$vm.yaml");
+			}
+			$info{'uuid'} = $vm_option{'uuid'};
+			$info{'mac'} = uc($self->{helper}->get_config($lxc_conf_dir."/$vm/config", "lxc.network.hwaddr"));
+			$info{'disksize'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
+			$info{'template'} = $vm_option{'ostemplate'};
+			$vm_option{'mem'} ||= 0;
+			$info{'mem'} = int($self->{lxc}->convert_size($vm_option{'mem'}, "MiB", 0));
+			$info{'name'} = $vm_option{'contname'};
+			$info{'cpus'} = $self->get_cpus($vm_option{'contname'});
+			$info{'status'} = lc($self->{lxc}->status($vm));;
+			push(@vms_result, \%info);
+			$cnt++;
+			1;
+		} or do {
+			print "[ERR]: $@\n";
+		};
+	}
+	return @vms_result;
 }
 
 sub do
@@ -248,6 +312,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
+	$self->{helper} = new Lxctl::helper;
 	return $self;
 }
 
