@@ -15,11 +15,15 @@ _lxctl()
     MIGRATE_OPTS="$SET_OPTS --tohost= --remuser= --remport= --remname= --clone= --afterstart= "
     VZ2LXC_OPTS="--rootsz= --cpus= --cpu-shares= --mem= --io= --fromhost= --remuser= --remport= --remname= --afterstart="
 
+    BUILTIN="create list destroy enter freeze unfreeze migrate set start stop --man --help --version vz2lxc"
+
     case $COMP_CWORD in
         1)
-            COMPREPLY=( $( compgen -W "create list destroy enter \
-                freeze unfreeze migrate set start stop --man --help --version\
-                vz2lxc" -- "$cur" ) )
+            COMMANDS=`echo $BUILTIN $LXCTL_PLUGINS`
+#            COMPREPLY=( $( compgen -W "create list destroy enter \
+#                freeze unfreeze migrate set start stop --man --help --version\
+#                vz2lxc" -- "$cur" ) )
+            COMPREPLY=( $( compgen -W "$COMMANDS" -- "$cur" ) )
             ;;
         2)
             case $command in
@@ -32,8 +36,22 @@ _lxctl()
 			COMPREPLY=( $( compgen -W "$CREATE_OPTS" -- "$cur" ) )
 		    ;;
 		*)
-			LIST=$(lxctl list --raw 2>/dev/null)
-			COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
+			found=0
+			for cmd in $BUILTIN ; do
+				if [ $command = $cmd ] ; then
+					LIST=$(lxctl list --raw 2>/dev/null)
+					COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
+					found=1
+				fi
+			done
+
+			if [ $found -eq 0 ] ; then
+				params="\${LXCTL_PLUGIN_$command}"
+				params=`eval echo "$params"`
+				if [ -n "$params" ] ; then
+					COMPREPLY=( $( compgen -W "$params" -- "$cur" ) )
+				fi
+			fi
 		esac
             ;;
 	*)
