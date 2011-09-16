@@ -28,7 +28,12 @@ sub help_me
 
 	$Getopt::Long::passthrough = 1;
 	GetOptions('help|?' => \$help, 'man' => \$man, 'version' => \$ver) or pod2usage(2);
-	die "Version: $version\n" if $ver;
+
+	if ($ver) {
+		print "Version: $version\n";
+		exit 0;
+	}
+
 	if ($help) {
 		pod2usage(1);
 	} elsif ($man) {
