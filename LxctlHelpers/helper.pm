@@ -2,6 +2,7 @@ package Lxctl::helper;
 
 use strict;
 use warnings;
+use autodie qw(:all);
 
 sub fool_proof
 {
@@ -59,8 +60,7 @@ sub load_module
 sub delete_config #(filename, option_name)
 {
 	my ($self, $filename, $what) = @_;
-	open(my $file, '<', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open(my $file, '<', "$filename");
 
 	my @content = <$file>;
 	my $status = 0;
@@ -69,8 +69,7 @@ sub delete_config #(filename, option_name)
 
 	@content = grep(!/^$what/, @content);
 
-	open($file, '>', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open($file, '>', "$filename");
 
 	print $file @content;
 
@@ -85,16 +84,14 @@ sub delete_config #(filename, option_name)
 sub change_config #(filename, searchstring, newvalue)
 {
 	my ($self, $filename, $what, $newval) = @_;
-	open(my $file, '<', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open(my $file, '<', "$filename");
 
 	my @content = <$file>;
 	my $status = 0;
 
 	close $file;
 
-	open($file, '>', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open($file, '>', "$filename");
 
 	for my $line (@content) {
 		$status += $line =~ s/($what).*/$1 $newval/g;
@@ -115,16 +112,14 @@ sub change_config #(filename, searchstring, newvalue)
 sub modify_config
 {
 	my ($self, $filename, $option, $what, $newvalue) = @_;
-	open(my $file, '<', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open(my $file, '<', "$filename");
 
 	my @content = <$file>;
 	my $status = 0;
 
 	close $file;
 
-	open($file, '>', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open($file, '>', "$filename");
 
 	for my $line (@content) {
 		$status += $line =~ s/^($option)(.*)$what(.*)/$1$2$newvalue$3/g;
@@ -140,8 +135,7 @@ sub get_config #(filename, searchstring)
 {
 	my ($self, $filename, $what) = @_;
 	$what ||= "";
-	open(my $file, '<', "$filename") or
-		die " Failed to open $filename!\n\n";
+	open(my $file, '<', "$filename");
 
 	my @content = <$file>;
 
@@ -157,16 +151,45 @@ sub get_config #(filename, searchstring)
 	return 0;
 }
 
+sub lvcreate{
+	my ($self, $name, $vg, $size) = @_;
+	my $subname = (caller(0))[3];
+
+	if (!defined($name) || !defined($vg) || !defined(!$size)) {
+		die "$subname: not enough information to create array\n";
+	}
+
+	print "Creating root logical volume: /dev/$vg/$name\n";
+
+	system("lvcreate -L $size -n $name $vg 1>/dev/null");
+}
+
+sub mkfs{
+	my ($self, $fstype, $dev_name, $opts) = @_;
+	my $subname = (caller(0))[3];
+	$opts ||= "";
+
+	if (!defined($fstype) || !defined($dev_name)) {
+		die "$subname: not enough information to create fs\n";
+	}
+
+	if ( ! -e "$dev_name" ) {
+		die "$subname: device doesn't exists\n";
+	}
+
+	system("yes | mkfs.$fstype $dev_name $opts 1>/dev/null");
+}
+
 sub cidr2ip #(cidr_bits)
 {
 	my ($self, $bits) = @_;
 
 	$bits = 2**32 - 2**(32-$bits);
-	return dec2ip($bits);
+	return join('.', unpack('C4', pack('N', $bits)));
 }
 
 sub dec2ip ($) {
-    join('.', unpack('C4', pack('N', shift)));
+	join('.', unpack('C4', pack('N', shift)));
 }
 
 sub new
