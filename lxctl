@@ -12,8 +12,8 @@ use Exporter 'import';
 
 use Lxc::object;
 
-use Lxctl::helper;
-use Lxctl::_config;
+use LxctlHelpers::helper;
+use LxctlHeplers::config;
 
 
 our $version = "0.2.000";
@@ -47,14 +47,14 @@ sub help_me
 
 sub lets_rock
 {
-	my $config = new Lxctl::_config;
+	my $config = new LxctlHelpers::config;
 	$config->load_main();
 
 	help_me();
 
 	my $action = shift @ARGV;
 	my $class;
-	my $helper = new Lxctl::helper;
+	my $helper = new LxctlHelpers::helper;
 
 	eval {
 		$helper->load_module("Lxctl/$action.pm");
