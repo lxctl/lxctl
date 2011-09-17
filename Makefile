@@ -8,8 +8,10 @@ install:
 	
 	install -d $(DESTDIR)/usr/lib/perl/5.10/Lxc
 	install -d $(DESTDIR)/usr/lib/perl/5.10/Lxctl
+	install -d $(DESTDIR)/usr/lib/perl/5.10/LxctlHelpers
 	install -d $(DESTDIR)/var/lxc/templates
 	install -d $(DESTDIR)/var/lxc/root
 	
 	cp Lxc/* $(DESTDIR)/usr/lib/perl/5.10/Lxc
 	cp Lxctl/* $(DESTDIR)/usr/lib/perl/5.10/Lxctl
+	cp LxctlHelpers/* $(DESTDIR)/usr/lib/perl/5.10/LxctlHelpers
