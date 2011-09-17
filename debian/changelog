@@ -1,0 +1,122 @@
+lxctl (0.2.10) natty; urgency=low
+
+  * Updated source
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Mon, 22 Aug 2011 20:06:34 +0400
+
+lxctl (0.2.09) natty; urgency=low
+
+  * Chanded dependency: lxc=0.7.5-0ubuntu0-lxctl2
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Mon, 22 Aug 2011 18:37:54 +0400
+
+lxctl (0.2.08) unstable; urgency=low
+
+  * Improved migration (now sets correct mtu and root size).
+  * Great number of small fixes of found bugs.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Sun, 14 Aug 2011 21:41:47 +0400
+
+lxctl (0.2.07) unstable; urgency=low
+
+  * Destroy hotfix.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Sun, 14 Aug 2011 20:32:16 +0400
+
+lxctl (0.2.06) unstable; urgency=low
+
+  * Lots of improvements and bug fixes.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Sun, 14 Aug 2011 19:44:38 +0400
+
+lxctl (0.2.05) unstable; urgency=low
+
+  * Closes #40. Fixed autostart.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Mon, 01 Aug 2011 20:10:22 +0400
+
+lxctl (0.2.04) unstable; urgency=low
+
+  * Fixed man.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Mon, 01 Aug 2011 15:37:50 +0400
+
+lxctl (0.2.03) unstable; urgency=low
+
+  * IP, mask, dns and gateway are now not nesessary at creation.
+  * Fixed --save.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Mon, 01 Aug 2011 11:58:47 +0400
+
+lxctl (0.2.02) unstable; urgency=low
+
+  * Changed numeration style.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 28 Jul 2011 09:38:38 +0400
+
+lxctl (0.2-rc4) unstable; urgency=low
+
+  * Added ability to install packets before first boot.
+  * Many bug fixes.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Wed, 27 Jul 2011 16:57:25 +0400
+
+lxctl (0.2-rc3) unstable; urgency=low
+
+  * Autostart now default option.
+  * Added --mtu option.
+  * Added support for choosing fs and mkfs options.
+  * A pile of other fixes.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 26 Jul 2011 17:45:44 +0400
+
+lxctl (0.2-rc2) unstable; urgency=low
+
+  * Added --tz option for timezone selection.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Sat, 16 Jul 2011 19:58:04 +0400
+
+lxctl (0.2-rc1) unstable; urgency=low
+
+  * Fixed error display during module compilation.
+  * No more bugs for v0.2, it's release candidate.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Fri, 15 Jul 2011 03:14:50 +0400
+
+lxctl (0.2-beta2) unstable; urgency=low
+
+  * Now /etc/hosts is edited according to hostname and searchdomain.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Fri, 15 Jul 2011 00:23:59 +0400
+
+lxctl (0.2-beta1) unstable; urgency=low
+
+  * Added template existance check before container creation.
+  * Hostname (as set, may not be a FQDN) now is written to /etc/hosts.
+  * Added terinal interactivity detection to destroy.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 14 Jul 2011 21:25:03 +0400
+
+lxctl (0.2-alpha4) unstable; urgency=low
+
+  * Lot of bugfixes.
+  * Migraton from VZ.
+  * Fool proof.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Wed, 13 Jul 2011 00:28:31 +0400
+
+lxctl (0.2-alpha1) unstable; urgency=low
+
+  * Added IP-based MAC-address generation.
+  * Code rewriten with object-orientation.
+  * Added global configuration file.
+  * Commands are modules.
+  * Many-many different improvements and fixes.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 28 Jun 2011 02:55:47 +0400
+
+lxctl (0.1-rc1-1) unstable; urgency=low
+
+  * Initial release
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 28 Jun 2011 02:55:47 +0400
