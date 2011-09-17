@@ -1,4 +1,4 @@
-package Lxctl::_getters;
+package LxctlHelpers::getters;
 
 use strict;
 use warnings;

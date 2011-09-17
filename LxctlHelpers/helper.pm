@@ -1,4 +1,4 @@
-package Lxctl::helper;
+package LxctlHelpers::helper;
 
 use strict;
 use warnings;
@@ -180,7 +180,7 @@ sub mkfs{
         if ($opts ne "") {
 		$msg = " with options $opts";
 	}
-	print "Creating $options{'fs'} FS$msg: $dev_name\n";
+	print "Creating $fstype FS$msg: $dev_name\n";
 
 	system("yes | mkfs.$fstype $dev_name $opts 1>/dev/null");
 }

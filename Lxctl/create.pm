@@ -2,6 +2,7 @@ package Lxctl::create;
 
 use strict;
 use warnings;
+use autodie qw(:all);
 
 use Getopt::Long qw(GetOptionsFromArray);
 
@@ -9,11 +10,12 @@ use Lxc::object;
 
 use Lxctl::set;
 use LxctlHelpers::config;
+use LxctlHelpers::helper;
 use Data::UUID;
 
 
 my $config = new LxctlHelpers::config;
-my $helper = new Lxctlhelpers::helper;
+my $helper = new LxctlHelpers::helper;
 
 my %options = ();
 
@@ -51,47 +53,42 @@ sub create_root
 
 	if ($options{'rootsz'} ne 'share') {
 		if (lc($options{'roottype'}) eq 'lvm') {
-			print "Creating root logical volume: /dev/$vg/$options{'contname'}\n";
+			$helper->lvcreate($options{'contname'}, $vg, $options{'rootsz'});
 
-		$helper->lvcreate($options{'contname'}, $vg, $options{'rootsz'});
+			$helper->mkfs($options{'fs'}, "/dev/$vg/$options{'contname'}",   $options{'mkfsopts'});
+		} elsif (lc($options{'roottype'}) eq 'file') {
+			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
-		$helper->mkfs($options{'fs'}, "/dev/$vg/$options{'contname'}",   $options{'mkfsopts'});
-	} elsif (lc($options{'roottype'}) eq 'file') {
-		print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
+			my $bs = 4096;
+			my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
 
-		my $bs = 4096;
-		my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
+			system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
 
-		die "Failed to create file $options{'contname'}.raw!\n\n"
-			if system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
-
-		$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
+			$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
+		}
 	}
 
 	print "Creating directory: $root_mount_path/$options{'contname'}\n";
 
-	die "Failed to create directory $root_mount_path/$options{'contname'}!\n\n"
-		if system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
+	system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
 
 	if ($options{'rootsz'} ne 'share') {
 		print "Fixing fstab...\n";
 
-	my $what_to_mount = "";
-	my $additional_opts = "";
-	if (lc($options{'roottype'}) eq 'lvm') {
-		$what_to_mount = "/dev/$vg/$options{'contname'}";
-	} elsif (lc($options{'roottype'}) eq 'file') {
-		$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
-		$additional_opts=",loop";
-	}
-	# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
-	die "Failed to add fstab entry for $options{'contname'}!\n\n"
-		if system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
+		my $what_to_mount = "";
+		my $additional_opts = "";
+		if (lc($options{'roottype'}) eq 'lvm') {
+			$what_to_mount = "/dev/$vg/$options{'contname'}";
+		} elsif (lc($options{'roottype'}) eq 'file') {
+			$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
+			$additional_opts=",loop";
+		}
+		# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
+		system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
 
-	print "Mounting FS...\n";
+		print "Mounting FS...\n";
 
-	die "Failed to mount FS for $options{'contname'}!\n\n"
-		if system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
+		system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
 	}
 
 	return;
@@ -182,8 +179,7 @@ sub deploy_template
 	my $template = "$templates_path/$options{'ostemplate'}.tar.gz";
 	print "Deploying template: $template\n";
 
-	die "Failed to untar template!\n\n"
-		if system("tar xf $template -C $root_mount_path/$options{'contname'} 1>/dev/null");
+	system("tar xf $template -C $root_mount_path/$options{'contname'} 1>/dev/null");
 
 	return;
 }
@@ -194,8 +190,7 @@ sub create_lxc_conf
 
 	print "Creating lxc configuration file: $lxc_conf_dir/$options{'contname'}/config\n";	
 
-	die "Failed to create directory $lxc_conf_dir/$options{'contname'}!\n\n"
-		if system("mkdir -p $lxc_conf_dir/$options{'contname'} 1>/dev/null");
+	system("mkdir -p $lxc_conf_dir/$options{'contname'} 1>/dev/null");
 
 	my $conf = "\
 lxc.utsname = $options{'contname'}
@@ -234,13 +229,11 @@ proc			$root_mount_path/$options{'contname'}/rootfs/proc		 proc	nodev,noexec,nos
 sysfs		   $root_mount_path/$options{'contname'}/rootfs/sys		  sysfs defaults  0 0
 ";
 
-	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config" or
-		die "Failed to create $lxc_conf_dir/$options{'contname'}/config!\n\n";
+	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config";
 	print $config_file $conf;
 	close($config_file);
 
-	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab" or
-		die "Failed to create $lxc_conf_dir/$options{'contname'}/fstab!\n\n";
+	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
 	print $fstab_file $fstab;
 	close($fstab_file);
 
@@ -253,13 +246,15 @@ sub create_ssh_keys
 
 	print "Regenerating SSH keys...\n";
 
-	print "Failed to delete old ssh keys!\n\n"
-		if system("rm $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_*");
+	eval {
+		system("rm $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_*");
+		1;
+	} or do {
+		print "Failed to delete old ssh keys!\n\n";
+	};
 
-	die "Failed to generete RSA key!\n\n"
-		if system("ssh-keygen -q -t rsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_rsa_key -N ''");
-	die "Failed to generete DSA key!\n\n"
-		if system("ssh-keygen -q -t dsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_dsa_key -N ''");
+	system("ssh-keygen -q -t rsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_rsa_key -N ''");
+	system("ssh-keygen -q -t dsa -f $root_mount_path/$options{'contname'}/rootfs/etc/ssh/ssh_host_dsa_key -N ''");
 }
 
 sub deploy_packets
@@ -273,8 +268,7 @@ sub deploy_packets
 
 	print "Adding packages: $options{'addpkg'}\n";
 
-	die "Failed to install packets!\n\n"
-		if system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
+	system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
 
 	return;
 }
