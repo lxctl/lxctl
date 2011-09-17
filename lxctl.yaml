@@ -2,9 +2,9 @@
 lvm:
   VG: vg00
 paths:
-  CONFIG_PATH: '/etc/lxctl'
+  YAML_CONFIG_PATH: '/etc/lxctl'
   LXC_CONF_DIR: '/var/lib/lxc'
-  ROOTS_PATH: '/var/lxc/root'
+  ROOT_MOUNT_PATH: '/var/lxc/root'
   TEMPLATE_PATH: '/var/lxc/templates'
 check:
   skip_kernel_config_check: 1
