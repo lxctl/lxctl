@@ -10,3 +10,12 @@ check:
   skip_kernel_config_check: 1
 rsync:  
   RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*'
+root:
+  ROOT_SIZE: 50G
+  ROOT_TYPE: lvm
+fs:
+  FS: ext4
+  FS_OPTS: -b 4096 -E stride=16,stripe-width=32
+  FS_MOUNT_OPTS: defaults,barrier=0
+os:
+  OS_TEMPLATE: ubuntu-10.04-amd64

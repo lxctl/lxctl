@@ -92,7 +92,7 @@ sub remote_deploy
 
     $self->copy_config();
 
-    $ssh->exec("lxctl create $options{'remname'} --empty --config /tmp/$options{'contname'}")
+    $ssh->exec("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}")
         or die "Failed to create remote container.\n\n";
 
     $first_pass = $self->sync_data();
