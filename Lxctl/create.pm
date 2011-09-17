@@ -8,11 +8,11 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Lxc::object;
 
 use Lxctl::set;
-use Lxctl::_config;
+use LxctlHelpers::config;
 use Data::UUID;
 
 
-my $config = new Lxctl::_config;
+my $config = new LxctlHelpers::config;
 
 my %options = ();
 

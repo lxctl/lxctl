@@ -9,8 +9,8 @@ use Linux::LVM;
 
 use Lxc::object;
 
-use Lxctl::helper;
-use Lxctl::_config;
+use LxctlHelpers::helper;
+use LxctlHelpers::config;
 
 my %options = ();
 
@@ -331,7 +331,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = Lxctl::helper->new;
+	$self->{'helper'} = LxctlHelpers::helper->new;
 
 	$root_mount_path = $self->{'lxc'}->get_roots_path();
 	$templates_path = $self->{'lxc'}->get_template_path();

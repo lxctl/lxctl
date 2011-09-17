@@ -4,10 +4,9 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-
 use Lxc::object;
-
-use Lxctl::_config;
+use LxctlHelpers::config;
+use LxctlHelpers::SSH;
 
 my %options = ();
 
@@ -17,144 +16,120 @@ my $root_mount_path;
 my $templates_path;
 my $vg;
 
+my $ssh;
+
 my $rsync_opts;
 my $config;
 
 sub migrate_get_opt
 {
-	my $self = shift;
+    my $self = shift;
 
-	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
-		'onboot=s', 'nameserver=s', 'searchdomain=s', 'rootsz=s', 
-		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpu=s', 'mem=s', 
-		'io=s', 'tohost=s', 'remuser=s', 'remport=s', 'remname=s',
-		'clone', 'afterstart!');
+    GetOptions(\%options, 
+        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!');
 
-	$options{'remuser'} ||= 'root';
-	$options{'remport'} ||= '22';
-	$options{'remname'} ||= $options{'contname'};
-	$options{'afterstart'} ||= 0;
+    $options{'remuser'} ||= 'root';
+    $options{'remport'} ||= '22';
+    $options{'remname'} ||= $options{'contname'};
+    $options{'afterstart'} ||= 1;
+
+    defined($options{'tohost'}) or 
+        die "To which host should I migrate?\n\n";
+
+    $ssh = LxctlHelpers::SSH->connect($options{'rumuser'}, $options{'tohost'}, '');
 }
 
 sub re_rsync
 {
-	my $self = shift;
-	my $status;
+    my $self = shift;
+    my $first_pass = shift;
+    my $status;
 
-	eval {
-		$status = $self->{'lxc'}->status($options{'contname'});
-	} or do {
-		die "Failed to get status for container $options{'contname'}!\n\n";
-	};
+    eval {
+        $status = $self->{'lxc'}->status($options{'contname'});
+    } or do {
+        die "Failed to get status for container $options{'contname'}!\n\n";
+    };
 
-	return if $status ne 'RUNNING';
+    return if ($status ne 'RUNNING' && $first_pass);
+    die "Aborting due to rsinc error.\n\n" if !$first_pass;
 
-	eval {
-		if ($options{'clone'}) {
-			print "Freezing container $options{'contname'}...\n";
-			$self->{'lxc'}->freeze($options{'contname'});
-		} else {
-			print "Stopping container $options{'contname'}...\n";
-			$self->{'lxc'}->stop($options{'contname'});
-		}
-	} or do {
-		if ($options{'clone'}) {
-			die "Failed to freeze container $options{'contname'}!\n\n";
-		} else {
-			die "Failed to stop container $options{'contname'}!\n\n";
-		}
-	};
+    eval {
+        print "Stopping container $options{'contname'}...\n";
+        $self->{'lxc'}->stop($options{'contname'});
+    } or do {
+        die "Failed to stop container $options{'contname'}.\n\n";
+    };
 
-	print "Re-rsyncing container $options{'contname'}...\n";
-
-	die "Failed to re-rsync root filesystem!\n\n"
-		if system("rsync -avz -e ssh $root_mount_path/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/");
-
-	eval {
-		if ($options{'clone'}) {
-			print "Unfreezing container $options{'contname'}...\n";
-			$self->{'lxc'}->unfreeze($options{'contname'});
-		}
-	} or do {
-		if ($options{'clone'}) {
-			die "Failed to unfreeze container $options{'contname'}!\n\n";
-		}
-	};
+    $self->sync_data()
+        or die "Failed to finish second rsinc pass.\n\n";
 }
 
 sub copy_config
 {
-	my $self = shift;
+    my $self = shift;
 
-	print "Configuring $options{'remname'}...\n";
+    print "Sending config to $options{'tohost'}...\n";
 
-	my $tmp = $config->load_file("$yaml_conf_dir/$options{'remname'}.yaml");
-	my %conf_hash = %$tmp;
+    $ssh->put_file("$yaml_conf_dir/$options{'contname'}.yaml", "/tmp/$options{'contname'}.yaml");
+}
 
-	my $set = "lxctl set $options{'remname'}";
+sub sync_data {
+    my $self = shift;
 
-	for my $key (sort keys %options) {
-		$conf_hash{$key} = $options{$key};
-	}
+    $rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
+    $rsync_from = "$root_mount_path/$options{'contname'}/";
+    $rsync_to = "$options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/";
+    my $ret = !system("rsync $rsync_opts -e ssh $rsync_from $rsync_to")
+        or print "There were some problems during syncing root filesystem. It's ok if this is the first pass.\n\n";
 
-	for my $key (sort keys %conf_hash) {
-		$set = "$set --$key '$conf_hash{$key}'" if defined($conf_hash{$key});
-	}
-
-	die "Failed to configure remote container!\n\n"
-		if system("ssh $options{'remuser'}\@$options{'tohost'} \"$set\"");
+    return $ret;
 }
 
 sub remote_deploy
 {
-	my $self = shift;
+    my $self = shift;
 
-	$rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
-	$rsync_opts ||= '-avz';
+    $self->copy_config();
 
-	defined($options{'tohost'}) or 
-		die "To which host shold I migrate?\n\n";
+    $ssh->exec("lxctl create $options{'remname'} --empty --config /tmp/$options{'contname'}")
+        or die "Failed to create remote container.\n\n";
 
-	die "Failed to create container!\n\n"
-		if system("ssh $options{'remuser'}\@$options{'tohost'} 'lxctl create $options{'remname'} --empty --save'");
+    $first_pass = $self->sync_data();
 
-	$self->copy_config();
+    $self->re_rsync($first_pass);
 
-	die "Failed to rsync root filesystem!\n\n"
-		if system("rsync $rsync_opts -e ssh $root_mount_path/$options{'contname'}/ $options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/");
-
-	$self->re_rsync();
-
-	if ($options{'afterstart'} != 0) {
-		die "Failed to start remote container!\n\n"
-			if system("ssh $options{'remuser'}\@$options{'tohost'} \"lxctl start $options{'remname'}\"");
-	}
+    if ($options{'afterstart'} != 0) {
+        die "Failed to start remote container!\n\n"
+            if system("ssh $options{'remuser'}\@$options{'tohost'} \"lxctl start $options{'remname'}\"");
+    }
 }
 
 sub do
 {
-	my $self = shift;
+    my $self = shift;
 
-	$options{'contname'} = shift
-		or die "Name the container please!\n\n";
+    $options{'contname'} = shift
+        or die "Name the container please!\n\n";
 
-	$self->migrate_get_opt();
-	$self->remote_deploy();
+    $self->migrate_get_opt();
+    $self->remote_deploy();
 }
 
 sub new
 {
-	my $class = shift;
-	my $self = {};
-	bless $self, $class;
-	$self->{lxc} = new Lxc::object;
+    my $class = shift;
+    my $self = {};
+    bless $self, $class;
+    $self->{lxc} = new Lxc::object;
 
-	$root_mount_path = $self->{'lxc'}->get_roots_path();
-	$templates_path = $self->{'lxc'}->get_template_path();
-	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
-	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
-	$config = new Lxctl::_config;
-	return $self;
+    $root_mount_path = $self->{'lxc'}->get_roots_path();
+    $templates_path = $self->{'lxc'}->get_template_path();
+    $yaml_conf_dir = $self->{'lxc'}->get_config_path();
+    $lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+    $config = new LxctlHelpers::config;
+
+    return $self;
 }
 
 1;

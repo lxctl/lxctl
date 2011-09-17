@@ -6,8 +6,8 @@ use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-use Lxctl::_getters;
-use Lxctl::_config;
+use LxctlHelpers::getters;
+use LxctlHelpers::config;
 use Data::UUID;
 
 sub vsepsimply {
@@ -312,7 +312,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
-	$self->{helper} = new Lxctl::helper;
+	$self->{helper} = new LxctlHelpers::helper;
 	return $self;
 }
 

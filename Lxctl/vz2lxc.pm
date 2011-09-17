@@ -7,7 +7,7 @@ use Getopt::Long;
 
 use Lxc::object;
 
-use Lxctl::_config;
+use LxctlHelpers::config;
 
 my %options = ();
 
@@ -117,7 +117,7 @@ sub new
 	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
 	$vg = $self->{'lxc'}->get_vg();
 	
-	$config = new Lxctl::_config;
+	$config = new LxctlHelpers::config;
 	return $self;
 }
 

@@ -5,9 +5,9 @@ use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-use Lxctl::helper;
+use LxctlHelpers::helper;
 use Lxctl::set;
-use Lxctl::_config;
+use LxctlHelpers::config;
 
 my %options = ();
 
@@ -91,8 +91,8 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = new Lxctl::helper;
-	$self->{'config'} = new Lxctl::_config;
+	$self->{'helper'} = new LxctlHelpers::helper;
+	$self->{'config'} = new LxctlHelpers::config;
 
 	$root_mount_path = $self->{'lxc'}->get_roots_path();
 	$yaml_conf_dir = $self->{'lxc'}->get_config_path();

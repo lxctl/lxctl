@@ -8,3 +8,5 @@ paths:
   TEMPLATE_PATH: '/var/lxc/templates'
 check:
   skip_kernel_config_check: 1
+rsync:  
+  RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*'
