@@ -13,6 +13,7 @@ use Data::UUID;
 
 
 my $config = new LxctlHelpers::config;
+my $helper = new Lxctlhelpers::helper;
 
 my %options = ();
 
@@ -46,69 +47,54 @@ sub check_existance
 
 sub create_root
 {
-    my $self = shift;
+	my $self = shift;
 
-    if ($options{'rootsz'} ne 'share') {
-        if (lc($options{'roottype'}) eq 'lvm') {
-	    print "Creating root logical volume: /dev/$vg/$options{'contname'}\n";
+	if ($options{'rootsz'} ne 'share') {
+		if (lc($options{'roottype'}) eq 'lvm') {
+			print "Creating root logical volume: /dev/$vg/$options{'contname'}\n";
 
-            die "Failed to create logical volume $options{'contname'}!\n\n"
-                if system("lvcreate -L $options{'rootsz'} -n $options{'contname'} $vg 1>/dev/null");
+		$helper->lvcreate($options{'contname'}, $vg, $options{'rootsz'});
 
-            my $msg = "";
-            if ($options{'mkfsopts'} ne "") {
-                $msg = " with options $options{'mkfsopts'}";
-            }
-            print "Creating $options{'fs'} FS$msg: /dev/$vg/$options{'contname'}\n";
+		$helper->mkfs($options{'fs'}, "/dev/$vg/$options{'contname'}",   $options{'mkfsopts'});
+	} elsif (lc($options{'roottype'}) eq 'file') {
+		print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
-            die "Failed to create FS for $options{'contname'}!\n\n"
-                if system("mkfs.$options{'fs'} /dev/$vg/$options{'contname'} $options{'mkfsopts'} 1>/dev/null");
-        } elsif (lc($options{'roottype'}) eq 'file') {
-            print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
+		my $bs = 4096;
+		my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
 
-            my $bs = 4096;
-            my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
+		die "Failed to create file $options{'contname'}.raw!\n\n"
+			if system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
 
-            die "Failed to create file $options{'contname'}.raw!\n\n"
-                if system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
+		$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
+	}
 
-            my $msg = "";
-            if ($options{'mkfsopts'} ne "") {
-                $msg = " with options $options{'mkfsopts'}";
-            }
-            print "Creating $options{'fs'} FS$msg: $root_mount_path/$options{'contname'}.raw\n";
+	print "Creating directory: $root_mount_path/$options{'contname'}\n";
 
-            die "Failed to create FS for $options{'contname'}!\n\n"
-                if system("yes | mkfs.$options{'fs'} $root_mount_path/$options{'contname'}.raw $options{'mkfsopts'} 1>/dev/null");
-            }
-    }
+	die "Failed to create directory $root_mount_path/$options{'contname'}!\n\n"
+		if system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
 
-    print "Creating directory: $root_mount_path/$options{'contname'}\n";
+	if ($options{'rootsz'} ne 'share') {
+		print "Fixing fstab...\n";
 
-    die "Failed to create directory $root_mount_path/$options{'contname'}!\n\n"
-        if system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
+	my $what_to_mount = "";
+	my $additional_opts = "";
+	if (lc($options{'roottype'}) eq 'lvm') {
+		$what_to_mount = "/dev/$vg/$options{'contname'}";
+	} elsif (lc($options{'roottype'}) eq 'file') {
+		$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
+		$additional_opts=",loop";
+	}
+	# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
+	die "Failed to add fstab entry for $options{'contname'}!\n\n"
+		if system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
 
-    if ($options{'rootsz'} ne 'share') {
-        print "Fixing fstab...\n";
+	print "Mounting FS...\n";
 
-        my $what_to_mount = "";
-        my $additional_opts = "";
-        if (lc($options{'roottype'}) eq 'lvm') {
-            $what_to_mount = "/dev/$vg/$options{'contname'}";
-        } elsif (lc($options{'roottype'}) eq 'file') {
-            $what_to_mount = "$root_mount_path/$options{'contname'}.raw";
-            $additional_opts=",loop";
-    }
-    die "Failed to add fstab entry for $options{'contname'}!\n\n"
-        if system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
+	die "Failed to mount FS for $options{'contname'}!\n\n"
+		if system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
+	}
 
-    print "Mounting FS...\n";
-
-    die "Failed to mount FS for $options{'contname'}!\n\n"
-        if system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
-    }
-
-    return;
+	return;
 }
 
 sub check_create_options
@@ -244,8 +230,8 @@ lxc.network.mtu = 1500
 ";
 
 	my $fstab = "\
-proc            $root_mount_path/$options{'contname'}/rootfs/proc         proc    nodev,noexec,nosuid 0 0
-sysfs           $root_mount_path/$options{'contname'}/rootfs/sys          sysfs defaults  0 0
+proc			$root_mount_path/$options{'contname'}/rootfs/proc		 proc	nodev,noexec,nosuid 0 0
+sysfs		   $root_mount_path/$options{'contname'}/rootfs/sys		  sysfs defaults  0 0
 ";
 
 	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config" or
@@ -278,19 +264,19 @@ sub create_ssh_keys
 
 sub deploy_packets
 {
-        my $self = shift;
+	my $self = shift;
 
-        defined($options{'addpkg'}) or return;
+	defined($options{'addpkg'}) or return;
 	$options{'pkgopt'} ||= "";
 
 	$options{'addpkg'} =~ s/,/ /g;
 
-        print "Adding packages: $options{'addpkg'}\n";
+	print "Adding packages: $options{'addpkg'}\n";
 
-        die "Failed to install packets!\n\n"
-                if system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
+	die "Failed to install packets!\n\n"
+		if system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
 
-        return;
+	return;
 }
 
 

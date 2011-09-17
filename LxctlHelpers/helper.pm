@@ -158,7 +158,6 @@ sub lvcreate{
 	if (!defined($name) || !defined($vg) || !defined(!$size)) {
 		die "$subname: not enough information to create array\n";
 	}
-
 	print "Creating root logical volume: /dev/$vg/$name\n";
 
 	system("lvcreate -L $size -n $name $vg 1>/dev/null");
@@ -176,6 +175,12 @@ sub mkfs{
 	if ( ! -e "$dev_name" ) {
 		die "$subname: device doesn't exists\n";
 	}
+	
+	my $msg = "";
+        if ($opts ne "") {
+		$msg = " with options $opts";
+	}
+	print "Creating $options{'fs'} FS$msg: $dev_name\n";
 
 	system("yes | mkfs.$fstype $dev_name $opts 1>/dev/null");
 }
