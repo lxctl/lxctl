@@ -138,7 +138,7 @@ sub do
 	my $raw;
 	my $columns;
 	my $header_printed = 0;
-	GetOptions('columns' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
+	GetOptions('columns=s' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
 
 	if ($raw) {
 		my @vms = $self->{lxc}->ls();
