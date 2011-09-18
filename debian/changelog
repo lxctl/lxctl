@@ -1,3 +1,9 @@
+lxctl (0.2.13) lucid; urgency=low
+
+  * Migration works. Well, at least it seems so.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Sun, 18 Sep 2011 17:25:46 +0400
+
 lxctl (0.2.12-1) lucid; urgency=low
 
   * Small bunch of bugfixes.
