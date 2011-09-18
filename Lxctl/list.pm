@@ -9,74 +9,11 @@ use Lxc::object;
 use LxctlHelpers::getters;
 use LxctlHelpers::config;
 use Data::UUID;
+use List::Util qw[max];
 
-sub vsepsimply {
-	my ($self, $val) = @_;
-	print "\n";
-	for (my $i = 0; $i < $val; $i++)
-	{
-		print "-";
-	}
-	print "\n";
-	return;
-}
-
-sub tab {
-	my ($self, $val) = @_;
-	for (my $i = 0; $i < $val; $i++)
-	{
-		print " ";
-	}
-	print "| ";
-
-	return;
-}
-
-sub megaprint{
-	my ($self, $rows, $columns, @data) = @_;
-	my @widths;
-	my $widthmatrix = 0;
-	$rows++;
-
-	#Determine max length.
-	for (my $i = 0; $i < $rows; $i++)
-		{
-		for (my $j = 0; $j < $columns; $j++)
-		{
-			if (length($data[$i * $columns + $j]) > ($widths[$j] || 0))
-			{
-				 $widths[$j] = length($data[$i * $columns + $j]);
-			}
-		}
-	}
-
-	for (my $i = 0; $i < $columns; $i++)
-	{
-		$widthmatrix += $widths[$i] + 3;
-	}
-
-	$self->vsepsimply($widthmatrix + 1);
-
-	for (my $i = 0; $i < $rows; $i++)
-	{
-		print "| ";
-		for (my $j = 0; $j < $columns; $j++)
-		{
-			print $data[$i * $columns + $j];
-			$self->tab($widths[$j] - length ($data[$i * $columns + $j]) + 1);
-		}
-		$self->vsepsimply($widthmatrix + 1);
-	}
-}
-
-sub fancy_size {
-	my ($self, $val, $to) = @_;
-	my $to_lc = lc $to;
-	$val = $self->{lxc}->convert_size($val, $to);
-	$val =~ s/$to_lc//;
-	$val = sprintf ("%.2f", $val);
-	return $val;
-}
+my $getters = new LxctlHelpers::getters;
+my %sizes;
+my $sep = "  ";
 
 sub get_cpus
 {
@@ -113,29 +50,81 @@ sub get_all_info
 	my %vm_option;
 	foreach my $vm (@vms) {
 		my %info;
+		my $root_path;
+		my $ghost = 0;
+		$vm_option_ref = $config_reader->load_file("$yaml_conf_dir/$vm.yaml");
+		%vm_option = %$vm_option_ref;
 		eval {
-			$vm_option_ref = $config_reader->load_file("$yaml_conf_dir/$vm.yaml");
-			%vm_option = %$vm_option_ref;
-			if (!defined($vm_option{'uuid'})) {
-				my $ug = new Data::UUID;
-				$vm_option{'uuid'} = $ug->create_str();
-				$config_reader->save_hash(\%vm_option, "$yaml_conf_dir/$vm.yaml");
-			}
-			$info{'uuid'} = $vm_option{'uuid'};
-			$info{'mac'} = uc($self->{helper}->get_config($lxc_conf_dir."/$vm/config", "lxc.network.hwaddr"));
-			$info{'disksize'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
-			$info{'template'} = $vm_option{'ostemplate'};
-			$vm_option{'mem'} ||= 0;
-			$info{'mem'} = int($self->{lxc}->convert_size($vm_option{'mem'}, "MiB", 0));
-			$info{'name'} = $vm_option{'contname'};
-			$info{'cpus'} = $self->get_cpus($vm_option{'contname'});
-			$info{'status'} = lc($self->{lxc}->status($vm));;
-			push(@vms_result, \%info);
-			$cnt++;
+			$root_path = $self->{lxc}->get_conf($vm, "lxc.rootfs");
+		} or do {
+			$root_path = "N/A";
+			$ghost = 1;
+		};
+		if (!defined($vm_option{'uuid'})) {
+			my $ug = new Data::UUID;
+			$vm_option{'uuid'} = $ug->create_str();
+			$config_reader->save_hash(\%vm_option, "$yaml_conf_dir/$vm.yaml");
+		}
+		$info{'uuid'} = $vm_option{'uuid'};
+		$info{'mac'} = uc($self->{helper}->get_config($lxc_conf_dir."/$vm/config", "lxc.network.hwaddr"));
+		$info{'disksize_mb'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
+		$info{'template'} = $vm_option{'ostemplate'};
+		$vm_option{'mem'} ||= 0;
+		$info{'memory_mb'} = int($self->{lxc}->convert_size($vm_option{'mem'}, "MiB", 0));
+		$info{'name'} = $vm_option{'contname'};
+		$info{'cpus'} = $self->get_cpus($vm_option{'contname'});
+		eval {
+			$info{'cpu'} = $self->{lxc}->get_cgroup($vm, "cpuset.cpus");
 			1;
 		} or do {
-			print "[ERR]: $@\n";
+			# By default pid will got all CPUs
+			$info{'cpu'} = "All";
 		};
+		eval {
+			$info{'cpushares'} = $self->{lxc}->get_cgroup($vm, "cpu.shares");
+			1;
+		} or do {
+			$info{'cpushares'} = 1024;
+		};
+		eval {
+			my $ip = $getters->get_ip($vm);
+			($info{'ip'}) = $ip =~ m/(\d+\.\d+\.\d+\.\d+)/;
+			1;
+		} or do {
+			$info{'ip'} = "N/A";
+		};
+		eval {
+			$info{'hostname'} = $self->{lxc}->get_conf($vm, "lxc.utsname");
+			1;
+		} or do {
+			$info{'hostname'} = "N/A";
+		};
+		if ($ghost == 0) {
+			my $df = `df -B 1 $root_path`;
+			my ($total, $free) = $df =~ m/\s+(\d+)\s+(\d+)/g;
+
+			if (defined($total)) {
+				$info{'disk_total_mb'} =  sprintf("%.2f", $self->{lxc}->convert_size($total, 'MiB', 0));
+				$info{'disk_free_mb'} =  sprintf("%.2f", $self->{lxc}->convert_size($free, 'MiB', 0));
+			} else {
+				$info{'disk_total_mb'} = "N/A";
+				$info{'disk_free_mb'} = "N/A";
+			}
+			$info{'status'} = lc($self->{lxc}->status($vm));
+		} else {
+			$info{'disk_total_mb'} = "N/A";
+			$info{'disk_free_mb'} = "N/A";
+			$info{'status'} = "ghost";
+		};
+		
+		foreach my $key (sort keys %info) {
+			if (!defined($sizes{$key}) || ($sizes{$key} < length($info{$key}))) {
+				$sizes{$key} = max(length($info{$key}), length($key));
+			}
+		}
+		
+		push(@vms_result, \%info);
+		$cnt++;
 	}
 	return @vms_result;
 }
@@ -144,36 +133,10 @@ sub do
 {
 	my $self = shift;
 
-	use constant {
-		TAB_WIDTH => 15,
-		dVM_NAME => 7,
-		dSTATE => 5,
-		dHOSTNAME => 8,
-		dIPADDR => 2,
-		dDS_FREE => 10,
-		dDS_ALL => 11,
-		dCG_MEM => 12,
-		dCG_CPUS => 11,
-		dCG_SHARES => 10,
-		dMOUNTPOINT => 11,
-		MIN_COL => 2,
-		MAX_MEM => 2097152,
-		SPACE_VAL => "Gb",
-	};
-	my @data;
-	my $count = 0;
-	my $ipaddr = 0;
-	my $hostname = 0;
-	my $cgroup = 0;
-	my $all = 0;
-	my $disk_space = 0;
-	my $mount_point = 0;
-	my $countvm = 0;
-	my $raw = 0;
-	my $cols = MIN_COL;
-	my $getters = new LxctlHelpers::getters;
-	GetOptions('ipaddr' => \$ipaddr, 'hostname' => \$hostname, 'cgroup' => \$cgroup, 'diskspace' => \$disk_space, 'mount' => \$mount_point,
-'raw' => \$raw, 'all' => \$all);
+	my $all;
+	my $raw;
+	my $columns;
+	GetOptions('columns' => \$columns, 'raw' => \$raw, 'all' => \$all);
 
 	if ($raw) {
 		my @vms = $self->{lxc}->ls();
@@ -184,125 +147,51 @@ sub do
 		return;
 	}
 
-	if ($all) { $ipaddr = 1; $hostname = 1; $disk_space = 1; $cgroup = 1; $mount_point = 1; }
+	$all ||= 0;
+	$columns ||= "name,hostname,status,memory_mb,disksize_mb,disk_free_mb,ip,template";
 
-	my @vms = $self->{lxc}->ls();
-	$cols += $ipaddr + $hostname + $disk_space + $mount_point + $cgroup*3;
-	#Printing header
-	$data[$count++] = "VM_NAME";
-	$data[$count++] = "STATE";
-	
-	if ($hostname) {
-		$data[$count++] = "hostname" 
-	}
+	my @splitted = split(/,/, $columns);
 
-	if ($ipaddr) {
-		$data[$count++] = "ip";
-	}
-
-	if ($mount_point) {
-		$data[$count++] = "mount point";
-	}
-
-	if ($disk_space){
-		$data[$count++] = "free/size";
-	}
-	
-	if ($cgroup) {
-		$data[$count++] = "memory limit";
-		$data[$count++] = "cpuset.cpus";
-		$data[$count++] = "cpu.shares";
-	}
-
-	foreach my $vm (@vms){
-		my $vm_state = $self->{lxc}->status($vm);
-		my $root_path = "N/A";
-		my $ghoststate = 0;
-		eval {
-			$root_path = $self->{lxc}->get_conf($vm, "lxc.rootfs");
-		} or do {$vm_state = "GHOST"; $ghoststate = 1;};	
-		$countvm++;
-		$data[$count++] = "$vm";
-		$data[$count++] = "$vm_state";
-
-		if ($hostname) {
-				if (!$ghoststate) {
-					$data[$count++] = $self->{lxc}->get_conf($vm, "lxc.utsname");
-				} else {
-					$data[$count++] = "N/A";
+	my $hash_printed = 0;
+	my @vms_new = $self->get_all_info();
+	my %vm_hash;
+	my $tmp_string;
+	if ($all) {
+		foreach my $vm_ref (@vms_new) {
+			%vm_hash = %$vm_ref;
+			if ($hash_printed == 0) {
+				foreach my $key (sort keys %vm_hash) {
+					$tmp_string = "%".$sizes{$key}."s$sep";
+					printf "$tmp_string", "$key";
 				}
-		}
-
-
-		if ($ipaddr) {
-			if (!$ghoststate) {
-				$data[$count++] = $getters->get_ip($vm);
-			} else {
-				$data[$count++] = "N/A";
+				print "\n";
+				$hash_printed = 1;
 			}
-		}
-
-		if ($mount_point) {
-			$data[$count++] = $root_path;
-		}
-
-		if ($disk_space && $vm_state ne "STOPPED" && $vm_state ne "GHOST") {
-			my $text = `df -B 1 $root_path`;
-			my (@digits) = $text =~ m/(\s\d\d\d\d+)/g;
-			my $tmp =  $self->fancy_size($digits[2], SPACE_VAL);
-			$data[$count] = $tmp . "/";
-
-			$tmp = $self->fancy_size($digits[0], SPACE_VAL);
-			$data[$count] .= $tmp . " " . SPACE_VAL;
-			$count++;
-		} elsif ($disk_space) {
-			$data[$count++] = "N/A";
-		}
-
-		if ($cgroup) {
-			my $tmp;
-			eval {
-				$data[$count] = $self->{lxc}->get_cgroup($vm, "memory.limit_in_bytes");
-				$data[$count] = $self->{lxc}->convert_size($data[$count], "MB");
-				$data[$count] =~ s/\n//;
-
-				1;
-			} or do {
-				# By default memory isn't limited.
-				# Setting to MAX
-				$data[$count] = MAX_MEM + 1;
-			};
-
-			($tmp) = $data[$count] =~ m/(\d+)/ms;
-			if ($tmp > MAX_MEM) {
-				# It's unlikly that somebody would have >2TB of RAM.
-				$data[$count] = "Unlim";
+			foreach my $key (sort keys %vm_hash) {
+				printf "%".$sizes{$key}."s$sep", $vm_hash{$key};
 			}
-
-			$count++;
-
-			eval {
-				$data[$count] = $self->{lxc}->get_cgroup($vm, "cpuset.cpus");
-				$data[$count++] =~ s/\n//;
-
-				1;
-			} or do {
-				# By default pid will got all CPUs
-				$data[$count++] = "All";
-			};
-
-			eval {
-				$data[$count] = $self->{lxc}->get_cgroup($vm, "cpu.shares");
-				$data[$count++] =~ s/\n//;
-
-				1;
-			} or do {
-				# Default cpu.shares is 1024
-				$data[$count++] = "1024";
-			};
+			print "\n";
+		}
+	} else {
+		foreach my $vm_ref (@vms_new) {
+			%vm_hash = %$vm_ref;
+			if ($hash_printed == 0) {
+				foreach my $key (@splitted) {
+					if (defined($vm_hash{$key})) {
+						printf "%".$sizes{$key}."s$sep", "$key";
+					}
+				}
+				print "\n";
+				$hash_printed = 1;
+			}
+			foreach my $key (@splitted) {
+				if (defined($vm_hash{$key})) {
+					printf "%".$sizes{$key}."s$sep", $vm_hash{$key};
+				}
+			}
+			print "\n";
 		}
 	}
-	$self->megaprint($countvm, $cols, @data);
 	return;
 }
 
