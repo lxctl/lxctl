@@ -13,7 +13,7 @@ use Exporter 'import';
 use Lxc::object;
 
 use LxctlHelpers::helper;
-use LxctlHeplers::config;
+use LxctlHelpers::config;
 
 
 our $version = "0.2.000";
