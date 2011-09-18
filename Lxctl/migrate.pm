@@ -95,7 +95,7 @@ sub remote_deploy
 
     print "Creating remote container...\n";
 
-    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}")
+    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml")
         or die "Failed to create remote container.\n\n";
 
     print "Start first rsync pass...\n";
@@ -119,6 +119,8 @@ sub do
 
     $self->migrate_get_opt();
     $self->remote_deploy();
+
+    system("lxctl set $options{'contname'} --autostart 0");
 }
 
 sub new

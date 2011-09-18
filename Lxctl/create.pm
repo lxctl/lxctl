@@ -124,7 +124,7 @@ sub check_create_options
 		};
 
 		%options = %opts_new;
-	};
+	}
 
 	if (!defined($options{'contname'})) {
 		die "No container name specified\n\n";

@@ -262,7 +262,7 @@ sub set_autostart
 	my $name = $options{'contname'};
 
 	if ($autostart == 0) {
-		print "Removing $name to autostart\n";
+		print "Removing $name from autostart\n";
 		$self->{'helper'}->modify_config("/etc/default/lxc", "CONTAINERS", $name, "");
 	} else {
 		print "Adding $name to autostart\n";
@@ -318,7 +318,7 @@ sub do
 	$self->set_cgroup('mem', 'memory.limit_in_bytes');
 	$self->set_cgroup('io', 'blkio.weight');
 
-	my $config = new Lxctl::_config;
+	my $config = new LxctlHelpers::config;
 	$config->change_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 
 	return;
