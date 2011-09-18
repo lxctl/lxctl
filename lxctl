@@ -16,7 +16,7 @@ use LxctlHelpers::helper;
 use LxctlHelpers::config;
 
 
-our $version = "0.2.000";
+our $version = "0.2.12";
 
 our $Lxc = Lxc::object->new;
 
