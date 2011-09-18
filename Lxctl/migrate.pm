@@ -36,7 +36,7 @@ sub migrate_get_opt
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
 
-    $ssh = LxctlHelpers::SSH->connect($options{'rumuser'}, $options{'tohost'}, '');
+    $ssh = LxctlHelpers::SSH->connect($options{'tohost'}, $options{'remuser'}, '');
 }
 
 sub re_rsync
@@ -61,6 +61,7 @@ sub re_rsync
         die "Failed to stop container $options{'contname'}.\n\n";
     };
 
+    print "Start second rsync pass...\n";
     $self->sync_data()
         or die "Failed to finish second rsinc pass.\n\n";
 }
@@ -78,8 +79,8 @@ sub sync_data {
     my $self = shift;
 
     $rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
-    $rsync_from = "$root_mount_path/$options{'contname'}/";
-    $rsync_to = "$options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/";
+    my $rsync_from = "$root_mount_path/$options{'contname'}/";
+    my $rsync_to = "$options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/";
     my $ret = !system("rsync $rsync_opts -e ssh $rsync_from $rsync_to")
         or print "There were some problems during syncing root filesystem. It's ok if this is the first pass.\n\n";
 
@@ -92,16 +93,20 @@ sub remote_deploy
 
     $self->copy_config();
 
-    $ssh->exec("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}")
+    print "Creating remote container...\n";
+
+    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}")
         or die "Failed to create remote container.\n\n";
 
-    $first_pass = $self->sync_data();
+    print "Start first rsync pass...\n";
+    my $first_pass = $self->sync_data();
 
     $self->re_rsync($first_pass);
 
     if ($options{'afterstart'} != 0) {
-        die "Failed to start remote container!\n\n"
-            if system("ssh $options{'remuser'}\@$options{'tohost'} \"lxctl start $options{'remname'}\"");
+        print "Starting remote container...\n";
+        $ssh->execute("lxctl start $options{'remname'}")
+            or die "Failed to start remote container!\n\n";
     }
 }
 

@@ -108,7 +108,7 @@ sub get_all_info
 	my $cnt = 0;
 	my $lxc_conf_dir = $self->{lxc}->get_lxc_conf_dir();
 	my $yaml_conf_dir = $self->{lxc}->get_yaml_config_path();
-	my $config_reader = new Lxctl::_config;
+	my $config_reader = new LxctlHelpers::config;
 	my $vm_option_ref;
 	my %vm_option;
 	foreach my $vm (@vms) {
@@ -171,7 +171,7 @@ sub do
 	my $countvm = 0;
 	my $raw = 0;
 	my $cols = MIN_COL;
-	my $getters = new Lxctl::_getters;
+	my $getters = new LxctlHelpers::getters;
 	GetOptions('ipaddr' => \$ipaddr, 'hostname' => \$hostname, 'cgroup' => \$cgroup, 'diskspace' => \$disk_space, 'mount' => \$mount_point,
 'raw' => \$raw, 'all' => \$all);
 
