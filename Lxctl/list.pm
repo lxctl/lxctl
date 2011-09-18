@@ -54,6 +54,7 @@ sub get_all_info
 		my $ghost = 0;
 		$vm_option_ref = $config_reader->load_file("$yaml_conf_dir/$vm.yaml");
 		%vm_option = %$vm_option_ref;
+
 		eval {
 			$root_path = $self->{lxc}->get_conf($vm, "lxc.rootfs");
 		} or do {
@@ -69,7 +70,7 @@ sub get_all_info
 		$info{'mac'} = uc($self->{helper}->get_config($lxc_conf_dir."/$vm/config", "lxc.network.hwaddr"));
 		$info{'disksize_mb'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
 		$info{'template'} = $vm_option{'ostemplate'};
-		$vm_option{'mem'} ||= 0;
+		$vm_option{'mem'} ||= "1EB";
 		$info{'memory_mb'} = int($self->{lxc}->convert_size($vm_option{'mem'}, "MiB", 0));
 		$info{'name'} = $vm_option{'contname'};
 		$info{'cpus'} = $self->get_cpus($vm_option{'contname'});
@@ -136,7 +137,8 @@ sub do
 	my $all;
 	my $raw;
 	my $columns;
-	GetOptions('columns' => \$columns, 'raw' => \$raw, 'all' => \$all);
+	my $header_printed = 0;
+	GetOptions('columns' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
 
 	if ($raw) {
 		my @vms = $self->{lxc}->ls();
@@ -152,20 +154,19 @@ sub do
 
 	my @splitted = split(/,/, $columns);
 
-	my $hash_printed = 0;
 	my @vms_new = $self->get_all_info();
 	my %vm_hash;
 	my $tmp_string;
 	if ($all) {
 		foreach my $vm_ref (@vms_new) {
 			%vm_hash = %$vm_ref;
-			if ($hash_printed == 0) {
+			if ($header_printed == 0) {
 				foreach my $key (sort keys %vm_hash) {
 					$tmp_string = "%".$sizes{$key}."s$sep";
 					printf "$tmp_string", "$key";
 				}
 				print "\n";
-				$hash_printed = 1;
+				$header_printed = 1;
 			}
 			foreach my $key (sort keys %vm_hash) {
 				printf "%".$sizes{$key}."s$sep", $vm_hash{$key};
@@ -175,14 +176,14 @@ sub do
 	} else {
 		foreach my $vm_ref (@vms_new) {
 			%vm_hash = %$vm_ref;
-			if ($hash_printed == 0) {
+			if ($header_printed == 0) {
 				foreach my $key (@splitted) {
 					if (defined($vm_hash{$key})) {
 						printf "%".$sizes{$key}."s$sep", "$key";
 					}
 				}
 				print "\n";
-				$hash_printed = 1;
+				$header_printed = 1;
 			}
 			foreach my $key (@splitted) {
 				if (defined($vm_hash{$key})) {
