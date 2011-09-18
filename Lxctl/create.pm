@@ -12,13 +12,14 @@ use Lxctl::set;
 use LxctlHelpers::config;
 use LxctlHelpers::helper;
 use Data::UUID;
-
+use File::Path;
 
 my $config = new LxctlHelpers::config;
 my $helper = new LxctlHelpers::helper;
 
 my %options = ();
 
+my $lxc;
 my $yaml_conf_dir;
 my $lxc_conf_dir;
 my $root_mount_path;
@@ -60,9 +61,12 @@ sub create_root
 			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
 			my $bs = 4096;
-			my $count = $self->{'lxc'}->convert_size($options{'rootsz'}, 'b')/$bs;
+			my $count = $lxc->convert_size($options{'rootsz'}, 'b')/$bs;
 
-			system("dd if=/dev/zero of=\"$root_mount_path/$options{'contname'}.raw\" bs=$bs count=$count");
+			# Creating empty file of desired size. It's a bit slower then system dd, but still rather fast (around 10% slower then dd)
+			open my $raw_file, '>' , "$root_mount_path/$options{'contname'}.raw";
+			print $raw_file "\0" x($count*$bs);
+			close ($raw_file);
 
 			$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
 		}
@@ -70,7 +74,7 @@ sub create_root
 
 	print "Creating directory: $root_mount_path/$options{'contname'}\n";
 
-	system("mkdir -p $root_mount_path/$options{'contname'}/rootfs 1>/dev/null");
+	mkpath("$root_mount_path/$options{'contname'}/rootfs");
 
 	if ($options{'rootsz'} ne 'share') {
 		print "Fixing fstab...\n";
@@ -190,7 +194,7 @@ sub create_lxc_conf
 
 	print "Creating lxc configuration file: $lxc_conf_dir/$options{'contname'}/config\n";	
 
-	system("mkdir -p $lxc_conf_dir/$options{'contname'} 1>/dev/null");
+	mkpath("$lxc_conf_dir/$options{'contname'}");
 
 	my $conf = "\
 lxc.utsname = $options{'contname'}
@@ -329,14 +333,13 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'lxc'} = new Lxc::object;
+	$lxc = new Lxc::object;
 
-	$root_mount_path = $self->{'lxc'}->get_roots_path();
-	$templates_path = $self->{'lxc'}->get_template_path();
-	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
-	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
-	$vg = $self->{'lxc'}->get_vg();
-
+	$root_mount_path = $lxc->get_roots_path();
+	$templates_path = $lxc->get_template_path();
+	$yaml_conf_dir = $lxc->get_config_path();
+	$lxc_conf_dir = $lxc->get_lxc_conf_dir();
+	$vg = $lxc->get_vg();
 
 	return $self;
 }
