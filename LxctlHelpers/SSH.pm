@@ -19,7 +19,17 @@ sub connect {
 sub execute {
     my ($self, $cmd) = @_;
     my $ssh_ch = $ssh_->channel();
+    my $output, $len;
+    $ssh_ch->ext_data('merge');
     $ssh_ch->exec($cmd);
+
+    $ssh_ch->close();
+    $ssh_ch->wait_closed();
+
+    $len = $ssh_ch->read($output,8192);
+    if ($len > 0) {
+        print "$output\n";
+    }
 }
 
 sub get_file {
