@@ -14,6 +14,7 @@ use List::Util qw[max];
 my $getters = new LxctlHelpers::getters;
 my %sizes;
 my $sep = "  ";
+my $config_reader = new LxctlHelpers::config;
 
 sub get_cpus
 {
@@ -45,7 +46,7 @@ sub get_all_info
 	my $cnt = 0;
 	my $lxc_conf_dir = $self->{lxc}->get_lxc_conf_dir();
 	my $yaml_conf_dir = $self->{lxc}->get_yaml_config_path();
-	my $config_reader = new LxctlHelpers::config;
+
 	my $vm_option_ref;
 	my %vm_option;
 	foreach my $vm (@vms) {
@@ -150,7 +151,7 @@ sub do
 	}
 
 	$all ||= 0;
-	$columns ||= "name,hostname,status,memory_mb,disksize_mb,disk_free_mb,ip,template";
+	$columns ||= $config_reader->get_option_from_main("list", "COLUMNS");
 
 	my @splitted = split(/,/, $columns);
 
