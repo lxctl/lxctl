@@ -4,35 +4,68 @@ use strict;
 use warnings;
 
 use Lxc::object;
+use LxctlHelpers::config;
+use File::Path;
+
+my $config = new LxctlHelpers::config;
 
 my %options = ();
 
+my $yaml_conf_dir;
+my $contname;
+my $root_path;
+my $lxc;
 my $lxc_conf_dir;
 
 sub _actual_start
 {
 	my ($self, $daemon) = @_;
-	$self->{'lxc'}->start($options{'contname'}, $daemon, $lxc_conf_dir."/".$options{'contname'}."/config");
+	$lxc->start($contname, $daemon, $lxc_conf_dir."/".$contname."/config");
 }
 
 sub do
 {
 	my $self = shift;
 
-	$options{'contname'} = shift
+	$contname = shift
 		or die "Name the container please!\n\n";
+
+	my $vm_option_ref;
+	my %vm_options;
+	$vm_option_ref = $config->load_file("$yaml_conf_dir/$contname.yaml");
+	%vm_options = %$vm_option_ref;
+
+	my @mount_points;
+	if (defined $vm_options{'mountpoints'}) {
+		my $mount_ref = $vm_options{'mountpoints'};
+		@mount_points = @$mount_ref;
+
+		my %mp;
+		foreach my $mp_ref (@mount_points) {
+			%mp = %$mp_ref;
+			my $cmd = "mount";
+			if (defined($mp{'fs'})) {
+				$cmd .= " -t $mp{'fs'}";
+			}
+			mkpath("$root_path/$contname/rootfs/$mp{'to'}") if (! -e "$root_path/$contname/rootfs/$mp{'to'}");
+			$cmd .= " -o $mp{'opts'} $mp{'from'} $root_path/$contname/rootfs/$mp{'to'}";
+			system("$cmd");
+		}
+	} else {
+		print "No mount points specified!\n";
+	}
 
 	eval {
 		$self->_actual_start(1);
 		sleep(1);
-		my $status = $self->{'lxc'}->status($options{'contname'});
+		my $status = $lxc->status($contname);
 		if ($status eq "STOPPED") {
 			$self->_actual_start(0);
 		}
-		print "It seems that \"$options{'contname'}\" was started.\n";
+		print "It seems that \"$contname\" was started.\n";
 	} or do {
 		print "$@";
-		die "Cannot start $options{'contname'}!\n\n";
+		die "Cannot start $contname!\n\n";
 	};
 	return;
 }
@@ -43,8 +76,10 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'lxc'} = Lxc::object->new;
-	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
+	$lxc = Lxc::object->new;
+	$yaml_conf_dir = $lxc->get_yaml_config_path();
+	$lxc_conf_dir = $lxc->get_lxc_conf_dir();
+	$root_path = $lxc->get_root_mount_path;
 
 	return $self;
 }
