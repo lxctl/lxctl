@@ -54,9 +54,9 @@ sub do
 	if (lc($old_conf{'roottype'}) eq 'file') {
 		system("rm -r $root_mount_path/$options{'contname'}.raw");
 	} elsif (lc($old_conf{'roottype'}) eq 'lvm') {
-		my $dm_vg = $vg;
-		$dm_vg =~ s/-/--/g;
-		system("dmsetup remove -c $dm_vg-$options{'contname'}");
+#		my $dm_vg = $vg;
+#		$dm_vg =~ s/-/--/g;
+#		system("dmsetup remove -c $dm_vg-$options{'contname'}");
 		system("lvremove -f /dev/$vg/$options{'contname'}");
 	}
 	system("rm -r $root_mount_path/$options{'contname'}");
