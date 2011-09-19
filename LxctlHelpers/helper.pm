@@ -185,6 +185,14 @@ sub mkfs{
 	system("yes | mkfs.$fstype $dev_name $opts 1>/dev/null");
 }
 
+sub umount #(mounted_path)
+{
+	my ($self, $mounted_path) = @_;
+	die "Nothing to umount\n" if (!defined($mounted_path));
+
+	system("umount $mounted_path");
+}
+
 sub cidr2ip #(cidr_bits)
 {
 	my ($self, $bits) = @_;

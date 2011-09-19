@@ -2,12 +2,14 @@ package Lxctl::destroy;
 
 use strict;
 use warnings;
+use autodie qw(:all);
 use Getopt::Long;
 
 use Lxc::object;
 use LxctlHelpers::helper;
 use Lxctl::set;
 use LxctlHelpers::config;
+use File::Path;
 
 my %options = ();
 
@@ -52,27 +54,25 @@ sub do
 
 	system("umount $mounted_path");
 	if (lc($old_conf{'roottype'}) eq 'file') {
-		system("rm -r $root_mount_path/$options{'contname'}.raw");
+		rmtree("$root_mount_path/$options{'contname'}.raw");
 	} elsif (lc($old_conf{'roottype'}) eq 'lvm') {
-		my $dm_vg = $vg;
-		$dm_vg =~ s/-/--/g;
-		system("dmsetup remove -c $dm_vg-$options{'contname'}");
+# HIGHLY EXPERIMENTAL. Seems to be source of some bugs.
+#		my $dm_vg = $vg;
+#		$dm_vg =~ s/-/--/g;
+#		system("dmsetup remove -c $dm_vg-$options{'contname'}");
 		system("lvremove -f /dev/$vg/$options{'contname'}");
 	}
-	system("rm -r $root_mount_path/$options{'contname'}");
-	system("rm -r $lxc_conf_dir/$options{'contname'}");
+	rmtree("$root_mount_path/$options{'contname'}");
+	rmtree("$lxc_conf_dir/$options{'contname'}");
 	if (defined($options{'configs'})) {
-		system("rm $yaml_conf_dir/$options{'contname'}.yaml");
+		rmtree("$yaml_conf_dir/$options{'contname'}.yaml");
 	}
 	
-	open(my $fstab_file, '<', "/etc/fstab") or
-		die " Failed to open /etc/fstab for reading!\n\n";
-
+	open(my $fstab_file, '<', "/etc/fstab");
 	my @fstab = <$fstab_file>;
 	close $fstab_file;
 
-	open($fstab_file, '>', "/etc/fstab") or
-		die " Failed to open /etc/fstab for writing!\n\n";
+	open($fstab_file, '>', "/etc/fstab");
 
 	for my $line (@fstab) {
 		$line = "" if $line =~ m#^$mounted_path#xs;
