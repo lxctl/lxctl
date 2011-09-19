@@ -201,10 +201,6 @@ sub cidr2ip #(cidr_bits)
 	return join('.', unpack('C4', pack('N', $bits)));
 }
 
-sub dec2ip ($) {
-	join('.', unpack('C4', pack('N', shift)));
-}
-
 sub new
 {
 	my $class = shift;

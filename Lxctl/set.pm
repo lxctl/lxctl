@@ -2,6 +2,7 @@ package Lxctl::set;
 
 use strict;
 use warnings;
+use autodie qw(:all);
 
 use Getopt::Long;
 use Digest::SHA qw(sha1_hex);
@@ -36,8 +37,7 @@ sub set_hostname
 	defined($options{'hostname'}) or return;
 	print "Setting hostname: $options{'hostname'}\n";
 
-	open(my $hostname_file, '>', "$root_mount_path/$options{'contname'}/rootfs/etc/hostname") or
-		die " Failed to open $root_mount_path/$options{'contname'}/rootfs/etc/hostname!\n\n";
+	open(my $hostname_file, '>', "$root_mount_path/$options{'contname'}/rootfs/etc/hostname");
 
 	seek $hostname_file,0,0;
 
@@ -219,10 +219,8 @@ sub set_rootsz
 
 	print "Setting root size: $desired_size\n";
 
-	die "Failed to resize root LV!\n\n"
-		if system("lvextend -L $desired_size /dev/$vg/$options{'contname'}");
-	die "Failed to resize root filesystem!\n\n"
-		if system("resize2fs /dev/$vg/$options{'contname'}");
+	system("lvextend -L $desired_size /dev/$vg/$options{'contname'}");
+	system("resize2fs /dev/$vg/$options{'contname'}");
 
 	return;
 }
@@ -272,16 +270,17 @@ sub set_autostart
 
 sub set_tz()
 {
-        my $self = shift;
+	use File::Copy "cp";
+	my $self = shift;
 
-        defined($options{'tz'}) or return;
+	defined($options{'tz'}) or return;
 
-        print "Setting timesone: $options{'tz'}...\n";
+	print "Setting timesone: $options{'tz'}...\n";
+	my $cont_root_path = "$root_mount_path/$options{'contname'}/rootfs";
 
-        -e "$root_mount_path/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
+	-e "$cont_root_path/usr/share/zoneinfo/$options{'tz'}" or die "No such timezone: $options{'tz'}!\n\n";
 
-        die "Failed to change timezone!\n\n"
-                if system("cp $root_mount_path/$options{'contname'}/rootfs/usr/share/zoneinfo/$options{'tz'} $root_mount_path/$options{'contname'}/rootfs/etc/localtime");
+	cp("$cont_root_path/usr/share/zoneinfo/$options{'tz'}", "$cont_root_path/etc/localtime");
 }
 
 sub do
