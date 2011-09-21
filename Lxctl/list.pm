@@ -76,14 +76,14 @@ sub get_all_info
 		$info{'name'} = $vm_option{'contname'};
 		$info{'cpus'} = $self->get_cpus($vm_option{'contname'});
 		eval {
-			$info{'cpu'} = $self->{lxc}->get_cgroup($vm, "cpuset.cpus");
+			$info{'cpu'} = chomp($self->{lxc}->get_cgroup($vm, "cpuset.cpus"));
 			1;
 		} or do {
 			# By default pid will got all CPUs
 			$info{'cpu'} = "All";
 		};
 		eval {
-			$info{'cpushares'} = $self->{lxc}->get_cgroup($vm, "cpu.shares");
+			$info{'cpushares'} = chomp($self->{lxc}->get_cgroup($vm, "cpu.shares"));
 			1;
 		} or do {
 			$info{'cpushares'} = 1024;

@@ -38,12 +38,14 @@ sub do
 	my @mount_points;
 	if (defined $vm_options{'mountpoints'}) {
 		my $mount_ref = $vm_options{'mountpoints'};
+#		my $mount_result = `mount`;
 		@mount_points = @$mount_ref;
 
 		my %mp;
 		foreach my $mp_ref (@mount_points) {
 			%mp = %$mp_ref;
 			my $cmd = "mount";
+#			next if ($mount_result ~= m/^$mp{'from'}/);
 			if (defined($mp{'fs'})) {
 				$cmd .= " -t $mp{'fs'}";
 			}
