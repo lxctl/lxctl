@@ -22,7 +22,7 @@ sub fool_proof
 	print "WARNING! ";
 	print color 'reset';
 	print "You are about to do something really terrible. This action may cause massive data loss.\n";
-	print "If you are sure, please enter: \"$expected_answer\" (without quotes, case sensetive)\n";
+	print "If you are sure, please enter: \"$expected_answer\" (without quotes, case sensitive or specify -f(--force) option)\n";
 	chomp($answer = <STDIN>);
 	if ("$answer" eq "$expected_answer") {
 		print "Have a lot of fun...\n";
