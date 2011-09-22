@@ -103,7 +103,7 @@ sub get_all_info
 		};
 		if ($ghost == 0) {
 			my $df = `df -B 1 $root_path`;
-			my ($total, $free) = $df =~ m/\s+(\d+)\s+(\d+)/g;
+			my ($total, $free) = $df =~ m/\s+(\d+)\s+\d+\s+(\d+)/g;
 
 			if (defined($total)) {
 				$info{'disk_total_mb'} =  sprintf("%.2f", $self->{lxc}->convert_size($total, 'MiB', 0));
