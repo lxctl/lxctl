@@ -163,6 +163,9 @@ sub check_create_options
 	my $tmp_hostname = shift @domain_tokens;
 	$options{'hostname'} ||= $tmp_hostname;
 	$options{'searchdomain'} ||= join '.', @domain_tokens;
+	if ($options{'searchdomain'} eq "") {
+		$options{'searchdomain'} = $config->get_option_from_main('set', 'SEARCHDOMAIN');
+	}
 
 	if ($options{'debug'}) {
 		foreach my $key (sort keys %options) {

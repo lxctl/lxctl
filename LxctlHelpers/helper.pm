@@ -84,6 +84,20 @@ sub delete_config #(filename, option_name)
 sub change_config #(filename, searchstring, newvalue)
 {
 	my ($self, $filename, $what, $newval) = @_;
+
+	if ( ! -e "$filename" ) {
+		# If it's invalid symlink, open will fail, but "! -e" will return true
+		# We need to unlink file before continue
+		eval {
+			unlink "$filename";
+		};
+		open(my $file, ">", "$filename");
+
+		print $file "$what $newval\n";
+
+		close($file);
+		return 0;
+	}
 	open(my $file, '<', "$filename");
 
 	my @content = <$file>;

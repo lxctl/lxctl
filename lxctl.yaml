@@ -19,5 +19,7 @@ fs:
   FS_MOUNT_OPTS: defaults,barrier=0
 os:
   OS_TEMPLATE: ubuntu-10.04-amd64
+set:
+  SEARCHDOMAIN: ru
 list:
   COLUMNS: 'name,hostname,status,memory_mb,disksize_mb,disk_free_mb,ip,template'

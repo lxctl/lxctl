@@ -47,7 +47,11 @@ sub set_hostname
 
 	my $searchdomain = $options{'searchdomain'};
 	if (!defined($options{'searchdomain'})) {
-		$searchdomain = $self->{'helper'}->get_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
+		if ( -e "$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf" ) {
+			$searchdomain = $self->{'helper'}->get_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
+		} else {
+			$searchdomain = $self->{'config'}->get_option_from_main('set', 'SEARCHDOMAIN');
+		}
 	}
 
 	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
