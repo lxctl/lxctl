@@ -11,6 +11,10 @@ my %options = ();
 
 my $lxc_conf_dir;
 
+use constant {
+	TIMEOUT => 30,
+};
+
 sub do
 {
 	my $self = shift;
@@ -25,14 +29,14 @@ sub do
 		my $status = $self->{'lxc'}->status($options{'contname'});
 		my $cnt = 0;
 		
-		while ($status eq "RUNNING" && $cnt < 300) {
+		while ($status eq "RUNNING" && $cnt < TIMEOUT) {
 			$cnt++;
 			$stop->do($options{'contname'});
 			sleep(1);
 			$status = $self->{'lxc'}->status($options{'contname'});
 		}
 
-		die "Cannot stop $options{'contname'}!" if ($cnt == 300);
+		die "Cannot stop $options{'contname'}!" if ($cnt == TIMEOUT);
 
 		$start->do($options{'contname'});
 		1;
