@@ -4,16 +4,12 @@ use strict;
 use warnings;
 
 use Lxc::object;
+use Lxctl::start;
+use Lxctl::stop;
 
 my %options = ();
 
 my $lxc_conf_dir;
-
-sub _actual_start
-{
-	my ($self, $daemon) = @_;
-	$self->{'lxc'}->start($options{'contname'}, $daemon, $lxc_conf_dir."/".$options{'contname'}."/config");
-}
 
 sub do
 {
@@ -22,23 +18,24 @@ sub do
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
 
+	my $stop = new Lxctl::stop;
+	my $start = new Lxctl::start;
+
 	eval {
-
-		$self->{'lxc'}->stop(1);
-		sleep(1);
 		my $status = $self->{'lxc'}->status($options{'contname'});
-		if ($status eq "RUNNING") {
-			$self->{'lxc'}->stop(0);
+		my $cnt = 0;
+		
+		while ($status eq "RUNNING" && $cnt < 300) {
+			$cnt++;
+			$stop->do($options{'contname'});
+			sleep(1);
+			$status = $self->{'lxc'}->status($options{'contname'});
 		}
-		print "It seems that \"$options{'contname'}\" is stopped now.\n";
 
-		$self->_actual_start(1);
-		sleep(1);
-		 $status = $self->{'lxc'}->status($options{'contname'});
-		if ($status eq "STOPPED") {
-			$self->_actual_start(0);
-		}
-		print "It seems that \"$options{'contname'}\" was started.\n";
+		die "Cannot stop $options{'contname'}!" if ($cnt == 300);
+
+		$start->do($options{'contname'});
+		1;
 	} or do {
 		print "$@";
 		die "Cannot restart $options{'contname'}!\n\n";
