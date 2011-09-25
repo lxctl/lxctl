@@ -52,7 +52,11 @@ sub do
 	my $setter = Lxctl::set->new(%options);
 	$setter->set_autostart();
 
-	system("umount $mounted_path");
+	eval {
+		system("umount $mounted_path");
+	} or do {
+		print "Nothing to umount...\n";
+	};
 	if (lc($old_conf{'roottype'}) eq 'file') {
 		rmtree("$root_mount_path/$options{'contname'}.raw");
 	} elsif (lc($old_conf{'roottype'}) eq 'lvm') {
