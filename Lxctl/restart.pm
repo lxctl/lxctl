@@ -62,7 +62,7 @@ sub new
 __END__
 =head1 NAME
 
-Lxctl::destroy
+Lxctl::restart
 
 =head1 SYNOPSIS
 
