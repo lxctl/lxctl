@@ -88,11 +88,17 @@ sub create_root
 			$additional_opts=",loop";
 		}
 		# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
-		system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
+		my %root_mp = (
+			'from' => "$what_to_mount",
+			'to' => "$root_mount_path/$options{'contname'}",
+			'fs' => "$options{'fs'}",
+			'opts' => "$options{'mountoptions'}$additional_opts",
+			);
 
+		$options{'rootfs_mp'} = \%root_mp;
 		print "Mounting FS...\n";
 
-		system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
+		system("mount -t $root_mp{'fs'} -o $root_mp{'opts'} $root_mp{'from'} $root_mp{'to'} 1>/dev/null");
 	}
 
 	return;
@@ -139,7 +145,7 @@ sub check_create_options
 	$options{'rootsz'} ||= $config->get_option_from_main('root', 'ROOT_SIZE');
 	$options{'autostart'} ||= "1";
 	$options{'roottype'} ||= $config->get_option_from_main('root', 'ROOT_TYPE');
-	
+
 	if (!defined($options{'empty'})) {
 		$options{'empty'} = 0;
 	}

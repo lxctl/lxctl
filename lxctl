@@ -226,9 +226,9 @@ B<Optional arguments:>
 	--ipaddr - display with IP addr
 
 	--hostname - display with hostname.
-	
+
 	--cgroup - display with cgroup
-		
+
 	--mount - display with mount point for rootfs
 
 	--diskspace - display with free/full size

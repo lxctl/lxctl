@@ -86,7 +86,7 @@ sub set_macaddr
 		return;	
 	}
 	defined($options{'contname'}) or return;
-	
+
 	my $mac = $self->mac_create($options{'contname'}) . ":01";
 	print "Setting MAC: $mac\n";
 	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
@@ -182,7 +182,7 @@ sub set_rootsz
 	my $self = shift;
 
 	defined($options{'rootsz'}) or return;
-	
+
 	$options{'roottype'} ||= 'lvm';
 	if (lc($options{'roottype'}) eq 'file') {
 		print "set rootsz is unsupported for root in file\n\n";

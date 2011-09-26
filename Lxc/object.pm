@@ -2,6 +2,9 @@
 
 package Lxc::object;
 
+use IO::Uncompress::Gunzip qw(gunzip);
+
+
 use warnings;
 use strict;
 use 5.010001;
@@ -200,17 +203,16 @@ sub set_conf_check {
 # Internal function
 # Check if 2-nd param is set to y or m in file by 1-st param
 sub is_inconfig {
-	my ($self, $config_name, $find) = @_;
+	my ($self, $config_ref, $find) = @_;
 	my $subname = (caller(0))[3];
-	open my $config_file, '<' , $config_name or die "$subname: Cannot open config \"$config_name\": $!";
-	while (<$config_file>) {
-		if ($_ =~/$find=[ym]+/ ) {
-			close $config_file;
+	my @config = @$config_ref;
+
+	foreach my $string (@config) {
+		if ($string =~ m/$find=[ym]/ ) {
 			return 0;
 		}
 	}
-	close $config_file;
-	
+
 	return 1;
 }
 
@@ -239,58 +241,69 @@ sub check {
 		$errors++;
 	}
 
-	if (!$self->{'skip_conf_check'}) {
-		# 5-dim array with kernel's config options.
-		# 1-st - option name
-		# 2-nd - is it required or optional
-		# 3-5 is kernel version, when this option was removed from config.
-		# if optional CONFIG is missing it'll result in warning
-		my @config_opts = (
-			["CONFIG_NAMESPACES", 1, 99, 99, 99],
-			["CONFIG_UTS_NS", 1, 99, 99, 99],
-			["CONFIG_IPC_NS", 1, 99, 99, 99],
-			["CONFIG_PID_NS", 1, 99, 99, 99],
-			["CONFIG_USER_NS", 0, 99, 99, 99],
-			["CONFIG_NET_NS", 0, 99, 99, 99],
-			["DEVPTS_MULTIPLE_INSTANCES", 1, 99, 99, 99],
-			["CONFIG_CGROUPS", 1, 99, 99, 99],
-			["CONFIG_CGROUP_NS", 0, 3, 0, 0],
-			["CONFIG_CGROUP_DEVICE", 0, 99, 99, 99],
-			["CONFIG_CGROUP_SCHED", 0, 99, 99, 99],
-			["CONFIG_CGROUP_CPUACCT", 0, 99, 99, 99],
-			["CONFIG_CGROUP_MEM_RES_CTLR", 0, 99, 99, 99],
-			["CONFIG_CPUSETS", 0, 99, 99, 99],
-			["CONFIG_VETH", 0, 99, 99, 99],
-			["CONFIG_MACVLAN", 0, 99, 99, 99],
-			["CONFIG_VLAN_8021Q", 0, 99, 99, 99]
-		);
-		my $kver = `uname -r`;
-		chop($kver);
-		my ($kver_1, $kver_2, $kver_3) = $kver =~ m/(\d+)\.(\d+)\.*(\d*)/;
-		my $kver_big = $kver_3 + $kver_2 * 1000 + $kver_1*1000*1000;
+	if ($self->{'skip_conf_check'}) {
+		return
+	}
+	# 5-dim array with kernel's config options.
+	# 1-st - option name
+	# 2-nd - is it required or optional
+	# 3-5 is kernel version, when this option was removed from config.
+	# if optional CONFIG is missing it'll result in warning
+	my @config_opts = (
+		["CONFIG_NAMESPACES", 1, 99, 99, 99],
+		["CONFIG_UTS_NS", 1, 99, 99, 99],
+		["CONFIG_IPC_NS", 1, 99, 99, 99],
+		["CONFIG_PID_NS", 1, 99, 99, 99],
+		["CONFIG_USER_NS", 0, 99, 99, 99],
+		["CONFIG_NET_NS", 0, 99, 99, 99],
+		["DEVPTS_MULTIPLE_INSTANCES", 1, 99, 99, 99],
+		["CONFIG_CGROUPS", 1, 99, 99, 99],
+		["CONFIG_CGROUP_NS", 0, 3, 0, 0],
+		["CONFIG_CGROUP_DEVICE", 0, 99, 99, 99],
+		["CONFIG_CGROUP_SCHED", 0, 99, 99, 99],
+		["CONFIG_CGROUP_CPUACCT", 0, 99, 99, 99],
+		["CONFIG_CGROUP_MEM_RES_CTLR", 0, 99, 99, 99],
+		["CONFIG_CPUSETS", 0, 99, 99, 99],
+		["CONFIG_VETH", 0, 99, 99, 99],
+		["CONFIG_MACVLAN", 0, 99, 99, 99],
+		["CONFIG_VLAN_8021Q", 0, 99, 99, 99]
+	);
+	my $kver = `uname -r`;
+	chop($kver);
+	my ($kver_1, $kver_2, $kver_3) = $kver =~ m/(\d+)\.(\d+)\.*(\d*)/;
+	my $kver_big = $kver_3 + $kver_2 * 1000 + $kver_1*1000*1000;
 
-		my $headers_config = "/lib/modules/$kver/build/.config";
-		my $config = "/boot/config-$kver";
+	my $config_fh;
+	my @config;
+	if ( -e "/boot/config-$kver" ) {
+		open($config_fh, '<', "/boot/config-$kver") or die "Can't read /boot/config-$kver: $@\n";
+		@config = <$config_fh>;
+	} elsif ( -e "/proc/config.gz" ) {
+		my $config_str;
+		my $status = gunzip("/proc/config.gz", \$config_str);
+		@config = split($/, $config_str);
+		undef($config_str);
+	} else {
+		die "No kernel config found!\n";
+	}
 
-
-		foreach my $opt (@config_opts) {
-			my $test_ver_big = @$opt[4] + @$opt[3]*1000 + @$opt[2]*1000*1000;
-			if ($test_ver_big > $kver_big) {
-				if ($self->is_inconfig($config, @$opt[0]) != 0) {
-					if (@$opt[1] == 0) {
-						print color 'bold yellow';
-						print "Warning: @$opt[0] not supported\n";
-						print color 'reset';
-						$warns++;
-					} else {
-						print color 'bold red';
-						print "Error: @$opt[0] not supported\n";
-						print color 'reset';
-						$errors++;
-					}
+	foreach my $option (@config_opts) {
+		my $test_ver_big = @$option[4] + @$option[3]*1000 + @$option[2]*1000*1000;
+		if ($test_ver_big > $kver_big) {
+			if ($self->is_inconfig(\@config, @$option[0]) != 0) {
+				if (@$option[1] == 0) {
+					print color 'bold yellow';
+					print "Warning: @$option[0] not supported\n";
+					print color 'reset';
+					$warns++;
+				} else {
+					print color 'bold red';
+					print "Error: @$option[0] not supported\n";
+					print color 'reset';
+					$errors++;
 				}
 			}
-}
+		}
 	}
 
 	if ($warns != 0 || $errors != 0) {
@@ -344,7 +357,7 @@ sub ls {
 		$vms{$key} = '';
 	}
 
-#	Listing all running vm and defining key in hash for them
+	# Listing all running vm and defining key in hash for them
 	@list = `netstat -xa`;
 	@list = grep /$self->{LXC_CONF_DIR}/, @list;
 	foreach $key (@list)
@@ -518,7 +531,7 @@ sub get_conf {
 		$conf[0] =~ s/\/\//\//;
 		chop($conf[0]);
 		close $config_file;
-		
+
 		return $conf[0];
 	} else {
 		close $config_file;
@@ -643,7 +656,7 @@ sub convert_size #(from, to, postfixed)
 	if (!defined($postfixed)) {
 		$postfixed = 1;
 	}
-	
+
 	my %convert = (
 		'b' => 0, '' => 0,
 		'k' => 1, 'kib' => 1, 'kb' => 1,

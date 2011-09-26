@@ -28,7 +28,7 @@ sub do
 	eval {
 		my $status = $self->{'lxc'}->status($options{'contname'});
 		my $cnt = 0;
-		
+
 		while ($status eq "RUNNING" && $cnt < TIMEOUT) {
 			$cnt++;
 			$stop->do($options{'contname'});

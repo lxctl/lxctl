@@ -14,7 +14,7 @@ sub fool_proof
 		sleep 5;
 		return 1;
 	}
-	
+
 	my ($self) = @_;
 	my $expected_answer = "Yes, all harm from this operation will be a result of my stupidity";
 	my $answer = "";
@@ -189,7 +189,7 @@ sub mkfs{
 	if ( ! -e "$dev_name" ) {
 		die "$subname: device doesn't exists\n";
 	}
-	
+
 	my $msg = "";
         if ($opts ne "") {
 		$msg = " with options $opts";

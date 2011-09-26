@@ -118,13 +118,13 @@ sub get_all_info
 			$info{'disk_free_mb'} = "N/A";
 			$info{'status'} = "ghost";
 		};
-		
+
 		foreach my $key (sort keys %info) {
 			if (!defined($sizes{$key}) || ($sizes{$key} < length($info{$key}))) {
 				$sizes{$key} = max(length($info{$key}), length($key));
 			}
 		}
-		
+
 		push(@vms_result, \%info);
 		$cnt++;
 	}

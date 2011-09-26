@@ -46,8 +46,8 @@ sub add
 		if (defined($options{'fs'})) {
 			$cmd .= " -t $options{'fs'}";
 		}
-		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e $options{'to'});
-		$cmd .= " -o $options{'opts'} $options{'from'} $options{'to'}";
+		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e "$root_path/$contname/rootfs/$options{'to'}");
+		$cmd .= " -o $options{'opts'} $options{'from'} $root_path/$contname/rootfs/$options{'to'}";
 		system("$cmd");
 	}
 
@@ -84,6 +84,11 @@ sub list
 		my $mount_ref = $vm_options{'mountpoints'};
 		@mount_points = @$mount_ref;
 	} else {
+		print "No mountpoints\n";
+		return;
+	}
+
+	if ($#mount_points) {
 		print "No mountpoints\n";
 		return;
 	}
@@ -191,9 +196,9 @@ sub do
 	my $list;
 	GetOptions('add' => \$add, 'del' => \$del, 'list' => \$list);
 
-#	if ($add && $del) {
-#		die "both del and add specified!\n";
-#	}
+	if (!$list && !$add && !$del) {
+		die "No options specified. Avaliable: add list del";
+	}
 
 	$self->add() if $add;
 	$self->del() if $del;

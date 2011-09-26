@@ -71,7 +71,7 @@ sub do
 	if (defined($options{'configs'})) {
 		rmtree("$yaml_conf_dir/$options{'contname'}.yaml");
 	}
-	
+
 	open(my $fstab_file, '<', "/etc/fstab");
 	my @fstab = <$fstab_file>;
 	close $fstab_file;

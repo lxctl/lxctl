@@ -116,7 +116,7 @@ sub new
 	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
 	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
 	$vg = $self->{'lxc'}->get_vg();
-	
+
 	$config = new LxctlHelpers::config;
 	return $self;
 }
