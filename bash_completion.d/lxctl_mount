@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS mount`
+LXCTL_PLUGIN_mount="--from --to --opts --fs"

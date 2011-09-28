@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS list`
+LXCTL_PLUGIN_list="--columns --raw --all --noheader"

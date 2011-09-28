@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS create`
+LXCTL_PLUGIN_create="--ipaddr --hostname --ostemplate --config --roottype --root --pkgset --rootsz --netmask --defgw --dns --macaddr --autostart --empty --save --load --debug --searchdomain --tz fs --mkfsopts --mountoptions --mtu --userpasswd --pkgopt --addpkg"

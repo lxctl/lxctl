@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS vz2lxc`
+LXCTL_PLUGIN_vz2lxc="--rootsz --cpus --cpu-shares --mem --io --fromhost --remuser --remport --remname --afterstart"

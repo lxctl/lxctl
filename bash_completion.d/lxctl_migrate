@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS migrate`
+LXCTL_PLUGIN_migrate="--rootsz --tohost --remuser --remport --remname --afterstart"

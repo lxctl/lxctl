@@ -1,0 +1,2 @@
+LXCTL_PLUGINS=`echo $LXCTL_PLUGINS set`
+LXCTL_PLUGIN_set="--ipaddr --hostname --userpasswd --nameserver --searchdomain --rootsz --netmask --defgw --dns --cpus --cpu-shares --mem --io --macaddr --autostart --timezone --mtu"
