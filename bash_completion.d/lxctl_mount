@@ -1,2 +1,3 @@
-LXCTL_PLUGINS=`echo $LXCTL_PLUGINS mount`
+LXCTL_PLUGINS="$LXCTL_PLUGINS mount"
 LXCTL_PLUGIN_mount="--from --to --opts --fs"
+LXCTL_PLUGIN_USE_VMNAME_mount="yes"
