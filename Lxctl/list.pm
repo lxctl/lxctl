@@ -15,6 +15,7 @@ my $getters = new LxctlHelpers::getters;
 my %sizes;
 my $sep = "  ";
 my $config_reader = new LxctlHelpers::config;
+my @vms;
 
 sub get_cpus
 {
@@ -41,7 +42,7 @@ sub get_cpus
 sub get_all_info
 {
 	my $self = shift;
-	my @vms = $self->{lxc}->ls();
+
 	my @vms_result;
 	my $cnt = 0;
 	my $lxc_conf_dir = $self->{lxc}->get_lxc_conf_dir();
@@ -139,15 +140,24 @@ sub do
 	my $raw;
 	my $columns;
 	my $header_printed = 0;
+	$Getopt::Long::passthrough = 1;
+	my $vm_list = $ARGV[0];
+	undef $vm_list if ($vm_list =~ m/^-+/);
 	GetOptions('columns=s' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
 
 	if ($raw) {
-		my @vms = $self->{lxc}->ls();
+		@vms = $self->{lxc}->ls();
 		foreach my $vm (@vms) {
 			print "$vm ";
 		}
 		print "\n";
 		return;
+	}
+
+	if (defined($vm_list)) {
+		@vms = split(/,/, $vm_list);
+	} else {
+		@vms = $self->{lxc}->ls();
 	}
 
 	$all ||= 0;
