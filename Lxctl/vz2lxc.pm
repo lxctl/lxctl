@@ -25,7 +25,7 @@ sub migrate_get_opt
 	my $self = shift;
 
 	GetOptions(\%options, 'rootsz=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 'fromhost=s', 
-		'remuser=s', 'remport=s', 'remname=s', 'afterstart!');
+		'remuser=s', 'remport=s', 'remname=s', '--continue!' 'afterstart!');
 
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
@@ -74,7 +74,7 @@ sub vz_migrate
 
 	print "Rsync'ing VZ container...\n";
 
-	die "Failed to rsync root filesystem!\n\n"
+	print "There were some errors during rsyncing root filesystem. It's definetely NOT okay if it was the only rsync pass.\n\n"
 		if system("rsync $rsync_opts -e ssh $options{'remuser'}\@$options{'fromhost'}:/var/lib/vz/root/$options{'remname'}/ $root_mount_path/$options{'contname'}/rootfs/ 1>/dev/null");
 
 	$self->re_rsync();
