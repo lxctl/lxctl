@@ -40,16 +40,16 @@ sub do
 	# mount root
 	my $mp_ref = $vm_options{'rootfs_mp'};
 	my %mp = %$mp_ref;
-	print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
-	print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
+#	print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
+#	print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
 	system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") if ($mount_result !~ m/on $mp{'to'}/);
-	if (defined $vm_options{'mountpoints'}) {
+	if (defined $vm_options{'mountpoints'}) { {
 		my $mount_ref = $vm_options{'mountpoints'};
 
 		@mount_points = @$mount_ref;
 		if ($#mount_points == -1 ) {
 			print "No mount points specified!\n";
-			break;
+			last;
 		}
 
 		#TODO: Move to mount module.
@@ -65,7 +65,7 @@ sub do
 			$cmd .= " -o $mp{'opts'} $mp{'from'} $root_path/$contname/rootfs/$mp{'to'}";
 			system("$cmd");
 		}
-	} else {
+	} } else {
 		print "No mount points specified!\n";
 	}
 
