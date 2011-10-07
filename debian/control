@@ -1,11 +1,11 @@
 Source: lxctl
 Section: misc
 Priority: extra
-Maintainer: Pavel Potapenkov <oxcd8o@yandex-team.ru>
+Maintainer: Rashit Azizbaev <syndicut@gmail.com>
 Build-Depends: debhelper (>= 7.0.50~)
 Standards-Version: 3.9.1
 Homepage: http://lxc.tl
-Vcs-Git: git://github.com/lxctl/lxctl.git
+Vcs-Git: git://github.com/syndicut/lxctl.git
 Vcs-Browser: https://github.com/lxctl/lxctl
 
 Package: lxctl
