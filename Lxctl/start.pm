@@ -56,13 +56,15 @@ sub do
 		foreach my $mp_ref (@mount_points) {
 			%mp = %$mp_ref;
 			my $cmd = "mount";
-
-			next if ($mount_result =~ m/^on $mp{'to'}/);
+			my $to = quotemeta("$root_path/$contname/rootfs$mp{'to'}");
+			
+			next if ($mount_result =~ /on $to/);
+			print "yes" if ($mount_result =~ m!on $to!);
 			if (defined($mp{'fs'})) {
 				$cmd .= " -t $mp{'fs'}";
 			}
-			mkpath("$root_path/$contname/rootfs/$mp{'to'}") if (! -e "$root_path/$contname/rootfs/$mp{'to'}");
-			$cmd .= " -o $mp{'opts'} $mp{'from'} $root_path/$contname/rootfs/$mp{'to'}";
+			mkpath("$to") if (! -e "$to");
+			$cmd .= " -o $mp{'opts'} $mp{'from'} $to";
 			system("$cmd");
 		}
 	} } else {
