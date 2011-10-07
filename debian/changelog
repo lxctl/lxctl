@@ -1,3 +1,37 @@
+lxctl (0.2.dev+git+76b214af562b578ddd28a3feb89690fd5dc7afeb) lucid; urgency=low
+
+  * Changed maintainer and package name
+  * Fix some bugs in start. Debug output commented out.
+  * Small improvement of vz2lxc. Now it does not die after failed first rsync pass.
+  * Added ability to list only vm's from 3-rd parameter.
+  * Fixed autocompletion. Finally.
+  * First stage of bash completion refactoring
+  * Some continious cleanups and some work on mount module.
+  * fixed pod Signed-off-by: Denis Zaitsev <dzaitsev@yandex-team.ru>
+  * Some fixes for Lxctl/destroy
+  * Some additional fixes to restart process.
+  * Merge branch 'master' into refactoring
+  * Cleanups for restart
+  * Some additional fixes
+  * added restart function
+  * added restart function.
+  * Fixed free size display in Lxctl/list
+  * Merge branch 'master' into refactoring
+  * Port fix from master branch
+  * 	fixed fool_proof sub message Signed-off-by: Denis Zaitsev <dzaitsev@yandex-team.ru>
+  * Fixed bug in list (need to chomp results)
+  * Experimental mount patch. Adds ability to do any mounts.
+  * Some other cleanups: autodie, remove some obsolete internal functions, etc.
+  * Make lvremove less offensive.
+  * Some cleanups in destroy
+  * Default column list moved to config
+  * Fixed bug when column parameter was ignored.
+  * list now can print only info, without headers. Default max mem is 1EB now, not 0.
+  * Closes #21 . Refactor command list.
+  * SSH helper now should print all output.
+
+ -- Rashit Azizbaev <syndicut@gmail.com>  Fri, 07 Oct 2011 17:49:13 +0400
+
 lxctl (0.2.13) lucid; urgency=low
 
   * Migration works. Well, at least it seems so.
