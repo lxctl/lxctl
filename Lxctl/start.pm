@@ -59,7 +59,6 @@ sub do
 			my $to = quotemeta("$root_path/$contname/rootfs$mp{'to'}");
 			
 			next if ($mount_result =~ /on $to/);
-			print "yes" if ($mount_result =~ m!on $to!);
 			if (defined($mp{'fs'})) {
 				$cmd .= " -t $mp{'fs'}";
 			}
