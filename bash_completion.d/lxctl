@@ -24,8 +24,7 @@ _lxctl()
                         use_vmname="\${LXCTL_PLUGIN_USE_VMNAME_$command}"
                         use_vmname=`eval echo "$use_vmname"`
                         if [ $use_vmname == "yes" ]; then
-                                #LIST=$(lxctl list --raw 2>/dev/null)
-                                LIST=$(echo "1 2 3")
+                                LIST=$(lxctl list --raw 2>/dev/null)
                                 COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
                         else
 			        params="\${LXCTL_PLUGIN_$command}"
