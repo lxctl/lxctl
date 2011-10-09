@@ -163,7 +163,7 @@ sub check_create_options
 		}
 		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
 		$options{'dns'} || print "You did not specify DNS! Using default.\n";
-	};
+	}
 
 	my @domain_tokens = split(/\./, $options{'contname'});
 	my $tmp_hostname = shift @domain_tokens;
@@ -281,6 +281,7 @@ sub deploy_packets
 
 	print "Adding packages: $options{'addpkg'}\n";
 
+	## Deb only
 	system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
 
 	return;
