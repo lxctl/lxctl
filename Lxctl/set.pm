@@ -221,6 +221,8 @@ sub set_rootsz
 
 	$desired_size .= $lvm_info{'size_unit'};
 
+        $options{'rootsz'} = $desired_size;
+
 	print "Setting root size: $desired_size\n";
 
 	system("lvextend -L $desired_size /dev/$vg/$options{'contname'}");
