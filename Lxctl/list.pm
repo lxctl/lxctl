@@ -142,7 +142,8 @@ sub do
 	my $header_printed = 0;
 	$Getopt::Long::passthrough = 1;
 	my $vm_list = $ARGV[0];
-	undef $vm_list if ($vm_list =~ m/^-+/);
+	# First we should check if $vm_list is defined
+	undef $vm_list if ($vm_list && $vm_list =~ m/^-+/);
 	GetOptions('columns=s' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
 
 	if ($raw) {
