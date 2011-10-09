@@ -24,12 +24,14 @@ sub add
 	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'from=s', 'to=s', 'opts=s', 'fs=s');
-	if (!defined($options{'from'}) || !defined($options{'to'})) {
-		die "Don't know what to mount! Aborting...\n";
-	}
+
+	$options{'from'} || die "Don't know what to mount.\n\n";
+	$options{'to'} || die "Don't know where to mount.\n\n";
+
+	-e $options{'from'} || die "You are trying to mount void. Lxctl does not able to do it. Yet.\n\n";
 
 	if (!defined($options{'opts'})) {
-		print "No options specified, autoguessing...\n";
+		print "No options specified, using telepathy...\n";
 		if ( -d $options{'from'} ) {
 			$options{'opts'} = "bind";
 		} elsif ( -e $options{'from'} ) {
@@ -37,15 +39,9 @@ sub add
 		}
 	}
 
-	if ( ! -e $options{'from'} ) {
-		die "Nothing to mount, exiting...\n";
-	}
-
 	if ($lxc->status($contname) eq "RUNNING") {
 		my $cmd = "mount";
-		if (defined($options{'fs'})) {
-			$cmd .= " -t $options{'fs'}";
-		}
+		$cmd .= " -t $options{'fs'}" if defined($options{'fs'});
 		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e "$root_path/$contname/rootfs/$options{'to'}");
 		$cmd .= " -o $options{'opts'} $options{'from'} $root_path/$contname/rootfs/$options{'to'}";
 		system("$cmd");
@@ -103,10 +99,8 @@ sub list
 	foreach my $mp_ref (@mount_points) {
 		%mp = %$mp_ref;
 		foreach my $key (split(/,/, $columns)) {
-			if (defined($mp{$key})) {
-				if (!defined($sizes{$key}) || ($sizes{$key} < length($mp{$key}))) {
-					$sizes{$key} = length($mp{$key});
-				}
+			if (defined($mp{$key}) && (!defined($sizes{$key}) || $sizes{$key} < length($mp{$key}))) {
+				$sizes{$key} = length($mp{$key});
 			}
 		}
 	}
@@ -140,9 +134,7 @@ sub del
 	$Getopt::Long::passthrough = 1;
 	GetOptions('id=i' => \$id);
 
-	if (!defined($id)) {
-		die "No id specified, don't know what to delete\n";
-	}
+	die "No id specified, don't know what to delete.\n\n" if !defined($id);
 
 	my $vm_option_ref;
 	my %vm_options;
@@ -164,15 +156,13 @@ sub del
 		$cnt++;
 		if ($cnt != $id) {
 			push(@new_array, $val)
-		} else {
-			if ($lxc->status($contname) eq "RUNNING") {
-				my %mount = %$val;
-				my $cmd = "umount -r -f $root_path/$contname/rootfs/$mount{'to'}";
-				eval {
-					system("$cmd");
-				} or do {
-					print "There was a problem while umounting: $@\n";
-				}
+		} elsif ($lxc->status($contname) eq "RUNNING") {
+			my %mount = %$val;
+			my $cmd = "umount -r -f $root_path/$contname/rootfs/$mount{'to'}";
+			eval {
+				system("$cmd");
+			} or do {
+				print "There was a problem while umounting: $@\n";
 			}
 		}
 	}
@@ -196,9 +186,12 @@ sub do
 	my $list;
 	GetOptions('add' => \$add, 'del' => \$del, 'list' => \$list);
 
-	if (!$list && !$add && !$del) {
-		die "No options specified. Avaliable: add list del";
-	}
+	my $opts = 0;
+	$opts += 1 if $add;
+	$opts += 1 if $del;
+	$opts += 1 if $list;
+	die "No action options specified. Avaliable: --add, --list or --del.\n\n" if $opts < 1;
+	die "Specify only ONE of --add, --list or --del.\n\n" if $opts > 1;
 
 	$self->add() if $add;
 	$self->del() if $del;
