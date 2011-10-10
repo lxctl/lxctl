@@ -36,13 +36,13 @@ sub do
 			$status = $self->{'lxc'}->status($options{'contname'});
 		}
 
-		die "Cannot stop $options{'contname'}!" if ($cnt == TIMEOUT);
+		die "Cannot stop $options{'contname'}.\n\n" if ($cnt == TIMEOUT);
 
 		$start->do($options{'contname'});
 		1;
 	} or do {
 		print "$@";
-		die "Cannot restart $options{'contname'}!\n\n";
+		die "Cannot restart $options{'contname'}.\n\n";
 	};
 	return;
 }
