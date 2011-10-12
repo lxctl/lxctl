@@ -175,7 +175,7 @@ sub do
 			if ($header_printed == 0) {
 				foreach my $key (sort keys %vm_hash) {
 					$tmp_string = "%".$sizes{$key}."s$sep";
-					printf "$tmp_string", "$key";
+					printf "$tmp_string", uc("$key");
 				}
 				print "\n";
 				$header_printed = 1;
@@ -191,7 +191,7 @@ sub do
 			if ($header_printed == 0) {
 				foreach my $key (@splitted) {
 					if (defined($vm_hash{$key})) {
-						printf "%".$sizes{$key}."s$sep", "$key";
+						printf "%".$sizes{$key}."s$sep", uc("$key");
 					}
 				}
 				print "\n";
