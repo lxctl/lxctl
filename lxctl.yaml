@@ -22,4 +22,4 @@ os:
 set:
   SEARCHDOMAIN: ru
 list:
-  COLUMNS: 'name,hostname,status,memory_mb,disksize_mb,disk_free_mb,ip,template'
+  COLUMNS: 'name,disk_free_mb,status,ip,hostname'
