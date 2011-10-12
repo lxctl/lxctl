@@ -142,7 +142,8 @@ sub do
 	my $header_printed = 0;
 	$Getopt::Long::passthrough = 1;
 	my $vm_list = $ARGV[0];
-	undef $vm_list if ($vm_list =~ m/^-+/);
+	$vm_list ||= "";
+	$vm_list = "" if ($vm_list =~ m/^-+/);
 	GetOptions('columns=s' => \$columns, 'raw' => \$raw, 'all' => \$all, 'noheader' => \$header_printed);
 
 	if ($raw) {
@@ -154,7 +155,7 @@ sub do
 		return;
 	}
 
-	if (defined($vm_list)) {
+	if ($vm_list ne "") {
 		@vms = split(/,/, $vm_list);
 	} else {
 		@vms = $self->{lxc}->ls();
