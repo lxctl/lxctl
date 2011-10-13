@@ -50,7 +50,7 @@ sub check_root_in_config
 		chomp $mp;
 		use Term::ANSIColor;
 		print color "bold red";
-		print "Removing $mp from /etc/fstab.\n CHACK IT! Backup will be saved at /etc/fstab.bak.\n\n";
+		print "Removing $mp from /etc/fstab.\nCHECK IT! Backup will be saved at /etc/fstab.bak.\n\n";
 		print color "reset";
 		system("sed -i.bak 's#$mp##' /etc/fstab");
 
