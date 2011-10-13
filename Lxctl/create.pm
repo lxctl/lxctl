@@ -88,11 +88,17 @@ sub create_root
 			$additional_opts=",loop";
 		}
 		# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
-		system("echo '$what_to_mount $root_mount_path/$options{'contname'} $options{'fs'} $options{'mountoptions'}$additional_opts 0 0' >> /etc/fstab");
+		my %root_mp = (
+			'from' => "$what_to_mount",
+			'to' => "$root_mount_path/$options{'contname'}",
+			'fs' => "$options{'fs'}",
+			'opts' => "$options{'mountoptions'}$additional_opts",
+			);
 
+		$options{'rootfs_mp'} = \%root_mp;
 		print "Mounting FS...\n";
 
-		system("mount $root_mount_path/$options{'contname'} 1>/dev/null");
+		system("mount -t $root_mp{'fs'} -o $root_mp{'opts'} $root_mp{'from'} $root_mp{'to'} 1>/dev/null");
 	}
 
 	return;
@@ -139,7 +145,7 @@ sub check_create_options
 	$options{'rootsz'} ||= $config->get_option_from_main('root', 'ROOT_SIZE');
 	$options{'autostart'} ||= "1";
 	$options{'roottype'} ||= $config->get_option_from_main('root', 'ROOT_TYPE');
-	
+
 	if (!defined($options{'empty'})) {
 		$options{'empty'} = 0;
 	}
@@ -157,12 +163,15 @@ sub check_create_options
 		}
 		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
 		$options{'dns'} || print "You did not specify DNS! Using default.\n";
-	};
+	}
 
 	my @domain_tokens = split(/\./, $options{'contname'});
 	my $tmp_hostname = shift @domain_tokens;
 	$options{'hostname'} ||= $tmp_hostname;
 	$options{'searchdomain'} ||= join '.', @domain_tokens;
+	if ($options{'searchdomain'} eq "") {
+		$options{'searchdomain'} = $config->get_option_from_main('set', 'SEARCHDOMAIN');
+	}
 
 	if ($options{'debug'}) {
 		foreach my $key (sort keys %options) {
@@ -272,6 +281,7 @@ sub deploy_packets
 
 	print "Adding packages: $options{'addpkg'}\n";
 
+	## Deb only
 	system("chroot $root_mount_path/$options{'contname'}/rootfs/ apt-get $options{'pkgopt'} install $options{'addpkg'}");
 
 	return;
@@ -319,6 +329,8 @@ sub do
 	}
 
 	$setter->set_autostart();
+
+	$options{'api_ver'} = $config->get_api_ver();
 
 	$options{'save'} && $config->save_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 

@@ -1,0 +1,3 @@
+LXCTL_PLUGINS="$LXCTL_PLUGINS unfreeze"
+LXCTL_PLUGIN_unfreeze=""
+LXCTL_PLUGIN_USE_VMNAME_unfreeze="yes"

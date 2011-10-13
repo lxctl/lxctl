@@ -36,7 +36,7 @@ sub migrate_get_opt
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
 
-    $ssh = LxctlHelpers::SSH->connect($options{'tohost'}, $options{'remuser'}, '');
+    $ssh = LxctlHelpers::SSH->connect($options{'tohost'}, $options{'remuser'}, $options{'remport'});
 }
 
 sub re_rsync
@@ -95,7 +95,7 @@ sub remote_deploy
 
     print "Creating remote container...\n";
 
-    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml >/tmp/lxctl.log.out 2>/tmp/lxctl.log.err")
+    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml")
         or die "Failed to create remote container.\n\n";
 
     print "Start first rsync pass...\n";

@@ -14,7 +14,7 @@ sub fool_proof
 		sleep 5;
 		return 1;
 	}
-	
+
 	my ($self) = @_;
 	my $expected_answer = "Yes, all harm from this operation will be a result of my stupidity";
 	my $answer = "";
@@ -84,6 +84,20 @@ sub delete_config #(filename, option_name)
 sub change_config #(filename, searchstring, newvalue)
 {
 	my ($self, $filename, $what, $newval) = @_;
+
+	if ( ! -e "$filename" ) {
+		# If it's invalid symlink, open will fail, but "! -e" will return true
+		# We need to unlink file before continue
+		eval {
+			unlink "$filename";
+		};
+		open(my $file, ">", "$filename");
+
+		print $file "$what $newval\n";
+
+		close($file);
+		return 0;
+	}
 	open(my $file, '<', "$filename");
 
 	my @content = <$file>;
@@ -175,7 +189,7 @@ sub mkfs{
 	if ( ! -e "$dev_name" ) {
 		die "$subname: device doesn't exists\n";
 	}
-	
+
 	my $msg = "";
         if ($opts ne "") {
 		$msg = " with options $opts";
@@ -185,16 +199,20 @@ sub mkfs{
 	system("yes | mkfs.$fstype $dev_name $opts 1>/dev/null");
 }
 
+sub umount #(mounted_path)
+{
+	my ($self, $mounted_path) = @_;
+	die "Nothing to umount\n" if (!defined($mounted_path));
+
+	system("umount $mounted_path");
+}
+
 sub cidr2ip #(cidr_bits)
 {
 	my ($self, $bits) = @_;
 
 	$bits = 2**32 - 2**(32-$bits);
 	return join('.', unpack('C4', pack('N', $bits)));
-}
-
-sub dec2ip ($) {
-	join('.', unpack('C4', pack('N', shift)));
 }
 
 sub new

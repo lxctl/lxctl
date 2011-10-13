@@ -16,7 +16,8 @@ use LxctlHelpers::helper;
 use LxctlHelpers::config;
 
 
-our $version = "0.2.13";
+our $version = "0.3.0";
+our $api_ver = 1;
 
 our $Lxc = Lxc::object->new;
 
@@ -226,9 +227,9 @@ B<Optional arguments:>
 	--ipaddr - display with IP addr
 
 	--hostname - display with hostname.
-	
+
 	--cgroup - display with cgroup
-		
+
 	--mount - display with mount point for rootfs
 
 	--diskspace - display with free/full size

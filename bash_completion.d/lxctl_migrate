@@ -1,0 +1,3 @@
+LXCTL_PLUGINS="$LXCTL_PLUGINS migrate"
+LXCTL_PLUGIN_migrate="--rootsz --tohost --remuser --remport --remname --afterstart"
+LXCTL_PLUGIN_USE_VMNAME_migrate="yes"

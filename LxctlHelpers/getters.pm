@@ -16,14 +16,16 @@ sub get_ip{
         my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
         $path = $path . "/etc/network/interfaces";
 
-        open my $config_file, '<', "$path" or return "N/A";
+        open my $config_file, '<', "$path" or return "0.0.0.0";
 
         my @interfaces = <$config_file>;
         my @ip = grep { /address / } @interfaces;
+	return "0.0.0.0" if (scalar(@ip) == 0);
         $ip[0] =~ s/  address //;
-        chop($ip[0]);
+	close($config_file);
+	return "0.0.0.0" if (!defined($ip[0]));
+	chop($ip[0]);
 
-        close($config_file);
 
         return "$ip[0]";
 }

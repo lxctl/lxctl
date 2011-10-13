@@ -9,67 +9,40 @@ _lxctl()
     cur=`_get_cword`
     command=${COMP_WORDS[1]}
 
-    SET_CREATE_OPTS="--macaddr= --autostart= --ipaddr= --macaddr= --config= --root= --pkgset= --hostname= --userpasswd= --onboot= --nameserver= --searchdomain= --ostemplate= --rootsz= --netmask= --mask= --defgw= --gw= --dns= --load= --tz="
-    SET_OPTS="$SET_CREATE_OPTS --cpus= --cpu-shares= --mem= --io="
-    CREATE_OPTS="$SET_CREATE_OPTS --empty --debug --save --no-save"
-    MIGRATE_OPTS="$SET_OPTS --tohost= --remuser= --remport= --remname= --clone= --afterstart= "
-    VZ2LXC_OPTS="--rootsz= --cpus= --cpu-shares= --mem= --io= --fromhost= --remuser= --remport= --remname= --afterstart="
-
-    BUILTIN="create list destroy enter freeze unfreeze migrate set start stop --man --help --version vz2lxc"
+    BUILTIN="--man --help --version"
 
     case $COMP_CWORD in
         1)
             COMMANDS=`echo $BUILTIN $LXCTL_PLUGINS`
-#            COMPREPLY=( $( compgen -W "create list destroy enter \
-#                freeze unfreeze migrate set start stop --man --help --version\
-#                vz2lxc" -- "$cur" ) )
             COMPREPLY=( $( compgen -W "$COMMANDS" -- "$cur" ) )
             ;;
         2)
             case $command in
-                list)
-			COMPREPLY=( $( compgen -W "--all --ipaddr --diskspace --hostname --mount --cgroup --raw" -- "$cur" ) ) 
-                    ;;
-		vz2lxc)
-		   ;;
-		create)
-			COMPREPLY=( $( compgen -W "$CREATE_OPTS" -- "$cur" ) )
-		    ;;
+                '--help'|'--man'|'--version')
+                ;;
 		*)
-			found=0
-			for cmd in $BUILTIN ; do
-				if [ $command = $cmd ] ; then
-					LIST=$(lxctl list --raw 2>/dev/null)
-					COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
-					found=1
-				fi
-			done
-
-			if [ $found -eq 0 ] ; then
-				params="\${LXCTL_PLUGIN_$command}"
-				params=`eval echo "$params"`
-				if [ -n "$params" ] ; then
-					COMPREPLY=( $( compgen -W "$params" -- "$cur" ) )
-				fi
-			fi
+                        use_vmname="\${LXCTL_PLUGIN_USE_VMNAME_$command}"
+                        use_vmname=`eval echo "$use_vmname"`
+                        if [ $use_vmname == "yes" ]; then
+                                LIST=$(lxctl list --raw 2>/dev/null)
+                                COMPREPLY=( $( compgen -W "$LIST" -- "$cur" ) )
+                        else
+			        params="\${LXCTL_PLUGIN_$command}"
+			        params=`eval echo "$params"`
+			        if [ -n "$params" ] ; then
+			        	COMPREPLY=( $( compgen -W "$params" -- "$cur" ) )
+			        fi
+                        fi
 		esac
             ;;
 	*)
 	    case $command in
-		vz2lxc)
-			COMPREPLY=( $( compgen -W "$VZ2LXC_OPTS" -- "$cur" ) )
-		    ;;
-		migrate)
-			COMPREPLY=( $( compgen -W "$MIGRATE_OPTS" -- "$cur" ) )
-		    ;;
-                set)
-                  	COMPREPLY=( $( compgen -W "$SET_OPTS" -- "$cur" ) )
-            	    ;;
-		create)
-			COMPREPLY=( $( compgen -W "$CREATE_OPTS" -- "$cur" ) )
-		    ;;
-
 		*)
+                    params="\${LXCTL_PLUGIN_$command}"
+                    params=`eval echo "$params"`
+                    if [ -n "$params" ] ; then
+                        COMPREPLY=( $( compgen -W "$params" -- "$cur" ) )
+                    fi
 		    ;;
 	    esac
     esac

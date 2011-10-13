@@ -1,0 +1,3 @@
+LXCTL_PLUGINS="$LXCTL_PLUGINS destroy"
+LXCTL_PLUGIN_destroy=""
+LXCTL_PLUGIN_USE_VMNAME_destroy="yes"
