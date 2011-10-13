@@ -107,6 +107,14 @@ sub load_file
 	return $hash
 }
 
+#Current config API version
+sub get_api_ver
+{
+	my $self = shift;
+
+	return 1;
+}
+
 # Loads hash from file, then modifys it whti hash from 1-st arg
 # After that writes back to file.
 sub change_hash

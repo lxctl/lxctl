@@ -28,6 +28,12 @@ sub check_root_in_config
 {
 	my ($self, %vm_options) = @_;
 
+	if (defined($vm_options{'api_ver'}) && $vm_options{'api_ver'} == $config->get_api_ver()) {
+		die "$yaml_conf_dir/$contname.yaml has API version $vm_options{'api_ver'} (and current is ".$config->get_api_ver().") and has no root_mp statement. Fix it.\n\n";
+	}
+
+	$vm_options{'api_ver'} = $config->get_api_ver();
+
 	open(my $fstab, '<', '/etc/fstab');
 	my @mpoints = <$fstab>;
 	close $fstab;
