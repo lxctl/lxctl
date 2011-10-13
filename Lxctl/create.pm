@@ -330,6 +330,8 @@ sub do
 
 	$setter->set_autostart();
 
+	$options{'api_ver'} = $config->get_api_ver();
+
 	$options{'save'} && $config->save_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 
 	print "Container $options{'contname'}' created.\n";
