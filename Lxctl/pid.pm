@@ -55,7 +55,7 @@ sub do
 
 	my @pids = ('PID');
 	my @names = ('NAME');
-	my @cts = ('CT NAME');
+	my @cts = ('CT_NAME');
 
 	my @tmp_pids = split(/,/, $pidlist);
 	for my $pid (@tmp_pids) {
