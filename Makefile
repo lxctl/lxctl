@@ -17,6 +17,7 @@ install:
 	install -D bash_completion.d/lxctl_start $(DESTDIR)/etc/bash_completion.d/lxctl_start
 	install -D bash_completion.d/lxctl_stop $(DESTDIR)/etc/bash_completion.d/lxctl_stop
 	install -D bash_completion.d/lxctl_unfreeze $(DESTDIR)/etc/bash_completion.d/lxctl_unfreeze
+	install -D bash_completion.d/lxctl_pid $(DESTDIR)/etc/bash_completion.d/lxctl_pid
 	install -D bash_completion.d/lxctl_vz2lxc $(DESTDIR)/etc/bash_completion.d/lxctl_vz2lxc
 	
 	install -d $(DESTDIR)/usr/lib/perl/5.10/Lxc
