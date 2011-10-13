@@ -64,9 +64,10 @@ sub create_root
 			my $count = $lxc->convert_size($options{'rootsz'}, 'b')/$bs;
 
 			# Creating empty file of desired size. It's a bit slower then system dd, but still rather fast (around 10% slower then dd)
-			open my $raw_file, '>' , "$root_mount_path/$options{'contname'}.raw";
-			print $raw_file "\0" x($count*$bs);
-			close ($raw_file);
+			system("dd if=/dev/zero of=$root_mount_path/$options{'contname'}.raw bs=$bs count=$count");
+#			open my $raw_file, '>' , "$root_mount_path/$options{'contname'}.raw";
+#			print $raw_file "\0" x($count*$bs);
+#			close ($raw_file);
 
 			$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
 		}
@@ -114,7 +115,7 @@ sub check_create_options
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
-		'pkgopt=s', 'addpkg=s');
+		'pkgopt=s', 'addpkg=s', 'ifname=s');
 
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
@@ -308,6 +309,15 @@ sub do
 	$self->create_root();
 	$self->create_lxc_conf();
 
+	if (!defined($options{'ifname'})) {
+		eval {
+			$options{'ifname'} = $config->get_option_from_main('set', "IFNAME");
+			1;
+		} or do {
+			$options{'ifname'} = "mac";
+		};
+	}
+
 	my $setter = Lxctl::set->new(%options);
 	$setter->set_macaddr();
 
@@ -324,6 +334,7 @@ sub do
 		$setter->set_tz();
 		$setter->set_mtu();
 		$setter->set_userpasswd();
+		$setter->set_ifname();
 
 		$self->deploy_packets();
 	}

@@ -21,5 +21,6 @@ os:
   OS_TEMPLATE: ubuntu-10.04-amd64
 set:
   SEARCHDOMAIN: ru
+  IFNAME: 'ip'
 list:
   COLUMNS: 'name,disk_free_mb,status,ip,hostname'

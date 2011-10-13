@@ -89,9 +89,10 @@ sub set_macaddr
 	}
 	defined($options{'contname'}) or return;
 
-	my $mac = $self->mac_create($options{'contname'}) . ":01";
+	my $mac = "01:" . $self->mac_create($options{'contname'});
 	print "Setting MAC: $mac\n";
 	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
+	$options{'macaddr'} = $mac;
 	return;
 } 
 
@@ -127,7 +128,32 @@ sub set_ifname
 	my $self = shift;
 	defined($options{'ifname'}) or return;
 
-	print "Setting interface (host part) name to $options{'ifname'}\n";
+	if ($options{'ifname'} eq "mac") {
+		$options{'ifname'} = $options{'mac'};
+		if (!defined($options{'ifname'})) {
+			$options{'ifname'} = $config->get_option_from_yaml("$yaml_conf_dir/$options{'contname'}.yaml", "", "macaddr");
+		}
+
+		if (!defined($options{'ifname'})) {
+			$options{'ifname'} = $self->{'lxc'}->get_conf($options{'contname'}, "lxc.network.hwaddr");
+			$options{'macaddr'} = $options{'ifname'};
+		}
+
+		$options{'ifname'} =~ s/^..:(.*)/$1/;
+		$options{'ifname'} =~ s/://g;
+
+		$options{'ifname'} = "veth" . $options{'ifname'};
+	} elsif ($options{'ifname'} eq "ip") {
+		if (!defined($options{'ipaddr'})) {
+			$options{'ipaddr'} = $config->get_option_from_yaml("$yaml_conf_dir/$options{'contname'}.yaml", "", "ipaddr");
+			die "No IP address specified" if (!defined($options{'ipaddr'}));
+		}
+		$options{'ifname'} = $options{'ipaddr'};
+		$options{'ifname'} =~ s/\d+\.\d+\.(\d+).(\d+)/$1$2/g;
+		$options{'ifname'} = "lxc" . $options{'ifname'};
+	}
+
+	print "Setting interface (host part) name to $options{'ifname'}\n";	
 
 	my $size = bytes::length($options{'ifname'});
 
