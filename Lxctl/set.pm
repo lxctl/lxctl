@@ -20,6 +20,8 @@ my $lxc_conf_dir;
 my $root_mount_path;
 my $templates_path;
 my $vg;
+my $config = new LxctlHelpers::config;
+
 
 sub mac_create
 {
@@ -50,7 +52,7 @@ sub set_hostname
 		if ( -e "$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf" ) {
 			$searchdomain = $self->{'helper'}->get_config("$root_mount_path/$options{'contname'}/rootfs/etc/resolv.conf", 'search');
 		} else {
-			$searchdomain = $self->{'config'}->get_option_from_main('set', 'SEARCHDOMAIN');
+			$searchdomain = $config->get_option_from_main('set', 'SEARCHDOMAIN');
 		}
 	}
 
@@ -117,6 +119,37 @@ sub set_mtu
 	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'mtu', $options{'mtu'});
 	$self->{'helper'}->change_config("$lxc_conf_dir/$options{'contname'}/config", 'lxc.network.mtu = ', $options{'mtu'});
 
+	return;
+}
+
+sub set_ifname
+{
+	my $self = shift;
+	defined($options{'ifname'}) or return;
+
+	print "Setting interface (host part) name to $options{'ifname'}\n";
+
+	my $size = bytes::length($options{'ifname'});
+
+	die "Wow... that thing is big... too big for me! Maximum I know how to handle is 15 bytes\n" if ($size > 15);
+
+	my $old_name;
+	my $step = 1;
+	eval {
+		$old_name = $config->get_option_from_yaml("$yaml_conf_dir/$options{'contname'}.yaml", "", "ifname") or die;
+		$step++;
+		system("ip link set $old_name down");
+		$step++;
+		system("ip link set $old_name name $options{'ifname'}");
+		$step++;
+		system("ip link set $options{'ifname'} up");
+		$step++;
+		1;
+	} or do {
+		print "THIS IS NOT FATAL: Failed to do step $step, can't change ifname of interface in runtime. Please, restart container manualy.\n";
+	};
+
+	$self->{'helper'}->change_config("$lxc_conf_dir/$options{'contname'}/config", 'lxc.network.link', $options{'ifname'});
 	return;
 }
 
@@ -296,10 +329,12 @@ sub do
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
 
+	die "Strange, rare name... I don't know how to deal with it.\n" if ($options{'contname'} =~ m/^-.*/);
+
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'userpasswd=s', 
 		'nameserver=s', 'searchdomain=s', 'rootsz=s', 
 		'netmask|mask=s', 'defgw|gw=s', 'dns=s', 'cpus=s', 'cpu-shares=s', 'mem=s', 'io=s', 
-		'macaddr=s', 'autostart=s', 'tz|timezone=s', 'mtu=i');
+		'macaddr=s', 'autostart=s', 'tz|timezone=s', 'mtu=i', 'ifname=s');
 
 	if (defined($options{'mem'})) {
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
@@ -318,12 +353,12 @@ sub do
 	$self->set_autostart();
 	$self->set_tz();
 	$self->set_mtu();
+	$self->set_ifname();
 	$self->set_cgroup('cpu-shares', 'cpu.shares');
 	$self->set_cgroup('cpus', 'cpuset.cpus');
 	$self->set_cgroup('mem', 'memory.limit_in_bytes');
 	$self->set_cgroup('io', 'blkio.weight');
 
-	my $config = new LxctlHelpers::config;
 	$config->change_hash(\%options, "$yaml_conf_dir/$options{'contname'}.yaml");
 
 	return;

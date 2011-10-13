@@ -78,6 +78,24 @@ sub get_option_from_main #($section, $option_name)
 	return $result;
 }
 
+sub get_option_from_yaml #($filepath, $section, $option_name)
+{
+	my ($self, $filepath, $section, $option_name) = @_;
+	my $result = undef;
+	return $result if (! -f "$filepath");
+	my $yaml = YAML::Tiny->new;
+	$yaml = YAML::Tiny->read("$filepath");
+	eval {
+		if ($section ne '') {
+			$result = $yaml->[0]->{"$section"}->{"$option_name"};
+		} else {
+			$result = $yaml->[0]->{"$option_name"};
+		}
+		1;
+	};
+	
+	return $result;
+}
 
 # hash_ref, filename
 #  ex: $config->save_hash(\%options, "abrakadabra.yaml");
