@@ -23,6 +23,37 @@ sub _actual_start
 	$lxc->start($contname, $daemon, $lxc_conf_dir."/".$contname."/config");
 }
 
+# At 0.3.0 we mount root from config at start. Make shure we have it there, not in fstab.
+sub check_root_in_config
+{
+	my ($self, %vm_options) = @_;
+
+	open(my $fstab, '<', '/etc/fstab');
+	my @mpoints = <$fstab>;
+	close $fstab;
+
+	for my $mp (@mpoints) {
+		next if !($mp =~ m/^\/dev\/vg00\/$vm_options{'contname'}/);
+
+		my @fstab_line = split (/\s+/, $mp);
+		my %root_mp = ('from' => $fstab_line[0], 'to' => $fstab_line[1], 'fs' => $fstab_line[2], 'opts' => $fstab_line[3]);
+
+		$vm_options{'rootfs_mp'} = \%root_mp;
+		$config->change_hash(\%vm_options, "$yaml_conf_dir/$contname.yaml");
+
+		chomp $mp;
+		use Term::ANSIColor;
+		print color "bold red";
+		print "Removing $mp from /etc/fstab.\n CHACK IT! Backup will be saved at /etc/fstab.bak.\n\n";
+		print color "reset";
+		system("sed -i.bak 's#$mp##' /etc/fstab");
+
+		return \%root_mp;
+	}
+
+	die "There is no root mount directions at $yaml_conf_dir/$contname.yaml and I failed to find them in /etc/fstab.\n\n";
+}
+
 sub do
 {
 	my $self = shift;
@@ -39,10 +70,12 @@ sub do
 	my $mount_result = `mount`;
 	# mount root
 	my $mp_ref = $vm_options{'rootfs_mp'};
+	$mp_ref = $self->check_root_in_config(%vm_options) if (!defined($mp_ref));
 	my %mp = %$mp_ref;
 #	print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
 #	print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
 	system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") if ($mount_result !~ m/on $mp{'to'}/);
+	
 	if (defined $vm_options{'mountpoints'}) { {
 		my $mount_ref = $vm_options{'mountpoints'};
 
