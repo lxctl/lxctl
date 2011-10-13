@@ -9,6 +9,34 @@ my %options = ();
 
 my $ssh = new Lxc::object;
 
+sub get_proc_name
+{
+
+}
+
+sub get_proc_container
+{
+	my ($self, $pid) = @_;
+
+	open(my $file, '<', "/proc/$pid/cgroup")
+		or die "Failed to open /proc/$pid/cgroup.\n\n";
+
+	$line =~ s/^\S+:\S+:\/(\S+)$/$1/;
+	chomp $line;
+	$line = "dom0 process" if $line eq "";
+
+	return $line;
+}
+
+sub get_longest_string
+{
+	my ($self, @arr) = @_;
+
+	@tmp = sort { length($b) <=> length($a) } @arr;
+
+	return $tmp[0];
+}
+
 sub do
 {
 	my $self = shift;
@@ -19,12 +47,22 @@ sub do
 	$pid =~ m/^\d+$/
 		or die "That's non a pid. No-no-no-no, don't try to fool me.\n\n";
 
-	open(my $file, '<', "/proc/$pid/cgroup")
-		or die "Failed to open /proc/$pid/cgroup.\n\n";
 
-	$line =~ s/^\S+:\S+:(\S+)$/$1/;
+	my @pids = ('PID');
+	my @names = ('NAME');
+	my @cts = ('CT NAME');
 
-	print "Pid $pid is a part of $line.\n";
+	push(@pids, $pid);
+	push(@names, "");
+	push(@cts, $self->get_proc_container());
+
+	my $max_pids = $self->get_longest_string(@pids);
+	my $max_names = $self->get_longest_string(@names);
+	my $max_cts = $self->get_longest_string(@cts);
+
+	for (my $i=0; $i < length(@pids); $i++) {
+		printf "  %".$max_pids."s  %".$max_names."s  %".$max_cts."s\n", $pids[$i], $names[$i], $cts[$i];
+	}
 
 	return;
 }
