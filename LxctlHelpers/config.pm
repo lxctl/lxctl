@@ -105,7 +105,7 @@ sub load_file
 	my $hash = LoadFile($filename);
 
 	my %h = %$hash;
-	%h{'api_ver'} = 0 if (!defined(%h{'api_ver'}));
+	$h{'api_ver'} = 0 if (!defined($h{'api_ver'}));
 	$hash = \%h;
 
 	return $hash
