@@ -30,7 +30,7 @@ sub get_proc_container
 		or die "Failed to open /proc/$pid/cgroup.\n\n";
 
 	my $line = <$file>;
-	$line =~ s/^\S+:\S+:\/(\S+)?$/$1/;
+	$line =~ s/^\S+:\S+:\/(\S*)$/$1/;
 	chomp $line;
 	$line = "dom0 process" if $line eq "";
 
