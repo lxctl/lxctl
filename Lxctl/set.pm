@@ -225,8 +225,8 @@ sub set_rootsz
 
 	print "Setting root size: $desired_size\n";
 
-	system("lvextend -L $desired_size /dev/$vg/$options{'contname'}");
-	system("resize2fs /dev/$vg/$options{'contname'}");
+	(system("lvextend -L $desired_size /dev/$vg/$options{'contname'}") == 0) or die "Failed to extend logical volume.\n\n";
+	(system("resize2fs /dev/$vg/$options{'contname'}") == 0) or die "Failed to resize filesystem.\n\n";
 
 	return;
 }
