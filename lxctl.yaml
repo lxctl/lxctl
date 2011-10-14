@@ -9,7 +9,7 @@ paths:
 check:
   skip_kernel_config_check: 1
 rsync:  
-  RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*'
+  RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh
 root:
   ROOT_SIZE: 50G
   ROOT_TYPE: lvm

@@ -81,7 +81,7 @@ sub sync_data {
     $rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
     my $rsync_from = "$root_mount_path/$options{'contname'}/";
     my $rsync_to = "$options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/";
-    my $ret = !system("rsync $rsync_opts -e ssh $rsync_from $rsync_to")
+    my $ret = !system("rsync $rsync_opts $rsync_from $rsync_to")
         or print "There were some problems during syncing root filesystem. It's ok if this is the first pass.\n\n";
 
     return $ret;

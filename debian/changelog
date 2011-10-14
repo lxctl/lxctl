@@ -1,3 +1,20 @@
+lxctl (0.3.0) lucid; urgency=low
+
+  * Added restart module.
+  * Added pid module.
+  * Totally rewriten list. Now looks more vz-like and very customizeable.
+  * Added mount module. A bit experimental, though.
+  * Bash completion made more correct.
+  * vz2lxc does not dies after first failed rsync pass.
+  * Fixed wrong rootsz in config after set --rootsz +N.
+  * /etc/fstab now is not used any more. Mount root at start from config.
+    Appropriate converter added and will trigger at start.
+  * migrate now works well with ssh-agent.
+  * A great number of small improvements.
+  * --help still not updated =(
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 13 Oct 2011 21:03:32 +0400
+
 lxctl (0.2.13) lucid; urgency=low
 
   * Migration works. Well, at least it seems so.
