@@ -23,19 +23,19 @@ sub add
 	my $self = shift;
 	$Getopt::Long::passthrough = 1;
 
-	GetOptions(\%options, 'from=s', 'to=s', 'opts=s', 'fs=s');
+	GetOptions(\%options, 'from=s', 'to=s', 'mountoptions=s', 'fs=s');
 
 	$options{'from'} || die "Don't know what to mount.\n\n";
 	$options{'to'} || die "Don't know where to mount.\n\n";
 
 	-e $options{'from'} || die "You are trying to mount void. Lxctl does not able to do it. Yet.\n\n";
 
-	if (!defined($options{'opts'})) {
+	if (!defined($options{'mountoptions'})) {
 		print "No options specified, using telepathy...\n";
 		if ( -d $options{'from'} ) {
-			$options{'opts'} = "bind";
+			$options{'mountoptions'} = "bind";
 		} elsif ( -e $options{'from'} ) {
-			$options{'opts'} = "noatime";
+			$options{'mountoptions'} = "noatime";
 		}
 	}
 
@@ -43,7 +43,7 @@ sub add
 		my $cmd = "mount";
 		$cmd .= " -t $options{'fs'}" if defined($options{'fs'});
 		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e "$root_path/$contname/rootfs/$options{'to'}");
-		$cmd .= " -o $options{'opts'} $options{'from'} $root_path/$contname/rootfs/$options{'to'}";
+		$cmd .= " -o $options{'mountoptions'} $options{'from'} $root_path/$contname/rootfs/$options{'to'}";
 		system("$cmd");
 	}
 
@@ -90,7 +90,7 @@ sub list
 	}
 
 	my %mp;
-	my $columns = "id,from,to,fs,opts";
+	my $columns = "id,from,to,fs,mountoptions";
 	my %sizes;
 	my $id_size = @mount_points;
 	$sizes{'fs'} = length("auto");
