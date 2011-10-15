@@ -111,7 +111,7 @@ sub check_create_options
 	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
-		'config=s', 'roottype=s', 'root=s', 'pkgset=s', 'rootsz=s', 'netmask|mask=s',
+		'config=s', 'roottype=s', 'root=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
