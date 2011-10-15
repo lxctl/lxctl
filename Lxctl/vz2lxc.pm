@@ -79,6 +79,11 @@ sub vz_migrate
 
 	$self->re_rsync();
 
+	if (-e "$root_mount_path/$options{'contname'}/rootfs/etc/init/openvz.conf") {
+		print "Found upstart openvz.conf. Modifying...\n";
+		system("sed -i.bak 's/^.*devpts.*\$//' $root_mount_path/$options{'contname'}/rootfs/etc/init/openvz.conf");
+	}
+
 	if ($options{'afterstart'} != 0) {
 		die "Failed to start container $options{'contname'}!\n\n"
 			if system("lxctl start $options{'contname'}");
