@@ -15,7 +15,7 @@ root:
   ROOT_TYPE: lvm
 fs:
   FS: ext4
-  FS_OPTS: -b 4096 -E stride=16,stripe-width=32
+  FS_OPTS: -b 4096
   FS_MOUNT_OPTS: defaults,barrier=0
 os:
   OS_TEMPLATE: ubuntu-10.04-amd64
