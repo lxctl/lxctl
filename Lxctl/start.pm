@@ -75,12 +75,14 @@ sub do
 	my @mount_points;
 	my $mount_result = `mount`;
 	# mount root
-	my $mp_ref = $vm_options{'rootfs_mp'};
-	$mp_ref = $self->check_root_in_config(%vm_options) if (!defined($mp_ref));
-	my %mp = %$mp_ref;
-#	print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
-#	print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
-	system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") if ($mount_result !~ m/on $mp{'to'}/);
+	if (!defined($vm_options{'rootsz'}) || $vm_options{'rootsz'} ne 'share') {
+		my $mp_ref = $vm_options{'rootfs_mp'};
+		$mp_ref = $self->check_root_in_config(%vm_options) if (!defined($mp_ref));
+		my %mp = %$mp_ref;
+#		print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
+#		print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
+		system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") if ($mount_result !~ m/on $mp{'to'}/);
+	}
 	
 	if (defined $vm_options{'mountpoints'}) { {
 		my $mount_ref = $vm_options{'mountpoints'};
@@ -93,7 +95,7 @@ sub do
 
 		#TODO: Move to mount module.
 		foreach my $mp_ref (@mount_points) {
-			%mp = %$mp_ref;
+			my %mp = %$mp_ref;
 			my $cmd = "mount";
 			my $to = quotemeta("$root_path/$contname/rootfs$mp{'to'}");
 			
