@@ -70,7 +70,11 @@ sub get_all_info
 		}
 		$info{'uuid'} = $vm_option{'uuid'};
 		$info{'mac'} = uc($self->{helper}->get_config($lxc_conf_dir."/$vm/config", "lxc.network.hwaddr"));
-		$info{'disksize_mb'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
+		if ($vm_option{'rootsz'} ne 'share') {
+			$info{'disksize_mb'} = int($self->{lxc}->convert_size($vm_option{'rootsz'}, "MiB", 0));
+		} else {
+			$info{'disksize_mb'} = 'SHARED';
+		}
 		$info{'template'} = $vm_option{'ostemplate'};
 		$vm_option{'mem'} ||= "1EB";
 		$info{'memory_mb'} = int($self->{lxc}->convert_size($vm_option{'mem'}, "MiB", 0));
