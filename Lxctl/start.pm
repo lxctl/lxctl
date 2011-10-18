@@ -81,7 +81,9 @@ sub do
 		my %mp = %$mp_ref;
 #		print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
 #		print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
-		system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") if ($mount_result !~ m/on $mp{'to'}/);
+		if ($mount_result !~ m/on $mp{'to'}/) {
+			(system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") == 0) or die "Failed to mount $mp{'from'} to $mp{'to'}\n\n";
+		}
 	}
 	
 	if (defined $vm_options{'mountpoints'}) { {
