@@ -123,6 +123,10 @@ sub do
 		print "It seems that \"$contname\" was started.\n";
 	} or do {
 		print "$@";
+		# We should check $@ to analyize some common errors, such as:
+		# 1) No cgroups mounter
+		# 2) if it tries to mount proc to /usr/lib/lxc//proc - it's usualy forgotten /proc in container's rootfs. Check same for dev and sys
+		# 3) ... Maybe more in future.
 		die "Cannot start $contname!\n\n";
 	};
 	return;
@@ -146,7 +150,7 @@ sub new
 __END__
 =head1 NAME
 
-Lxctl::destroy
+Lxctl::start
 
 =head1 SYNOPSIS
 
