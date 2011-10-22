@@ -23,37 +23,28 @@ our $Lxc = Lxc::object->new;
 
 sub help_me
 {
-	my $help = 0;
-	my $man = 0;
-	my $ver = 0;
+	my $action = shift;
+	return if !$action;
 
-	$Getopt::Long::passthrough = 1;
-	GetOptions('help|?' => \$help, 'man' => \$man, 'version' => \$ver) or pod2usage(2);
-
-	if ($ver) {
+	if ($action eq '--version' || $action eq '-v') {
 		print "Version: $version\n";
 		exit 0;
 	}
 
-	if ($help) {
+	if ($action eq '--help' || $action eq '-h') {
 		pod2usage(1);
-	} elsif ($man) {
-		pod2usage(-exitstatus => 0, -verbose => 2);
-	} elsif (@ARGV == 0) {
-		pod2usage("No argument specified.");
 	}
 	$Lxc->check();
-	$Getopt::Long::passthrough = 0;
 }
 
 sub lets_rock
 {
 	my $config = new LxctlHelpers::config;
 	$config->load_main();
-
-	help_me();
-
 	my $action = shift @ARGV;
+
+	help_me($action);
+
 	my $class;
 	my $helper = new LxctlHelpers::helper;
 

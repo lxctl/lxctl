@@ -1,5 +1,3 @@
-DESTDIR=debian/tmp
-
 install:
 	install -D lxctl $(DESTDIR)/usr/bin/lxctl
 	install -D lxctl.yaml $(DESTDIR)/etc/lxctl/lxctl.yaml

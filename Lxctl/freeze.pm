@@ -3,6 +3,9 @@ package Lxctl::freeze;
 use strict;
 use warnings;
 
+use Getopt::Long;
+use Pod::Usage;
+
 use Lxc::object;
 
 my %options = ();
@@ -13,6 +16,12 @@ sub do
 
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
+
+	GetOptions(\%options, 'help!');
+
+	if (defined($options{'help'}) && $options{'help'}) {
+		pod2usage(1);
+	}
 
 	eval {
 		$self->{'lxc'}->freeze($options{'contname'});
@@ -38,31 +47,6 @@ sub new
 
 1;
 __END__
-=head1 NAME
-
-Lxctl::destroy
-
-=head1 SYNOPSIS
-
-TODO
-
-=head1 DESCRIPTION
-
-TODO
-
-Man page by Capitan Obvious.
-
-=head2 EXPORT
-
-None by default.
-
-=head2 Exportable constants
-
-None by default.
-
-=head2 Exportable functions
-
-TODO
 
 =head1 AUTHOR
 

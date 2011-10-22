@@ -370,32 +370,6 @@ sub new
 1;
 __END__
 
-=head1 NAME
-
-Lxctl::create
-
-=head1 SYNOPSIS
-
-Basic create command. Should be sufficient for all needs
-
-=head1 DESCRIPTION
-
-Basic create command. Should be sufficient for all needs
-
-Man page by Capitan Obvious.
-
-=head2 EXPORT
-
-None by default.
-
-=head2 Exportable constants
-
-None by default.
-
-=head2 Exportable functions
-
-TODO
-
 =head1 AUTHOR
 
 Anatoly Burtsev, E<lt>anatolyburtsev@yandex.ruE<gt>
