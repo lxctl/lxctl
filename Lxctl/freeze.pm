@@ -3,9 +3,6 @@ package Lxctl::freeze;
 use strict;
 use warnings;
 
-use Getopt::Long;
-use Pod::Usage;
-
 use Lxc::object;
 
 my %options = ();
@@ -16,12 +13,6 @@ sub do
 
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
-
-	GetOptions(\%options, 'help!');
-
-	if (defined($options{'help'}) && $options{'help'}) {
-		pod2usage(1);
-	}
 
 	eval {
 		$self->{'lxc'}->freeze($options{'contname'});
