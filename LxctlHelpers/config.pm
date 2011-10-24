@@ -176,32 +176,6 @@ sub new
 1;
 __END__
 
-=head1 NAME
-
-Lxctl::_config - internal helper module for functions.
-
-=head1 SYNOPSIS
-
-Can read, write and change config files
-
-=head1 DESCRIPTION
-
-Can read, write and change config files
-
-Man page by Capitan Obvious.
-
-=head2 EXPORT
-
-None by default.
-
-=head2 Exportable constants
-
-None by default.
-
-=head2 Exportable functions
-
-TODO
-
 =head1 AUTHOR
 
 Anatoly Burtsev, E<lt>anatolyburtsev@yandex.ruE<gt>

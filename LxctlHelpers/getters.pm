@@ -44,26 +44,6 @@ sub new
 1;
 __END__
 
-=head1 NAME
-
-Lxctl::_getters - temporary module, until we split all distro-specific functions to plugins.
-
-=head1 SYNOPSIS
-
-Can get IP from debian/ubuntu containers.
-
-=head2 EXPORT
-
-None by default.
-
-=head2 Exportable constants
-
-None by default.
-
-=head2 Exportable functions
-
-TODO
-
 =head1 AUTHOR
 
 Anatoly Burtsev, E<lt>anatolyburtsev@yandex.ruE<gt>
