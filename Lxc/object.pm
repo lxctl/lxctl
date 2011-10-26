@@ -106,6 +106,23 @@ sub get_lxc_log_path {
 	return $self->{LXC_LOG_PATH};
 }
 
+sub set_lxc_log_level {
+	my ($self, $loglvl) = @_;
+	my $subname = (caller(0))[3];
+	if (!defined($loglvl)) {
+		die "$subname: No parameter is given\n";
+	}
+
+	$self->{LXC_LOG_LEVEL} = $loglvl;
+	return 1;
+}
+
+sub get_lxc_log_level {
+	my ($self) = @_;
+
+	return $self->{LXC_LOG_LEVEL};
+}
+
 sub set_yaml_config_path {
 	my ($self, $confdir) = @_;
 	my $subname = (caller(0))[3];
@@ -468,9 +485,9 @@ sub Kill {
 # Config file is $2 (optional)
 # Write all output to $3 (optional)
 # Return 0 on success, dies on failure
-sub start #(name, daemon, config_file, log_file)
+sub start #(name, daemon, config_file, log_file, log_priority)
 {
-	my ($self, $name, $daemon, $file, $log) = @_;
+	my ($self, $name, $daemon, $file, $log, $log_priority) = @_;
 	my $subname = (caller(0))[3];
 	if (!defined($name)) {
 		die "$subname: No vmname is given\n";
@@ -498,6 +515,12 @@ sub start #(name, daemon, config_file, log_file)
 		}
 	}
 
+	if (!defined($log_priority)) {
+		$log_priority = "ERROR";
+	}
+
+	$myarg = $myarg . " -l $log_priority";
+
 	my $status = `lxc-start $myarg 2>&1`;
 	chop($status);
 	if ($status eq "") {
@@ -512,7 +535,7 @@ sub start #(name, daemon, config_file, log_file)
 sub stop {
 	my ($self, $name, $log) = @_;
 	my $subname = (caller(0))[3];
-	my $myarg;
+	my $myarg = "";
 	if (!defined($name)) {
 		die "$subname: No vmname is given\n";
 	}

@@ -46,6 +46,7 @@ sub load_main
 
 			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
 			$self->{'lxc'}->set_lxc_log_path($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'});
+			$self->{'lxc'}->set_lxc_log_level($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'});
 			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
 			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
 
