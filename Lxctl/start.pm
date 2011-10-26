@@ -17,11 +17,14 @@ my $root_path;
 my $lxc;
 my $lxc_conf_dir;
 my $lxc_log_path;
+my $lxc_log_level;
 
 sub _actual_start
 {
 	my ($self, $daemon) = @_;
-	$lxc->start($contname, $daemon, $lxc_conf_dir."/".$contname."/config", $lxc_log_path);
+	my $lxc_real_log_path = $lxc_log_path;
+	$lxc_real_log_path =~ s/%CONTNAME%/$contname/g;
+	$lxc->start($contname, $daemon, $lxc_conf_dir."/".$contname."/config", $lxc_real_log_path, $lxc_log_level);
 }
 
 # At 0.3.0 we mount root from config at start. Make shure we have it there, not in fstab.
@@ -143,8 +146,9 @@ sub new
 	$lxc = Lxc::object->new;
 	$yaml_conf_dir = $lxc->get_yaml_config_path();
 	$lxc_conf_dir = $lxc->get_lxc_conf_dir();
-	$root_path = $lxc->get_root_mount_path;
-	$lxc_log_path = $lxc->get_lxc_log_path;
+	$root_path = $lxc->get_root_mount_path();
+	$lxc_log_path = $lxc->get_lxc_log_path();
+	$lxc_log_level = $lxc->get_lxc_log_level();
 
 	return $self;
 }
