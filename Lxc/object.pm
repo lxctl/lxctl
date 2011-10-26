@@ -89,6 +89,23 @@ sub get_roots_path {
 }
 
 # New setters getters for local configs.
+sub set_lxc_log_path {
+	my ($self, $logpath) = @_;
+	my $subname = (caller(0))[3];
+	if (!defined($logpath)) {
+		die "$subname: No parameter is given\n"; 
+	}
+
+	$self->{LXC_LOG_PATH} = $logpath;
+	return 1;
+}
+
+sub get_lxc_log_path {
+	my ($self) = @_;
+
+	return $self->{LXC_LOG_PATH};
+}
+
 sub set_yaml_config_path {
 	my ($self, $confdir) = @_;
 	my $subname = (caller(0))[3];
