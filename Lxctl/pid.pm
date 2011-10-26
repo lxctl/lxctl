@@ -3,11 +3,7 @@ package Lxctl::pid;
 use strict;
 use warnings;
 
-use Lxc::object;
-
 my %options = ();
-
-my $ssh = new Lxc::object;
 
 sub get_proc_name
 {
@@ -60,7 +56,7 @@ sub do
 	my @tmp_pids = split(/,/, $pidlist);
 	for my $pid (@tmp_pids) {
 		$pid =~ m/^\d+$/
-			or die "$pid 0 that's not a pid. No-no-no-no, don't try to fool me.\n\n";
+			or die "$pid - that's not a pid. No-no-no-no, don't try to fool me.\n\n";
 		
 		push(@pids, $pid);
 		push(@names, $self->get_proc_name($pid));
