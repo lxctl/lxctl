@@ -1,3 +1,19 @@
+lxctl (0.3.1) lucid; urgency=low
+
+  * Added ability to change interface name on host via --ifname
+  * Now -e ssh for rsync is located at lxctl.yaml.
+  * Removed --pkgset from create. Use --addpkg instead.
+  * Updated default ext4 options.
+  * --opts in mount.pm replaces with --mountoptions.
+  * Now vz2lxc checks if there is /etc/init/openvz.conf and modifies it to
+    prevent devpts mounting.
+  * Fixed starting and listing container if rootsz eq 'share'.
+  * Now start dies if failed to mount any of it's mounts.
+  * Added logging at start.
+  * Some bugfixes and typo corrections.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Wed, 26 Oct 2011 21:20:36 +0400
+
 lxctl (0.3.0) lucid; urgency=low
 
   * Added restart module.
