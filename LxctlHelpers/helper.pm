@@ -108,7 +108,7 @@ sub change_config #(filename, searchstring, newvalue)
 	open($file, '>', "$filename");
 
 	for my $line (@content) {
-		$status += $line =~ s/($what).*/$1 $newval/g;
+		$status += $line =~ s/($what)\s*(=*).*/$1 $2 $newval/g;
 		print $file $line;
 	}
 

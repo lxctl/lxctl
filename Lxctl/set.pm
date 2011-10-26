@@ -7,6 +7,7 @@ use autodie qw(:all);
 use Getopt::Long;
 use Digest::SHA qw(sha1_hex);
 use Linux::LVM;
+use Regexp::IPv6 qw($IPv6_re);
 
 use Lxc::object;
 
@@ -66,7 +67,21 @@ sub set_ipaddr
 	my $self = shift;
 
 	defined($options{'ipaddr'}) or return;
-	if ($options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/(\d+)/ ) {
+
+	eval {
+		$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'iface eth0', 'inet static');
+		1;
+	};
+
+	if ($options{'ipaddr'} =~ m#^($IPv6_re)/(.*)$# ) {
+		$options{'ipaddr'} = $1;
+		$options{'netmask'} = $2;
+		
+		eval {
+			$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/network/interfaces", 'iface eth0', 'inet6 static');
+			1;
+		};
+	} elsif ($options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/(\d+)/ ) {
 		my $netmask = $self->{'helper'}->cidr2ip($1);
 		$options{'netmask'} = $netmask;
 	}

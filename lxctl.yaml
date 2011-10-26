@@ -6,7 +6,7 @@ paths:
   LXC_CONF_DIR: '/var/lib/lxc'
   ROOT_MOUNT_PATH: '/var/lxc/root'
   TEMPLATE_PATH: '/var/lxc/templates'
-  LXC_LOG_PATH: '/var/log/lxc.log'
+  LXC_LOG_PATH: '/var/log/lxc/%CONTNAME%.log'
   LXC_LOG_LEVEL: 'DEBUG'
 check:
   skip_kernel_config_check: 1
