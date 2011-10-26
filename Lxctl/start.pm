@@ -96,7 +96,7 @@ sub do
 
 		@mount_points = @$mount_ref;
 		if ($#mount_points == -1 ) {
-			print "No mount points specified!\n";
+			#print "No mount points specified!\n";
 			last;
 		}
 
