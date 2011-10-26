@@ -39,8 +39,9 @@ sub check_root_in_config
 	my @mpoints = <$fstab>;
 	close $fstab;
 
+	my $vg = $lxc->get_vg();
 	for my $mp (@mpoints) {
-		next if !($mp =~ m/^\/dev\/vg00\/$vm_options{'contname'}/);
+		next if !($mp =~ m/^\/dev\/$vg\/$vm_options{'contname'}/);
 
 		my @fstab_line = split (/\s+/, $mp);
 		my %root_mp = ('from' => $fstab_line[0], 'to' => $fstab_line[1], 'fs' => $fstab_line[2], 'opts' => $fstab_line[3]);
