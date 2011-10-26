@@ -477,7 +477,7 @@ sub start #(name, daemon, config_file, log_file)
 
 	if (defined($log)) {
 		if ($log ne "") {
-			$myarg = $myarg . " -c $log";
+			$myarg = $myarg . " -o $log";
 		}
 	}
 
@@ -493,12 +493,18 @@ sub start #(name, daemon, config_file, log_file)
 # Stop container with name $1
 # Returns 0 on success
 sub stop {
-	my ($self, $name) = @_;
+	my ($self, $name, $log) = @_;
 	my $subname = (caller(0))[3];
+	my $myarg;
 	if (!defined($name)) {
 		die "$subname: No vmname is given\n";
 	}
-	my $status = `lxc-stop --name $name 2>&1`;
+	if (defined($log)) {
+		if ($log ne "") {
+			$myarg = $myarg . " -o $log";
+		}
+	}
+	my $status = `lxc-stop --name $name $myarg 2>&1`;
 	if ($status eq "") {
 		return 1;
 	} else {
