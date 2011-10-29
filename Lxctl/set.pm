@@ -89,7 +89,7 @@ sub set_macaddr
 	}
 	defined($options{'contname'}) or return;
 
-	my $mac = "01:" . $self->mac_create($options{'contname'});
+	my $mac = $self->mac_create($options{'contname'}) . ":01";
 	print "Setting MAC: $mac\n";
 	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
 	$options{'macaddr'} = $mac;
