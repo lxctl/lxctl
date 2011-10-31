@@ -146,7 +146,10 @@ sub set_ifname
 	} elsif ($options{'ifname'} eq "ip") {
 		if (!defined($options{'ipaddr'})) {
 			$options{'ipaddr'} = $config->get_option_from_yaml("$yaml_conf_dir/$options{'contname'}.yaml", "", "ipaddr");
-			die "No IP address specified" if (!defined($options{'ipaddr'}));
+			if (!defined($options{'ipaddr'})) {
+				print "No IP address specified, skipping\n";
+				return;
+			}
 		}
 		$options{'ifname'} = $options{'ipaddr'};
 		$options{'ifname'} =~ s/\d+\.\d+\.(\d+).(\d+)/$1$2/g;
