@@ -318,6 +318,8 @@ sub do
 		};
 	}
 
+	die "Trust me. You dont' want a container named 'lxctl'.\n\n" if ($options{'contname'} eq 'lxctl');
+
 	my $setter = Lxctl::set->new(%options);
 	$setter->set_macaddr();
 
