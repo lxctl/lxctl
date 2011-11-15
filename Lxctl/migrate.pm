@@ -26,12 +26,13 @@ sub migrate_get_opt
     my $self = shift;
 
     GetOptions(\%options, 
-        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!');
+        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!');
 
     $options{'remuser'} ||= 'root';
     $options{'remport'} ||= '22';
     $options{'remname'} ||= $options{'contname'};
     $options{'afterstart'} ||= 1;
+    $options{'delete'} ||= 1;
 
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
@@ -122,6 +123,10 @@ sub do
     $self->remote_deploy();
 
     system("lxctl set $options{'contname'} --autostart 0");
+    
+    if ($options{'delete'} == 1) {
+        system("lxctl destroy $options{'contname'} -f");
+    }
 }
 
 sub new
