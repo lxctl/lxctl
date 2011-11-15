@@ -79,6 +79,7 @@ sub sync_data {
     my $self = shift;
 
     $rsync_opts = $config->get_option_from_main('rsync', 'RSYNC_OPTS');
+    $rsync_opts = "$rsync_opts --exclude '$root_mount_path/proc/*' --exclude '$root_mount_path/sys/*' ";
     my $rsync_from = "$root_mount_path/$options{'contname'}/";
     my $rsync_to = "$options{'remuser'}\@$options{'tohost'}:$root_mount_path/$options{'remname'}/";
     my $ret = !system("rsync $rsync_opts $rsync_from $rsync_to")
