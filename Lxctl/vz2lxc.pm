@@ -93,6 +93,7 @@ sub migrate_configuration
 sub do
 {
 	my $self = shift;
+	my $config = shift;
 
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";

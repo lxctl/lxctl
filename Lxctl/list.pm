@@ -139,6 +139,7 @@ sub get_all_info
 sub do
 {
 	my $self = shift;
+	my $config = shift;
 
 	my $all;
 	my $raw;

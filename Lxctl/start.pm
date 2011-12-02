@@ -68,6 +68,7 @@ sub check_root_in_config
 sub do
 {
 	my $self = shift;
+	my $config = shift;
 
 	$contname = shift
 		or die "Name the container please!\n\n";

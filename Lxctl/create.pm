@@ -292,6 +292,7 @@ sub deploy_packets
 sub do
 {
 	my ($self) = shift;
+	my $config = shift;
 
 	$options{'contname'} = $_[0]
 		or die "Name the container please!\n\n";

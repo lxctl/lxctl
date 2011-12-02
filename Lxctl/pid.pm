@@ -45,6 +45,7 @@ sub get_longest_string
 sub do
 {
 	my $self = shift;
+	my $config = shift;
 
 	my $pidlist = shift
 		or die "What pid[s] should I check?\n\n";
