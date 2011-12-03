@@ -13,8 +13,7 @@ sub validate_lvm
 	my $class = shift;
 
 	if (!defined($config{'lvm'})) {
-		%l;
-		$config{'lvm'} = \%l;
+		$config{'lvm'} = {};
 	}
 
 	if (!defined($config{'lvm'}->{'VG'})) {
@@ -34,8 +33,7 @@ sub validate_paths
 	my $class = shift;
 
 	if (!defined($config{'paths'})) {
-		%l;
-		$config{'paths'} = \%l;
+		$config{'paths'} = {};
 	}
 
 	if (!defined($config{'paths'}->{'YAML_CONFIG_PATH'})) {
@@ -65,8 +63,7 @@ sub validate_check
 	my $class = shift;
 
 	if (!defined($config{'check'})) {
-		%l;
-		$config{'check'} = \%l;
+		$config{'check'} = {};
 	}
 
 	if (!defined($config{'check'}->{'skip_kernel_config_check'})) {
@@ -81,8 +78,7 @@ sub validate_rsync
 	my $class = shift;
 
 	if (!defined($config{'rsync'})) {
-		%l;
-		$config{'rsync'} = \%l;
+		$config{'rsync'} = {};
 	}
 
 	if (!defined($config{'rsync'}->{'RSYNC_OPTS'})) {
@@ -98,8 +94,7 @@ sub validate_root
 	my $class = shift;
 
 	if (!defined($config{'root'})) {
-		%l;
-		$config{'root'} = \%l;
+		$config{'root'} = {};
 	}
 
 	if (!defined($config{'root'}->{'ROOT_SIZE'})) {
@@ -119,8 +114,7 @@ sub validate_fs
 	my $class = shift;
 
 	if (!defined($config{'fs'})) {
-		%l;
-		$config{'fs'} = \%l;
+		$config{'fs'} = {};
 	}
 
 	if (!defined($config{'fs'}->{'FS'})) {
@@ -141,8 +135,7 @@ sub validate_os
 	my $class = shift;
 
 	if (!defined($config{'os'})) {
-		%l;
-		$config{'os'} = \%l;
+		$config{'os'} = {};
 	}
 
 	if (!defined($config{'os'}->{'OS_TEMPLATE'})) {
@@ -158,8 +151,7 @@ sub validate_set
 	my $class = shift;
 
 	if (!defined($config{'set'})) {
-		%l;
-		$config{'set'} = \%l;
+		$config{'set'} = {};
 	}
 
 	if (!defined($config{'set'}->{'SEARCHDOMAIN'})) {
@@ -177,8 +169,7 @@ sub validate_list
 	my $class = shift;
 
 	if (!defined($config{'list'})) {
-		%l;
-		$config{'list'} = \%l;
+		$config{'list'} = {};
 	}
 
 	if (!defined($config{'list'}->{'COLUMNS'})) {
