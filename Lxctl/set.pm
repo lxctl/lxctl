@@ -178,7 +178,7 @@ sub set_ifname
 		print "THIS IS NOT FATAL: Failed to do step $step, can't change ifname of interface in runtime. Please, restart container manualy.\n";
 	};
 
-	$self->{'helper'}->change_config("$lxc_conf_dir/$options{'contname'}/config", 'lxc.network.link', $options{'ifname'});
+	$self->{'helper'}->change_config("$lxc_conf_dir/$options{'contname'}/config", 'lxc.network.name', $options{'ifname'});
 	return;
 }
 
