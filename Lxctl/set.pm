@@ -28,7 +28,7 @@ sub mac_create
 	my ($self, $data) = @_;
 
 	my $mac = sha1_hex($data);
-	$mac =~ s/(..)(..)(..)(..).*/F0:$1:$2:$3:$4/;	
+	$mac =~ s/(..)(..)(..)(..).*/FC:$1:$2:$3:$4/;	
 	return $mac;
 }
 
