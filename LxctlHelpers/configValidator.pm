@@ -1,63 +1,55 @@
 package LxctlHelpers::configValidator;
 
+use LxctlHelpers::generalValidators;
+
 # Main purpouse of this helper is to ensure that there are all fields of main
 # config filled. If some of fields (and even blocks) are missed, they will be
 # created with default values.
 
 my %config;
 
-# lvm: LVM-related defaults.
-#   VG: Name of the volume group, used by default.
-sub validate_lvm
-{
-	my $class = shift;
-
-	if (!defined($config{'lvm'})) {
-		$config{'lvm'} = {};
-	}
-
-	if (!defined($config{'lvm'}->{'VG'})) {
-		$config{'lvm'}->{'VG'} = 'vg00';
-	}
-}
-
 # paths: Different paths to different files.
-#   YAML_CONFIG_PATH: Default path to .yaml files of containers.
-#   LXC_CONF_DIR: Default path to lxc containers' configs.
-#   ROOT_MOUNT_PATH: Default paths to containers' roots. 
-#   TEMPLATE_PATH: Default path to templates.
-#   LXC_LOG_PATH: Default path to logs.
-#   LXC_LOG_LEVEL: Default loglevel.
+#   yaml: Default path to .yaml files of containers.
+#   lxc: Default path to lxc containers' configs.
+#   root: Default paths to containers' roots. 
+#   template: Default path to templates.
+#   module: Additional modules path.
 sub validate_paths
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'paths'})) {
 		$config{'paths'} = {};
 	}
 
-	if (!defined($config{'paths'}->{'YAML_CONFIG_PATH'})) {
-		$config{'paths'}->{'YAML_CONFIG_PATH'} = '/etc/lxctl';
-	}
-	if (!defined($config{'paths'}->{'LXC_CONF_DIR'})) {
-		$config{'paths'}->{'LXC_CONF_DIR'} = '/var/lib/lxc';
-	}
-	if (!defined($config{'paths'}->{'ROOT_MOUNT_PATH'})) {
-		$config{'paths'}->{'ROOT_MOUNT_PATH'} = '/var/lxc/root';
-	}
-	if (!defined($config{'paths'}->{'TEMPLATE_PATH'})) {
-		$config{'paths'}->{'TEMPLATE_PATH'} = '/var/lxc/templates';
-	}
-	if (!defined($config{'paths'}->{'LXC_LOG_PATH'})) {
-		$config{'paths'}->{'LXC_LOG_PATH'} = '/var/log/lxc/%CONTNAME%.log';
-	}
-	if (!defined($config{'paths'}->{'LXC_LOG_LEVEL'})) {
-		$config{'paths'}->{'LXC_LOG_LEVEL'} = 'DEBUG';
+	eval {
+		$self->{'valid'}->defaultDir($config{'paths'}->{'yaml'}, '/etc/lxctl');
+		$self->{'valid'}->defaultDir($config{'paths'}->{'lxc'}, '/var/lib/lxc');
+		$self->{'valid'}->defaultDir($config{'paths'}->{'root'}, '/var/lxc/root');
+		$self->{'valid'}->defaultDir($config{'paths'}->{'template'}, '/var/lxc/templates');
+		$self->{'valid'}->defaultDir($config{'paths'}->{'module'}, '.');
 	}
 }
 
-# check: Different checks of conpatibility.
-#   skip_kernel_config_check: Enable (or disable) check for lxc-related kernel features.
+# log: Different log settings.
+#   level: Default loglevel.
+#   path: Default path to logs.
+sub validate_log
+{
+	my $class = shift;
+
+	if (!defined($config{'log'})) {
+		$config{'log'} = {};
+	}
+
+	eval {
+		$self->{'valid'}->defaultEnum($config{'log'}->{'level'}, 'DEBUG', ('DEBUG', 'INFO', 'WARN'));
+		$self->{'valid'}->defaultDir($config{'log'}->{'path'}, '/var/log/lxc');
+	}
+}
+
+# check: Different checks of compatibility.
+#   kernel_config: Enable (or disable) check for lxc-related kernel features.
 sub validate_check
 {
 	my $class = shift;
@@ -66,13 +58,13 @@ sub validate_check
 		$config{'check'} = {};
 	}
 
-	if (!defined($config{'check'}->{'skip_kernel_config_check'})) {
-		$config{'check'}->{'skip_kernel_config_check'} = '1';
+	eval {
+		$self->{'valid'}->defaultEnum($config{'check'}->{'kernel_config'}, '1', ('1', '2'));
 	}
 }
 
 #rsync: Rsync-related ortions.
-#  RSYNC_OPTS: Default rsync options used at migration.
+#  opts: Default rsync options used at migration.
 sub validate_rsync
 {
 	my $class = shift;
@@ -81,14 +73,16 @@ sub validate_rsync
 		$config{'rsync'} = {};
 	}
 
-	if (!defined($config{'rsync'}->{'RSYNC_OPTS'})) {
-		$config{'rsync'}->{'RSYNC_OPTS'} = "-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh";
+	eval {
+		$self->{'valid'}->defaultString($config{'rsync'}->{'opts_first'}, "-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh");
+		$self->{'valid'}->defaultString($config{'rsync'}->{'opts_second'}, "-aH --delete --numeric-ids -e ssh");
 	}
 }
 
 #root: Different parameters of containers' roots.
-#  ROOT_SIZE: Default root size (only for LVMs).
-#  ROOT_TYPE: Default root type.
+#  root_size: Default root size (only for LVMs).
+#  root_type: Default root type.
+#  fs: Default root filesystem.
 sub validate_root
 {
 	my $class = shift;
@@ -97,73 +91,91 @@ sub validate_root
 		$config{'root'} = {};
 	}
 
-	if (!defined($config{'root'}->{'ROOT_SIZE'})) {
-		$config{'root'}->{'ROOT_SIZE'} = '50G';
-	}
-	if (!defined($config{'root'}->{'ROOT_TYPE'})) {
-		$config{'root'}->{'ROOT_TYPE'} = 'lvm';
+	eval {
+		$self->{'valid'}->defaultSize($config{'root'}->{'root_size'}, '50G');
+		$self->{'valid'}->defaultEnum($config{'root'}->{'root_type'}, 'lvm', ('lvm', 'file', 'share'));
+		$self->{'valid'}->defaultString($config{'root'}->{'fs'}, 'ext4');
 	}
 }
 
-#fs: Default filesystem options (only for LVMs).
-#  FS: Default filesystem.
-#  FS_OPTS: Default filesystem create options.
-#  FS_MOUNT_OPTS: Default filesystem mount options.
-sub validate_fs
+#root_lvm: Default options for rootfs on LVM.
+#  vg: Default volume group.
+#  opts: Default logical volume creation options.
+sub validate_root_lvm
 {
 	my $class = shift;
 
-	if (!defined($config{'fs'})) {
-		$config{'fs'} = {};
+	if (!defined($config{'root_lvm'})) {
+		$config{'root_lvm'} = {};
 	}
 
-	if (!defined($config{'fs'}->{'FS'})) {
-		$config{'fs'}->{'FS'} = 'ext4';
-	}
-	if (!defined($config{'fs'}->{'FS_OPTS'})) {
-		$config{'fs'}->{'FS_OPTS'} = '-b 4096';
-	}
-	if (!defined($config{'fs'}->{'FS_MOUNT_OPTS'})) {
-		$config{'fs'}->{'FS_MOUNT_OPTS'} = 'defaults,barrier=0';
+	eval {
+		$self->{'valid'}->defaultString($config{'root_lvm'}->{'vg'}, 'vg00');
+		$self->{'valid'}->defaultString($config{'root_lvm'}->{'opts'}, '');
 	}
 }
 
-#os: Templates' settings.
-#  OS_TEMPLATE: Default template.
+#root_file: Default options for rootfs in the file.
+#  path: Default volume group.
+sub validate_root_file
+{
+	my $class = shift;
+
+	if (!defined($config{'root_file'})) {
+		$config{'root_file'} = {};
+	}
+
+	eval {
+		$self->{'valid'}->defaultDir($config{'root_file'}->{'path'}, '/var/lxc/root/');
+	}
+}
+
+#templates: Templates' settings.
+#  default: Default template.
 sub validate_os
 {
 	my $class = shift;
 
-	if (!defined($config{'os'})) {
-		$config{'os'} = {};
+	if (!defined($config{'templates'})) {
+		$config{'templates'} = {};
 	}
 
-	if (!defined($config{'os'}->{'OS_TEMPLATE'})) {
-		$config{'os'}->{'OS_TEMPLATE'} = 'ubuntu-10.04-amd64';
+	eval {
+		$self->{'valid'}->defaultString($config{'templates'}->{'default'}, 'ubuntu-10.04-amd64');
 	}
 }
 
-#set: Different system settings.
-#  SEARCHDOMAIN: Default 'search' parameter of resolv.conf.
-#  IFNAME: Default method of generatinf veth interface name on host-system.
-sub validate_set
+#network: Different system settings.
+#  type: Default network interface type
+#  flags: Default network interface flags
+#  bridge: Default bridge
+#  name: Default network interface name
+#  mtu: Default MTU
+#  mac_source: Default source for MAC generation
+#  searchdomain: Default searchdomain option in /etc/resolv.conf
+#  ifname: Default external network interface naming convention
+sub validate_network
 {
 	my $class = shift;
 
-	if (!defined($config{'set'})) {
-		$config{'set'} = {};
+	if (!defined($config{'network'})) {
+		$config{'network'} = {};
 	}
 
-	if (!defined($config{'set'}->{'SEARCHDOMAIN'})) {
-		$config{'set'}->{'SEARCHDOMAIN'} = 'ru';
-	}
-	if (!defined($config{'set'}->{'IFNAME'})) {
-		$config{'set'}->{'IFNAME'} = 'ip';
+	eval {
+		$self->{'valid'}->defaultString($config{'network'}->{'type'}, 'veth');
+		$self->{'valid'}->defaultString($config{'network'}->{'flags'}, 'up');
+		$self->{'valid'}->defaultString($config{'network'}->{'bridge'}, 'br0');
+		$self->{'valid'}->defaultString($config{'network'}->{'name'}, 'eth');
+		$self->{'valid'}->defaultInt($config{'network'}->{'mtu'}, '1450');
+		$self->{'valid'}->defaultString($config{'network'}->{'mac_source'}, 'fqdn');
+		$self->{'valid'}->defaultString($config{'network'}->{'searchdomain'}, 'example.com');
+		$self->{'valid'}->defaultString($config{'network'}->{'ifname'}, 'ip');
 	}
 }
 
 #list: Different options of container listung.
-#  COLUMNS: Default columns for `lxctl list` output.
+#  columns: Default columns for `lxctl list` output.
 sub validate_list
 {
 	my $class = shift;
@@ -172,8 +184,8 @@ sub validate_list
 		$config{'list'} = {};
 	}
 
-	if (!defined($config{'list'}->{'COLUMNS'})) {
-		$config{'list'}->{'COLUMNS'} = 'name,disk_free_mb,status,ip,hostname';
+	eval {
+		$self->{'valid'}->defaultString($config{'list'}->{'columns'}, 'name,disk_free_mb,status,ip,hostname');
 	}
 }
 
@@ -201,6 +213,8 @@ sub new
 	my $class = shift;
 	my $self = {};
 	bless $self, $class;
+
+	$self->{'valid'} = new LxctlHelpers::generalValidators;
 
 	return $self;
 }
