@@ -1,4 +1,4 @@
-package LxctlHelpers::generalValidators;
+package Lxctl::Helpers::generalValidators;
 
 sub defaultEnum
 {

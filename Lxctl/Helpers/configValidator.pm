@@ -1,6 +1,6 @@
-package LxctlHelpers::configValidator;
+package Lxctl::Helpers::configValidator;
 
-use LxctlHelpers::generalValidators;
+use Lxctl::Helpers::generalValidators;
 
 # Main purpouse of this helper is to ensure that there are all fields of main
 # config filled. If some of fields (and even blocks) are missed, they will be

@@ -1,4 +1,4 @@
-package LxctlHelpers::configValidator;
+package Lxctl::Helpers::configValidator;
 
 # This is helper for validation container options. First, options from config
 # and command line are merged, then they are validated to correctness and
