@@ -195,15 +195,16 @@ sub validate
 	my $class;
 	($class, %config) = @_;
 
-	validate_lvm;
-	validate_paths;
-	validate_check;
-	validate_rsync;
-	validate_root;
-	validate_fs;
-	validate_os;
-	validate_set;
-	validate_list;
+	validate_paths();
+	validate_log();
+	validate_check();
+	validate_rsync();
+	validate_root();
+	validate_root_lvm();
+	validate_root_file();
+	validate_os();
+	validate_network();
+	validate_list();
 
 	return %config;
 }

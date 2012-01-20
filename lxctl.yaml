@@ -1,28 +1,66 @@
 ---
-lvm:
-  VG: vg00
 paths:
-  YAML_CONFIG_PATH: '/etc/lxctl'
-  LXC_CONF_DIR: '/var/lib/lxc'
-  ROOT_MOUNT_PATH: '/var/lxc/root'
-  TEMPLATE_PATH: '/var/lxc/templates'
-  LXC_LOG_PATH: '/var/log/lxc/%CONTNAME%.log'
-  LXC_LOG_LEVEL: 'DEBUG'
+  yaml: '/etc/lxctl/'
+  lxc: '/var/lib/lxc/'
+  root: '/var/lxc/root/'
+  template: '/var/lxc/templates/'
+  module: '.'
+  plugin: '/var/lxc/plugins/'
+
+log:
+  path: '/var/log/lxc'
+  level: 'DEBUG'
+
 check:
-  skip_kernel_config_check: 1
-rsync:  
-  RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh
+  kernel_config: 0
+
+rsync:
+  opts_first: '-aH --delete --numeric-ids --exclude "proc/*" --exclude "sys/*" -e ssh'
+  opts_second: '-aH --delete --numeric-ids -e ssh'
+
+fs_ext4:
+  make_opts: '-b 4096'
+  mount_opts: 'defaults,barrier=0,noatime'
+
 root:
-  ROOT_SIZE: 50G
-  ROOT_TYPE: lvm
-fs:
-  FS: ext4
-  FS_OPTS: -b 4096
-  FS_MOUNT_OPTS: defaults,barrier=0
-os:
-  OS_TEMPLATE: ubuntu-10.04-amd64
-set:
-  SEARCHDOMAIN: ru
-  IFNAME: 'ip'
+  root_size: '50G'
+  root_type: 'lvm'
+  fs: 'ext4'
+
+root_lvm:
+  vg: 'vg00'
+  opts: ' '
+
+root_file:
+  path: '/var/lxc/root/'
+
+templates:
+  default: 'ubuntu-10.04-amd64'
+
 list:
-  COLUMNS: 'name,disk_free_mb,status,ip,hostname'
+  columns: 'name,disk_free_mb,status,ip,hostname'
+
+devices:
+  policy: deny
+  devices:
+    -d: 'c 1:3 rwm'
+    -d: 'c 1:5 rwm'
+    -d: 'c 5:1 rwm'
+    -d: 'c 5:0 rwm'
+    -d: 'c 4:0 rwm'
+    -d: 'c 4:1 rwm'
+    -d: 'c 1:9 rwm'
+    -d: 'c 1:8 rwm'
+    -d: 'c 136:* rwm'
+    -d: 'c 5:2 rwm'
+    -d: 'c 254:0 rwm'
+
+network:
+  type: 'bridge'
+  flags: 'up'
+  bridge: 'br0'
+  name: 'eth'
+  mtu: '1500'
+  mac_source: 'name'
+  searchdomain: 'example.com'
+  ifname: 'ip'
