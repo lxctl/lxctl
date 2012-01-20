@@ -28,7 +28,7 @@ sub defaultString
 
 	if (!defined($var)) {
 		$var = $default;
-	} elsif (! $var =~ m/^([-^/a-zA-Z0-9_*'"]|\s)*$/) {
+	} elsif (! $var =~ m/^([a-zA-Z0-9]|\s)*$/) {
 		die "Incorrect value $var.\n";
 	}
 }

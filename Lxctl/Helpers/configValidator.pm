@@ -215,7 +215,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'valid'} = new LxctlHelpers::generalValidators;
+	$self->{'valid'} = new Lxctl::Helpers::generalValidators;
 
 	return $self;
 }
