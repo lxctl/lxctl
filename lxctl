@@ -52,6 +52,8 @@ sub lets_rock
 	my $validator = new LxctlHelpers::configValidator;
 
 	my $config = LoadFile('/etc/lxctl/lxctl.yaml');
+	my $validator = new LxctlHelper::configValidator;
+	$validatir->validate($config);
 
 	eval {
 		$helper->load_module("Lxctl/$action.pm");
