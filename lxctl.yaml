@@ -4,7 +4,7 @@ paths:
   lxc: '/var/lib/lxc/'
   root: '/var/lxc/root/'
   template: '/var/lxc/templates/'
-  module: '.'
+  module: '/tmp/'
   plugin: '/var/lxc/plugins/'
 
 log:

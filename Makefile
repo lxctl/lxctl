@@ -23,6 +23,7 @@ install:
 	install -d $(DESTDIR)/usr/lib/perl/5.10/LxctlHelpers
 	install -d $(DESTDIR)/var/lxc/templates
 	install -d $(DESTDIR)/var/lxc/root
+	install -d $(DESTDIR)/var/log/lxc
 	
 	cp Lxc/* $(DESTDIR)/usr/lib/perl/5.10/Lxc
 	cp Lxctl/*.pm $(DESTDIR)/usr/lib/perl/5.10/Lxctl

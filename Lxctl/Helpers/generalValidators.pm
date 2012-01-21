@@ -2,44 +2,55 @@ package Lxctl::Helpers::generalValidators;
 
 sub defaultEnum
 {
-	my ($self, $var, $default, @values) = @_;
+	my ($self, $hash, $key, $default, @values) = @_;
 
-	if (!defined($var)) {
-		$var = $default;
-	} elsif (! grep { $_ eq $var} @values) {
-		die "Incorrect value $var.\n";
+	if (!defined($hash->{$key})) {
+		$hash->{$key} = $default;
+	} elsif (! grep { $_ eq $hash->{$key}} @values) {
+		die "Incorrect value $hash->{$key}.\n";
 	}
 }
 
 sub defaultInt
 {
-	my ($self, $var, $default) = @_;
+	my ($self, $hash, $key, $default) = @_;
 
-	if (!defined($var)) {
+	if (!defined($hash->{$key})) {
 		$var = $default;
-	} elsif (! $var =~ m/^[0-9]+$/) {
-		die "Incorrect value $var.\n";
+	} elsif (! $hash->{$key} =~ m/^[0-9]+$/) {
+		die "Incorrect value $hash->{$key}.\n";
 	}
 }
 
 sub defaultString
 {
-	my ($self, $var, $default) = @_;
+	my ($self, $hash, $key, $default) = @_;
 
-	if (!defined($var)) {
-		$var = $default;
-	} elsif (! $var =~ m/^([a-zA-Z0-9]|\s)*$/) {
-		die "Incorrect value $var.\n";
+	if (!defined($hash->{$key})) {
+		$hash->{$key} = $default;
+	} elsif (! ($hash->{$key} =~ m/^([a-zA-Z0-9_.,'"\*\/\-]|\s)*$/)) {
+		die "Incorrect value $hash->{$key}.\n";
 	}
 }
 
 sub defaultDir
 {
-	my ($self, $var, $default) = @_;
+	my ($self, $hash, $key, $default) = @_;
 
-	defaultString($var, $default);
-	if (! -d "$var") {
-		die "No such directory $var.\n";
+	defaultString($hash, $key, $default);
+	if (! -d "$hash->{$key}") {
+		die "No such directory $hash->{$key}.\n";
+	}
+}
+
+sub defaultSize
+{
+	my ($self, $hash, $key, $default) = @_;
+
+	if (!defined($hash->{$key})) {
+		$var = $default;
+	} elsif (! $hash->{$key} =~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/) {
+		die "Incorrect value $hash->{$key}.\n";
 	}
 }
 

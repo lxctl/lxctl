@@ -6,6 +6,7 @@ use Lxctl::Helpers::generalValidators;
 # config filled. If some of fields (and even blocks) are missed, they will be
 # created with default values.
 
+my $validator;
 my %config;
 
 # paths: Different paths to different files.
@@ -23,11 +24,14 @@ sub validate_paths
 	}
 
 	eval {
-		$self->{'valid'}->defaultDir($config{'paths'}->{'yaml'}, '/etc/lxctl');
-		$self->{'valid'}->defaultDir($config{'paths'}->{'lxc'}, '/var/lib/lxc');
-		$self->{'valid'}->defaultDir($config{'paths'}->{'root'}, '/var/lxc/root');
-		$self->{'valid'}->defaultDir($config{'paths'}->{'template'}, '/var/lxc/templates');
-		$self->{'valid'}->defaultDir($config{'paths'}->{'module'}, '.');
+		$validator->defaultDir($config{'paths'}, 'yaml', '/etc/lxctl');
+		$validator->defaultDir($config{'paths'}, 'lxc', '/var/lib/lxc');
+		$validator->defaultDir($config{'paths'}, 'root', '/var/lxc/root');
+		$validator->defaultDir($config{'paths'}, 'template', '/var/lxc/templates');
+		#$validator->defaultDir($config{'paths'}, 'modules', '.');
+		1;
+	} or do {
+		die "Paths: $@";
 	}
 }
 
@@ -43,8 +47,11 @@ sub validate_log
 	}
 
 	eval {
-		$self->{'valid'}->defaultEnum($config{'log'}->{'level'}, 'DEBUG', ('DEBUG', 'INFO', 'WARN'));
-		$self->{'valid'}->defaultDir($config{'log'}->{'path'}, '/var/log/lxc');
+		$validator->defaultEnum($config{'log'}, 'level', 'DEBUG', ('DEBUG', 'INFO', 'WARN'));
+		$validator->defaultDir($config{'log'}, 'path', '/var/log/lxc');
+		1;
+	} or do {
+		die "Log: $@";
 	}
 }
 
@@ -59,7 +66,10 @@ sub validate_check
 	}
 
 	eval {
-		$self->{'valid'}->defaultEnum($config{'check'}->{'kernel_config'}, '1', ('1', '2'));
+		$validator->defaultEnum($config{'check'}, 'kernel_config', '1', ('1', '0'));
+		1;
+	} or do {
+		die "Check: $@";
 	}
 }
 
@@ -74,8 +84,11 @@ sub validate_rsync
 	}
 
 	eval {
-		$self->{'valid'}->defaultString($config{'rsync'}->{'opts_first'}, "-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh");
-		$self->{'valid'}->defaultString($config{'rsync'}->{'opts_second'}, "-aH --delete --numeric-ids -e ssh");
+		$validator->defaultString($config{'rsync'}, 'opts_first', "-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*' -e ssh");
+		$validator->defaultString($config{'rsync'}, 'opts_second', "-aH --delete --numeric-ids -e ssh");
+		1;
+	} or do {
+		die "Rsync: $@";
 	}
 }
 
@@ -92,9 +105,12 @@ sub validate_root
 	}
 
 	eval {
-		$self->{'valid'}->defaultSize($config{'root'}->{'root_size'}, '50G');
-		$self->{'valid'}->defaultEnum($config{'root'}->{'root_type'}, 'lvm', ('lvm', 'file', 'share'));
-		$self->{'valid'}->defaultString($config{'root'}->{'fs'}, 'ext4');
+		$validator->defaultSize($config{'root'}, 'root_size', '50G');
+		$validator->defaultEnum($config{'root'}, 'root_type', 'lvm', ('lvm', 'file', 'share'));
+		$validator->defaultString($config{'root'}, 'fs', 'ext4');
+		1;
+	} or do {
+		die "Root: $@";
 	}
 }
 
@@ -110,8 +126,11 @@ sub validate_root_lvm
 	}
 
 	eval {
-		$self->{'valid'}->defaultString($config{'root_lvm'}->{'vg'}, 'vg00');
-		$self->{'valid'}->defaultString($config{'root_lvm'}->{'opts'}, '');
+		$validator->defaultString($config{'root_lvm'}, 'vg', 'vg00');
+		$validator->defaultString($config{'root_lvm'}, 'opts', '');
+		1;
+	} or do {
+		die "RootLvm: $@";
 	}
 }
 
@@ -126,7 +145,10 @@ sub validate_root_file
 	}
 
 	eval {
-		$self->{'valid'}->defaultDir($config{'root_file'}->{'path'}, '/var/lxc/root/');
+		$validator->defaultDir($config{'root_file'}, 'path', '/var/lxc/root/');
+		1;
+	} or do {
+		die "RootFile: $@";
 	}
 }
 
@@ -141,7 +163,10 @@ sub validate_os
 	}
 
 	eval {
-		$self->{'valid'}->defaultString($config{'templates'}->{'default'}, 'ubuntu-10.04-amd64');
+		$validator->defaultString($config{'templates'}, 'default', 'ubuntu-10.04-amd64');
+		1;
+	} or do {
+		die "OS: $@";
 	}
 }
 
@@ -163,14 +188,17 @@ sub validate_network
 	}
 
 	eval {
-		$self->{'valid'}->defaultString($config{'network'}->{'type'}, 'veth');
-		$self->{'valid'}->defaultString($config{'network'}->{'flags'}, 'up');
-		$self->{'valid'}->defaultString($config{'network'}->{'bridge'}, 'br0');
-		$self->{'valid'}->defaultString($config{'network'}->{'name'}, 'eth');
-		$self->{'valid'}->defaultInt($config{'network'}->{'mtu'}, '1450');
-		$self->{'valid'}->defaultString($config{'network'}->{'mac_source'}, 'fqdn');
-		$self->{'valid'}->defaultString($config{'network'}->{'searchdomain'}, 'example.com');
-		$self->{'valid'}->defaultString($config{'network'}->{'ifname'}, 'ip');
+		$validator->defaultString($config{'network'}, 'type', 'veth');
+		$validator->defaultString($config{'network'}, 'flags', 'up');
+		$validator->defaultString($config{'network'}, 'bridge', 'br0');
+		$validator->defaultString($config{'network'}, 'name', 'eth');
+		$validator->defaultInt($config{'network'}, 'mtu', '1450');
+		$validator->defaultString($config{'network'}, 'mac_source', 'fqdn');
+		$validator->defaultString($config{'network'}, 'searchdomain', 'example.com');
+		$validator->defaultString($config{'network'}, 'ifname', 'ip');
+		1;
+	} or do {
+		die "Network: $@";
 	}
 }
 
@@ -185,7 +213,10 @@ sub validate_list
 	}
 
 	eval {
-		$self->{'valid'}->defaultString($config{'list'}->{'columns'}, 'name,disk_free_mb,status,ip,hostname');
+		$validator->defaultString($config{'list'}, 'columns', 'name,disk_free_mb,status,ip,hostname');
+		1;
+	} or do {
+		die "List: $@";
 	}
 }
 
@@ -193,7 +224,8 @@ sub validate_list
 sub validate
 {
 	my $class;
-	($class, %config) = @_;
+	($class, $conf) = @_;
+	%config = %$conf;
 
 	validate_paths();
 	validate_log();
@@ -215,7 +247,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 
-	$self->{'valid'} = new Lxctl::Helpers::generalValidators;
+	$validator = new Lxctl::Helpers::generalValidators;
 
 	return $self;
 }
