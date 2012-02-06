@@ -51,9 +51,9 @@ sub lets_rock
 	my $helper = new LxctlHelpers::helper;
 	my $validator = new LxctlHelpers::configValidator;
 
-	my $config = LoadFile('/etc/lxctl/lxctl.yaml');
+	my $config_yaml = LoadFile('/etc/lxctl/lxctl.yaml');
 	my $validator = new LxctlHelper::configValidator;
-	$validatir->validate($config);
+	my %config = $validator->validate($config_yaml);
 
 	eval {
 		$helper->load_module("Lxctl/$action.pm");
@@ -65,7 +65,7 @@ sub lets_rock
 		die "$@";
 	};
 
-	$class->do($config, @ARGV);
+	$class->do(\%config, @ARGV);
 
 	return;
 }
