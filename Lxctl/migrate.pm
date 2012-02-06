@@ -52,7 +52,7 @@ sub re_rsync
         die "Failed to get status for container $options{'contname'}!\n\n";
     };
 
-    return if ($status ne 'RUNNING' && $first_pass);
+    return if ($status ne 'running' && $first_pass);
     die "Aborting due to rsinc error.\n\n" if !$first_pass;
 
     eval {
