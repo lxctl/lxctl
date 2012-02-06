@@ -26,12 +26,13 @@ sub migrate_get_opt
     my $self = shift;
 
     GetOptions(\%options, 
-        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!');
+        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!');
 
     $options{'remuser'} ||= 'root';
     $options{'remport'} ||= '22';
     $options{'remname'} ||= $options{'contname'};
     $options{'afterstart'} ||= 1;
+    $options{'delete'} ||= 0;
 
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
@@ -108,6 +109,14 @@ sub remote_deploy
         $ssh->execute("lxctl start $options{'remname'}")
             or die "Failed to start remote container!\n\n";
     }
+
+    if ($options{'delete'} != 0) {
+        print "Destroying container $options{'contname'}...\n";
+        system("lxctl destroy $options{'contname'} -f");
+    }
+
+    #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
+    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}")
 }
 
 sub do
