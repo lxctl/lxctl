@@ -104,6 +104,9 @@ sub remote_deploy
 
     $self->re_rsync($first_pass);
 
+    #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
+    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}")
+
     if ($options{'afterstart'} != 0) {
         print "Starting remote container...\n";
         $ssh->execute("lxctl start $options{'remname'}")
@@ -114,9 +117,6 @@ sub remote_deploy
         print "Destroying container $options{'contname'}...\n";
         system("lxctl destroy $options{'contname'} -f");
     }
-
-    #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
-    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}")
 }
 
 sub do
