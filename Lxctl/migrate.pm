@@ -52,7 +52,7 @@ sub re_rsync
         die "Failed to get status for container $options{'contname'}!\n\n";
     };
 
-    return if ($status ne 'running' && $first_pass);
+    return if ($status ne 'RUNNING' && $first_pass);
     die "Aborting due to rsinc error.\n\n" if !$first_pass;
 
     eval {
@@ -105,7 +105,7 @@ sub remote_deploy
     $self->re_rsync($first_pass);
 
     #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
-    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}")
+    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}");
 
     if ($options{'afterstart'} != 0) {
         print "Starting remote container...\n";
