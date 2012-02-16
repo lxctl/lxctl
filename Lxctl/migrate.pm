@@ -151,9 +151,10 @@ sub do
     $self->remote_deploy();
     if ($options{'clone'}) {
         $self->clone();
+        system("lxctl start $options{'contname'}");
+    } else {
+        system("lxctl set $options{'contname'} --autostart 0");
     }
-
-    system("lxctl set $options{'contname'} --autostart 0");
 }
 
 sub new
