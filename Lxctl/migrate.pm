@@ -26,13 +26,22 @@ sub migrate_get_opt
     my $self = shift;
 
     GetOptions(\%options, 
-        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!');
+        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!', 'clone!');
 
     $options{'remuser'} ||= 'root';
     $options{'remport'} ||= '22';
     $options{'remname'} ||= $options{'contname'};
     $options{'afterstart'} ||= 1;
     $options{'delete'} ||= 0;
+    $options{'clone'} ||= 0;
+
+    if ($options{'clone'}) {
+        $options{'afterstart'} = 0;
+        $options{'delete'} = 0;
+        if ($options{'remname'} eq $options{'contname'}) {
+            die "Specify --remname not equal to container name for cloning";
+        }
+    }
 
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
@@ -74,6 +83,7 @@ sub copy_config
     print "Sending config to $options{'tohost'}...\n";
 
     $ssh->put_file("$yaml_conf_dir/$options{'contname'}.yaml", "/tmp/$options{'contname'}.yaml");
+    $ssh->execute("sed -i.bak 's/$options{'contname'}/$options{'remname'}/g' '/tmp/$options{'contname'}.yaml'");
 }
 
 sub sync_data {
@@ -121,6 +131,15 @@ sub remote_deploy
     }
 }
 
+# Ugly hack. Will not work with non standard paths.
+sub clone
+{
+    my $self = shift;
+
+    $ssh->execute("echo -n '$options{'remname'}' > /etc/hostname");
+    $ssh->execute("sed -i.bak 's/$options{'contname'}/$options{'remname'}/g' /var/lxc/root/$options{'remname'}/rootfs/etc/hosts");
+}
+
 sub do
 {
     my $self = shift;
@@ -130,6 +149,9 @@ sub do
 
     $self->migrate_get_opt();
     $self->remote_deploy();
+    if ($options{'clone'}) {
+        $self->clone();
+    }
 
     system("lxctl set $options{'contname'} --autostart 0");
 }
