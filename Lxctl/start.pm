@@ -115,7 +115,7 @@ sub do
 			system("$cmd");
 		}
 	} } else {
-		print "No mount points specified!\n";
+		print "Meow...\n";
 	}
 
 	eval {

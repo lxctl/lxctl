@@ -114,8 +114,12 @@ sub remote_deploy
 
     $self->re_rsync($first_pass);
 
-    #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
-    $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}");
+    eval {
+        #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
+        $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}");
+    } or do {
+        print "Meow...\n";
+    };
 
     if ($options{'afterstart'} != 0) {
         print "Starting remote container...\n";
@@ -124,8 +128,12 @@ sub remote_deploy
     }
 
     if ($options{'delete'} != 0) {
-        $ssh->execute("if [[ \$(lxctl list | grep $options{'remname'} | awk '{print \$3}') -ne running ]]; then exit 1; else exit 0; fi")
-            or return;
+        eval {
+            $ssh->execute("if [[ \$(lxctl list | grep $options{'remname'} | awk '{print \$3}') -ne running ]]; then exit 1; else exit 0; fi")
+        } or do {
+            print "Remote container was not started. I won't delete local.\n";
+            return;
+        };
         print "Destroying container $options{'contname'}...\n";
         system("lxctl destroy $options{'contname'} -f");
     }
@@ -136,8 +144,12 @@ sub clone
 {
     my $self = shift;
 
-    $ssh->execute("echo -n '$options{'remname'}' > /etc/hostname");
-    $ssh->execute("sed -i.bak 's/$options{'contname'}/$options{'remname'}/g' /var/lxc/root/$options{'remname'}/rootfs/etc/hosts");
+    eval {
+        $ssh->execute("echo -n '$options{'remname'}' > /var/lxc/root/$options{'remname'}/rootfs/etc/hostname");
+        $ssh->execute("sed -i.bak 's/$options{'contname'}/$options{'remname'}/g' /var/lxc/root/$options{'remname'}/rootfs/etc/hosts");
+    } or do {
+        print "Hostname or /etc/hosts mau be incorrect, somthing failed.\n";
+    };
 }
 
 sub do

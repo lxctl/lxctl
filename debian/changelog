@@ -1,3 +1,27 @@
+lxctl (0.3.1-10) lucid; urgency=low
+
+  * Fixed hostname changing
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 16 Feb 2012 20:40:37 +0400
+
+lxctl (0.3.1-9) lucid; urgency=low
+
+  * Fixed evals
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 16 Feb 2012 20:34:45 +0400
+
+lxctl (0.3.1-8) lucid; urgency=low
+
+  * Fixed some issues with exeptions.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 16 Feb 2012 20:29:02 +0400
+
+lxctl (0.3.1-7) lucid; urgency=low
+
+  * Added cloning ability (lxctl migrate ... --clone).
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 16 Feb 2012 19:44:07 +0400
+
 lxctl (0.3.1-6) lucid; urgency=low
 
   * Finally we can migrate as we desire.
