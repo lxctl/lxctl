@@ -114,6 +114,8 @@ sub remote_deploy
     }
 
     if ($options{'delete'} != 0) {
+        $ssh->execute("if [[ \$(lxctl list | grep $options{'remname'} | awk '{print \$3}') -ne running ]]; then exit 1; else exit 0; fi")
+            or return;
         print "Destroying container $options{'contname'}...\n";
         system("lxctl destroy $options{'contname'} -f");
     }
