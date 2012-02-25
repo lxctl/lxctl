@@ -97,7 +97,11 @@ sub remote_deploy
 
     print "Creating remote container...\n";
 
-    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml")
+    $extra_opts = "";
+    if (defined($options{'rootsz'})) {
+        $extra_opts .= " --rootsz $options{'rootsz'}";
+    }
+    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml $extra_opts")
         or die "Failed to create remote container.\n\n";
 
     print "Start first rsync pass...\n";
