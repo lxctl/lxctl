@@ -87,6 +87,7 @@ sub do
 #		print "\n\n\nDEBUG: $mount_result\n$mp{'to'}\n\n\n";
 #		print "TRUE\n" if ($mount_result !~ m/^$mp{'from'}/); 
 		if ($mount_result !~ m/on $mp{'to'}/) {
+                        system("if [[ ! -e $mp{'to'} ]]; then mkdir -p $mp{'to'}; fi");
 			(system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") == 0) or die "Failed to mount $mp{'from'} to $mp{'to'}\n\n";
 		}
 	}
