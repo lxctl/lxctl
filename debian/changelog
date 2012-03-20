@@ -1,3 +1,15 @@
+lxctl (0.3.1-12) lucid; urgency=low
+
+  * Small fix at lxctl.yaml - now migration should be a little bit safer
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 20 Mar 2012 16:54:41 +0400
+
+lxctl (0.3.1-11) lucid; urgency=low
+
+  * Added creation of root mountpoint if not exist
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 06 Mar 2012 17:53:51 +0400
+
 lxctl (0.3.1-10) lucid; urgency=low
 
   * Fixed hostname changing
