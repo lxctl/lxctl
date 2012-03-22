@@ -12,6 +12,7 @@ check:
   skip_kernel_config_check: 1
 rsync:  
   RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'rootfs/proc/*' --exclude 'rootfs/sys/*' -e ssh
+  VZ_RSYNC_OPTS: -aH --delete --numeric-ids --exclude '%veid%/proc/*' --exclude '%veid%/sys/*' -e ssh
 root:
   ROOT_SIZE: 50G
   ROOT_TYPE: lvm
