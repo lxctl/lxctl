@@ -22,7 +22,8 @@ sub get_cpus
 	my ($self, $name) = @_;
 	my $cpu_cnt = 0;
 	eval {
-		my $cpus = $self->{lxc}->get_cgroup($name, "cpuset.cpus");
+		my $cpus = "N/A";
+                $cpus = $self->{lxc}->get_cgroup($name, "cpuset.cpus");
 		my @splited = split(/,/, $cpus);
 
 		foreach my $part (@splited) {
@@ -107,15 +108,16 @@ sub get_all_info
 			$info{'hostname'} = "N/A";
 		};
 		if ($ghost == 0) {
-			my $df = `df -B 1 $root_path`;
-			my ($total, $free) = $df =~ m/\s+(\d+)\s+\d+\s+(\d+)/g;
-
+			$info{'disk_total_mb'} = "N/A";
+			$info{'disk_free_mb'} = "N/A";
+			my $df, $total, $free;
+                        if (-d $root_path) {
+                                $df = `df -B 1 $root_path`;
+			        ($total, $free) = $df =~ m/\s+(\d+)\s+\d+\s+(\d+)/g;
+                        }
 			if (defined($total)) {
 				$info{'disk_total_mb'} =  sprintf("%.2f", $self->{lxc}->convert_size($total, 'MiB', 0));
 				$info{'disk_free_mb'} =  sprintf("%.2f", $self->{lxc}->convert_size($free, 'MiB', 0));
-			} else {
-				$info{'disk_total_mb'} = "N/A";
-				$info{'disk_free_mb'} = "N/A";
 			}
 			$info{'status'} = lc($self->{lxc}->status($vm));
 		} else {

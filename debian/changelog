@@ -1,3 +1,11 @@
+lxctl (0.3.1-13) lucid; urgency=low
+
+  * Set IFNAME to 'none' by default. It does not try to rename interfaces.
+  * Fixed vz->lxc migration by adding VZ_RSYNC_OPTS, where exclude paths
+    contains '%vied%' which is replaced whith conteiner VEID.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 22 Mar 2012 17:59:44 +0400
+
 lxctl (0.3.1-12) lucid; urgency=low
 
   * Small fix at lxctl.yaml - now migration should be a little bit safer
