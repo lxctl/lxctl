@@ -154,7 +154,9 @@ sub set_ifname
 		$options{'ifname'} = $options{'ipaddr'};
 		$options{'ifname'} =~ s/\d+\.\d+\.(\d+).(\d+)/$1$2/g;
 		$options{'ifname'} = "lxc" . $options{'ifname'};
-	}
+	} elsif ($options{'ifname'} eq "none") {
+            return;
+        }
 
 	print "Setting interface (host part) name to $options{'ifname'}\n";	
 
