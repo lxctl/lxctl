@@ -110,7 +110,9 @@ sub get_all_info
 		if ($ghost == 0) {
 			$info{'disk_total_mb'} = "N/A";
 			$info{'disk_free_mb'} = "N/A";
-			my $df, $total, $free;
+			my $df;
+                        my $total;
+                        my $free;
                         if (-d $root_path) {
                                 $df = `df -B 1 $root_path`;
 			        ($total, $free) = $df =~ m/\s+(\d+)\s+\d+\s+(\d+)/g;

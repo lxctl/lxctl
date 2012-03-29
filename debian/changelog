@@ -1,3 +1,15 @@
+lxctl (0.3.1-15) lucid; urgency=low
+
+  * Fix of stupid mistake.
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 29 Mar 2012 19:56:18 +0400
+
+lxctl (0.3.1-14) lucid; urgency=low
+
+  * Fixed list and added noatime as mount option by default
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Thu, 29 Mar 2012 17:27:42 +0400
+
 lxctl (0.3.1-13) lucid; urgency=low
 
   * Set IFNAME to 'none' by default. It does not try to rename interfaces.
