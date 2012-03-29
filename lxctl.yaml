@@ -19,7 +19,7 @@ root:
 fs:
   FS: ext4
   FS_OPTS: -b 4096
-  FS_MOUNT_OPTS: defaults,barrier=0
+  FS_MOUNT_OPTS: defaults,barrier=0,noatime
 os:
   OS_TEMPLATE: ubuntu-10.04-amd64
 set:
