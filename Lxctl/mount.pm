@@ -43,7 +43,11 @@ sub add
 		my $cmd = "mount";
 		$cmd .= " -t $options{'fs'}" if defined($options{'fs'});
 		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e "$root_path/$contname/rootfs/$options{'to'}");
-		$cmd .= " -o $options{'mountoptions'} $options{'from'} $root_path/$contname/rootfs/$options{'to'}";
+                my $from = $options{'from'};
+                if ($options{'from'} =~ m/^UUID=([a-f0-9-]{36})$/i) {
+                    $from = " -U " . $from;
+                }
+		$cmd .= " -o $options{'mountoptions'} $from $root_path/$contname/rootfs/$options{'to'}";
 		system("$cmd");
 	}
 

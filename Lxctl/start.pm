@@ -112,7 +112,11 @@ sub do
 				$cmd .= " -t $mp{'fs'}";
 			}
 			mkpath("$to") if (! -e "$to");
-			$cmd .= " -o $mp{'opts'} $mp{'from'} $to";
+                        my $from = $mp{'from'};
+                        if ($from =~ m/^UUID=([a-f0-9-]{36})$/i) {
+                                 $from = " -U " . $from;
+                        }
+			$cmd .= " -o $mp{'opts'} $from $to";
 			system("$cmd");
 		}
 	} } else {
