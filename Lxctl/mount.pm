@@ -28,7 +28,7 @@ sub add
 	$options{'from'} || die "Don't know what to mount.\n\n";
 	$options{'to'} || die "Don't know where to mount.\n\n";
 
-	-e $options{'from'} || die "You are trying to mount void. Lxctl does not able to do it. Yet.\n\n";
+        -e $options{'from'} || $options{'from'} =~ m/^UUID/ || die "You are trying to mount void. Lxctl does not able to do it. Yet.\n\n";
 
 	if (!defined($options{'mountoptions'})) {
 		print "No options specified, using telepathy...\n";
@@ -44,8 +44,8 @@ sub add
 		$cmd .= " -t $options{'fs'}" if defined($options{'fs'});
 		mkpath("$root_path/$contname/rootfs/$options{'to'}") if (! -e "$root_path/$contname/rootfs/$options{'to'}");
                 my $from = $options{'from'};
-                if ($options{'from'} =~ m/^UUID=([a-f0-9-]{36})$/i) {
-                    $from = " -U " . $from;
+                if ($from =~ m/^UUID=([a-f0-9-]{36})$/i) {
+                        $from = " -U " . $1;
                 }
 		$cmd .= " -o $options{'mountoptions'} $from $root_path/$contname/rootfs/$options{'to'}";
 		system("$cmd");
