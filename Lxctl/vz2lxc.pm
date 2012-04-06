@@ -69,7 +69,7 @@ sub vz_migrate
 	$rsync_opts = $config->get_option_from_main('rsync', 'VZ_RSYNC_OPTS');
 	$rsync_opts ||= "-aH --delete --numeric-ids --exclude '%veid%/proc/*' --exclude '%veid%/sys/*'";
 
-        $rqync_opts =~ s/%veid%/$options{'remname'}/g;
+        $rsync_opts =~ s/%veid%/$options{'remname'}/g;
 
 	die "Failed to create container!\n\n"
 		if system("lxctl create $options{'contname'} --empty --rootsz $options{'rootsz'} --save");
