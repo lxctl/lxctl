@@ -1,3 +1,9 @@
+lxctl (0.3.1-19) lucid; urgency=low
+
+  * One more UUID fix
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Tue, 10 Apr 2012 00:16:10 +0400
+
 lxctl (0.3.1-18) lucid; urgency=low
 
   * Fix

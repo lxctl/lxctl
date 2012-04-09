@@ -114,7 +114,7 @@ sub do
 			mkpath("$to") if (! -e "$to");
                         my $from = $mp{'from'};
                         if ($from =~ m/^UUID=([a-f0-9-]{36})$/i) {
-                                 $from = " -U " . $from;
+                                 $from = " -U " . $1;
                         }
 			$cmd .= " -o $mp{'mountoptions'} $from $to";
 			system("$cmd");
