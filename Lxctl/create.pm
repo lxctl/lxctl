@@ -19,14 +19,8 @@ my $helper = new LxctlHelpers::helper;
 
 my %options = ();
 
-my $lxc;
-my $yaml_conf_dir;
-my $lxc_conf_dir;
-my $root_mount_path;
-my $templates_path;
-my $vg;
-
 my @args;
+my %conf;
 
 sub check_existance
 {
@@ -65,9 +59,6 @@ sub create_root
 
 			# Creating empty file of desired size. It's a bit slower then system dd, but still rather fast (around 10% slower then dd)
 			system("dd if=/dev/zero of=$root_mount_path/$options{'contname'}.raw bs=$bs count=$count");
-#			open my $raw_file, '>' , "$root_mount_path/$options{'contname'}.raw";
-#			print $raw_file "\0" x($count*$bs);
-#			close ($raw_file);
 
 			$helper->mkfs($options{'fs'}, "$root_mount_path/$options{'contname'}.raw", $options{'mkfsopts'});
 		}
@@ -289,12 +280,14 @@ sub deploy_packets
 }
 
 
-sub do
+sub act
 {
-	my ($self) = shift;
-	my $config = shift;
+	my $self = shift;
+        my $config = shift;
+        @args = @_;
+        %conf = %{$config};
 
-	$options{'contname'} = $_[0]
+	$options{'contname'} = $args[0]
 		or die "Name the container please!\n\n";
 
 	if ( $options{'contname'} =~ m/^-/ ) {
@@ -361,11 +354,11 @@ sub new
 
 	$lxc = new Lxc::object;
 
-	$root_mount_path = $lxc->get_roots_path();
-	$templates_path = $lxc->get_template_path();
-	$yaml_conf_dir = $lxc->get_config_path();
-	$lxc_conf_dir = $lxc->get_lxc_conf_dir();
-	$vg = $lxc->get_vg();
+        #$root_mount_path = $lxc->get_roots_path();
+        #$templates_path = $lxc->get_template_path();
+        #$yaml_conf_dir = $lxc->get_config_path();
+        #$lxc_conf_dir = $lxc->get_lxc_conf_dir();
+        #$vg = $lxc->get_vg();
 
 	return $self;
 }

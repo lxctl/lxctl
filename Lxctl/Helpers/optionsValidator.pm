@@ -139,6 +139,7 @@ sub validate_root_mp
 	}
 	if ($options{'roottype'} eq 'lvm' && ! -e "$options{'root_mp'}->{'from'}") {
 		die "Options error: 'root_mp/from': $options{'root_mp'}->{'from'} does not exist.\n";
+        }
 }
 
 sub do

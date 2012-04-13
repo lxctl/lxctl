@@ -6,68 +6,65 @@ use warnings;
 #use diagnostics -verbose;
 
 use Getopt::Long;
-#use Pod::Usage;
-#use Digest::SHA qw(sha1_hex);
 use Exporter 'import';
+use YAML::Tiny qw(LoadFile);
 
 use Lxc::object;
 
-use LxctlHelpers::helper;
-#use LxctlHelpers::config;
-use YAML::Tiny qw(LoadFile);
-use LxctlHelper::configValidator;
+use Lxctl::Helpers::helper;
+use Lxctl::Helpers::configValidator;
 
 
-our $version = "0.3.1";
+our $version = "0.4.0";
 our $api_ver = 1;
 
 our $Lxc = Lxc::object->new;
 
 sub help_me
 {
-	my $action = shift;
-	return if !$action;
+    my $action = shift;
+    return if !$action;
 
-	if ($action eq '--version' || $action eq '-v') {
-		print "Version: $version\n";
-		exit 0;
-	}
+    if ($action eq '--version' || $action eq '-v') {
+        print "Version: $version\n";
+        exit 0;
+    }
 
-	if ($action eq '--help' || $action eq '-h') {
-		pod2usage(1);
-	}
-	$Lxc->check();
+    if ($action eq '--help' || $action eq '-h') {
+        #pod2usage(1);
+        print "Here will be help.\n";
+    }
+    $Lxc->check();
 }
 
 sub lets_rock
 {
-	#my $config = new LxctlHelpers::config;
-	#$config->load_main();
-	my $action = shift @ARGV;
+    #my $config = new LxctlHelpers::config;
+    #$config->load_main();
+    my $action = shift @ARGV;
 
-	help_me($action);
+    help_me($action);
 
-	my $class;
-	my $helper = new LxctlHelpers::helper;
-	my $validator = new LxctlHelpers::configValidator;
+    my $class;
+    my $helper = new Lxctl::Helpers::helper;
+    my $validator = new Lxctl::Helpers::configValidator;
 
-	my $config_yaml = LoadFile('/etc/lxctl/lxctl.yaml');
-	my $validator = new LxctlHelper::configValidator;
-	my %config = $validator->validate($config_yaml);
+    my $config_yaml = YAML::Tiny->read('/etc/lxctl/lxctl.yaml');
+    my %config = $validator->validate($config_yaml->[0]);
 
-	eval {
-		$helper->load_module("Lxctl/$action.pm");
-		$action = "Lxctl::$action";
-		$action->import;
-		$class = new $action;
-	} or do {
-		#die "Unsupported command!\n\n$@\n\n";
-		die "$@";
-	};
+    eval {
+        $helper->load_module("Lxctl/$action.pm");
+        $action = "Lxctl::$action";
+        $action->import;
+        $class = new $action;
+    } or do {
+        #die "Unsupported command!\n\n$@\n\n";
+        die "$@";
+    };
 
-	$class->do(\%config, @ARGV);
+    $class->act(\%config, @ARGV);
 
-	return;
+    return;
 }
 
 lets_rock;
