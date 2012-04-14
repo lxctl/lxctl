@@ -1,5 +1,4 @@
 src/bin/lxctl /usr/bin/lxctl
- 
 src/etc/lxctl.yaml /etc/lxctl/lxctl.yaml
 src/etc/bash_completion.d/lxctl /etc/bash_completion.d/lxctl
 src/etc/bash_completion.d/lxctl_create /etc/bash_completion.d/lxctl_create
@@ -16,7 +15,6 @@ src/etc/bash_completion.d/lxctl_stop /etc/bash_completion.d/lxctl_stop
 src/etc/bash_completion.d/lxctl_unfreeze /etc/bash_completion.d/lxctl_unfreeze
 src/etc/bash_completion.d/lxctl_pid /etc/bash_completion.d/lxctl_pid
 src/etc/bash_completion.d/lxctl_vz2lxc /etc/bash_completion.d/lxctl_vz2lxc
- 
 src/lib/Lxc/object.pm /usr/lib/perl/5.10/Lxc/
 src/lib/Lxctl/create.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/destroy.pm /usr/lib/perl/5.10/Lxctl/
@@ -32,7 +30,6 @@ src/lib/Lxctl/start.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/stop.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/unfreeze.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/vz2lxc.pm /usr/lib/perl/5.10/Lxctl/
- 
 src/lib/LxctlHelpers/config.pm /usr/lib/perl/5.10/LxctlHelpers/
 src/lib/LxctlHelpers/getters.pm /usr/lib/perl/5.10/LxctlHelpers/
 src/lib/LxctlHelpers/helper.pm /usr/lib/perl/5.10/LxctlHelpers/
