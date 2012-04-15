@@ -231,8 +231,6 @@ Migrate container from localhost to remote host.
 
 B<Required arguments>
 
-	--vmname - container name
-
 	--tohost - to which host we should migrate
 
 B<Optional arguments>
