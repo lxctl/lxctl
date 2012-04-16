@@ -75,7 +75,7 @@ lxctl - Control various aspects of lxc.
 
 lxctl [action] [vmname] [options]
 
-See lxctl --man or lxctl --help for more info
+See lxctl --help for more info
 
 =head1 OPTIONS
 
@@ -84,10 +84,6 @@ See lxctl --man or lxctl --help for more info
 =item B<--help>
 
 Print a breif help message and exists
-
-=item B<--man>
-
-Prints the manual page and exits.
 
 =item B<start>
 
@@ -235,8 +231,6 @@ Migrate container from localhost to remote host.
 
 B<Required arguments>
 
-	--vmname - container name
-
 	--tohost - to which host we should migrate
 
 B<Optional arguments>
@@ -280,8 +274,6 @@ B<Optional arguments>
 Migrate VZ-container from remote host to local LXC container.
 
 B<Required arguments>
-
-	--vmname - container name
 
 	--fromhost - from which host we should migrate
 
