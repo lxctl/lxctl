@@ -56,9 +56,9 @@ sub defaultSize
 
 sub new
 {
-        my $class = shift;
+        my $parent = shift;
         my $self = {};
-        bless $self, $class;
+        bless $self, $parent;
 
 	return $self;
 }

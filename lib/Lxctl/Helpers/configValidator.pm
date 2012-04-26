@@ -40,7 +40,7 @@ sub validate_paths
 #   path: Default path to logs.
 sub validate_log
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'log'})) {
 		$config{'log'} = {};
@@ -59,7 +59,7 @@ sub validate_log
 #   kernel_config: Enable (or disable) check for lxc-related kernel features.
 sub validate_check
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'check'})) {
 		$config{'check'} = {};
@@ -77,7 +77,7 @@ sub validate_check
 #  opts: Default rsync options used at migration.
 sub validate_rsync
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'rsync'})) {
 		$config{'rsync'} = {};
@@ -98,7 +98,7 @@ sub validate_rsync
 #  fs: Default root filesystem.
 sub validate_root
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'root'})) {
 		$config{'root'} = {};
@@ -119,7 +119,7 @@ sub validate_root
 #  opts: Default logical volume creation options.
 sub validate_root_lvm
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'root_lvm'})) {
 		$config{'root_lvm'} = {};
@@ -138,7 +138,7 @@ sub validate_root_lvm
 #  path: Default volume group.
 sub validate_root_file
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'root_file'})) {
 		$config{'root_file'} = {};
@@ -156,7 +156,7 @@ sub validate_root_file
 #  default: Default template.
 sub validate_os
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'templates'})) {
 		$config{'templates'} = {};
@@ -181,7 +181,7 @@ sub validate_os
 #  ifname: Default external network interface naming convention
 sub validate_network
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'network'})) {
 		$config{'network'} = {};
@@ -206,7 +206,7 @@ sub validate_network
 #  columns: Default columns for `lxctl list` output.
 sub validate_list
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($config{'list'})) {
 		$config{'list'} = {};
@@ -223,8 +223,8 @@ sub validate_list
 # Get hash and return it validated.
 sub validate
 {
-	my $class;
-	($class, $conf) = @_;
+	my $self;
+	($self, $conf) = @_;
 	%config = %$conf;
 
 	validate_paths();
@@ -243,9 +243,9 @@ sub validate
 
 sub new
 {
-	my $class = shift;
+	my $parent = shift;
 	my $self = {};
-	bless $self, $class;
+	bless $self, $parent;
 
 	$validator = new Lxctl::Helpers::generalValidators;
 

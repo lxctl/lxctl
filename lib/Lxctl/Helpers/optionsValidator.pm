@@ -10,7 +10,7 @@ my %options;
 # Sets default value to given %config key.
 sub set_default_value
 {
-	my ($class, $key, $value) = @_;
+	my ($self, $key, $value) = @_;
 
 	if (!defined($options{$key})) {
 		$options{$key} = $value;
@@ -36,7 +36,7 @@ sub set_default_value
 # hostname: oxcd8o
 sub set_plain_defaults
 {
-	my $class = shift;
+	my $self = shift;
 
 	set_default_value('api_ver', 0);
 	set_default_value('autostart', 1);
@@ -55,7 +55,7 @@ sub set_plain_defaults
 # contname: oxcd8o.dev.yandex.net
 sub validate_contname
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($options{'contname'})) {
 		die "Options error: 'contname': there is no container name in config file.\n";
@@ -66,7 +66,7 @@ sub validate_contname
 # TODO: add uuid generation.
 sub validate_uuid
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($options{'contname'})) {
 		$options{'contname'} = 'blah-blah-blah';
@@ -76,7 +76,7 @@ sub validate_uuid
 # config: '/var/lib/lxc/oxcd8o.dev.yandex.net'
 sub validate_config
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($options{'config'})) {
 		$options{'config'} = "$config{'paths'}->{'LXC_CONF_DIR'}/$options{'contname'}";
@@ -91,7 +91,7 @@ sub validate_config
 # root: '/var/lxc/root/oxcd8o.dev.yandex.net'
 sub validate_root 
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($options{'root'})) {
 		$options{'root'} = "$config{'paths'}->{'ROOT_MOUNT_PATH'}/$options{'contname'}";
@@ -111,7 +111,7 @@ sub validate_root
 # TODO: roottype == file
 sub validate_root_mp
 {
-	my $class = shift;
+	my $self = shift;
 
 	if (!defined($options{'root_mp'}) && $options{'roottype'} ne 'share') {
 		$options{'root_mp'} = {};
@@ -144,7 +144,7 @@ sub validate_root_mp
 
 sub do
 {
-	my $class = shift;
+	my $self = shift;
 
 	validate_contname;
 	set_plain_defaults;
@@ -156,9 +156,9 @@ sub do
 
 sub new
 {
-	my $class = shift;
+	my $parent = shift;
 	my $self = {};
-	bless $self, $class;
+	bless $self, $parent;
 
 	return $self;
 }
