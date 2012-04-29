@@ -11,7 +11,7 @@ use YAML::Tiny qw(LoadFile);
 
 use Lxc::object;
 
-use Lxctl::Helpers::helper;
+use Lxctl::Helpers::common;
 use Lxctl::Helpers::configValidator;
 
 
@@ -46,7 +46,7 @@ sub lets_rock
     help_me($action);
 
     my $class;
-    my $helper = new Lxctl::Helpers::helper;
+    my $helper = new Lxctl::Helpers::common;
     my $validator = new Lxctl::Helpers::configValidator;
 
     my $config_yaml = YAML::Tiny->read('/etc/lxctl/lxctl.yaml');

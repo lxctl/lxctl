@@ -4,6 +4,8 @@ package Lxctl::Helpers::configValidator;
 # and command line are merged, then they are validated to correctness and
 # presence.
 
+use Data::UUID;
+
 my %config;
 my %options;
 
@@ -63,13 +65,13 @@ sub validate_contname
 }
 
 # uuid: 8291d9e6-b2f1-438e-be0b-391e75db1da5
-# TODO: add uuid generation.
 sub validate_uuid
 {
 	my $self = shift;
 
-	if (!defined($options{'contname'})) {
-		$options{'contname'} = 'blah-blah-blah';
+	if (!defined($options{'uuid'})) {
+		my $ug = new Data::UUID;
+		$options{'uuid'} = $ug->create_str();
 	}
 }
 
@@ -142,7 +144,7 @@ sub validate_root_mp
         }
 }
 
-sub do
+sub act
 {
 	my $self = shift;
 

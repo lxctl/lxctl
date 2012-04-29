@@ -134,7 +134,7 @@ sub get_all_info
 	return @vms_result;
 }
 
-sub do
+sub act
 {
 	my $self = shift;
 	my $config = shift;

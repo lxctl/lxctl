@@ -11,6 +11,8 @@ use Lxc::object;
 use Lxctl::set;
 use Lxctl::Helpers::config;
 use Lxctl::Helpers::common;
+use Lxctl::Helpers::generalValidators;
+use Lxctl::Helpers::configValidator;
 use Data::UUID;
 use File::Path;
 
@@ -21,6 +23,13 @@ my %options = ();
 
 my @args;
 my %conf;
+
+my $root_mount_path;
+my $templates_path;
+my $yaml_conf_dir;
+my $lxc_conf_dir;
+my $vg;
+my $lxc;
 
 sub check_existance
 {
@@ -99,6 +108,7 @@ sub create_root
 sub check_create_options
 {
 	my $self = shift;
+	my $generalValidator = new Lxctl::Helpers::generalValidators;
 	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
@@ -124,29 +134,18 @@ sub check_create_options
 		%options = %opts_new;
 	}
 
-	if (!defined($options{'contname'})) {
-		die "No container name specified\n\n";
-	}
-
 	my $ug = new Data::UUID;
 	$options{'uuid'} = $ug->create_str();
-
-	$options{'ostemplate'} ||= $config->get_option_from_main('os', 'OS_TEMPLATE');
-	$options{'config'} ||= "$lxc_conf_dir/$options{'contname'}";
-	$options{'root'} ||= "$root_mount_path/$options{'contname'}";
-	$options{'rootsz'} ||= $config->get_option_from_main('root', 'ROOT_SIZE');
-	$options{'autostart'} ||= "1";
-	$options{'roottype'} ||= $config->get_option_from_main('root', 'ROOT_TYPE');
-
-	if (!defined($options{'empty'})) {
-		$options{'empty'} = 0;
-	}
-
-	$options{'debug'} ||= 0;
-
-	if (!defined($options{'save'})) {
-		$options{'save'} = 1;
-	}
+	$generalValidator->string(\%options, "contname");
+	$generalValidator->defaultString(\%options, 'ostemplate', $config->get_option_from_main('os', 'OS_TEMPLATE'));
+	$generalValidator->defaultString(\%options, 'config', "$lxc_conf_dir/$options{'contname'}");
+	$generalValidator->defaultString(\%options, 'root', "$root_mount_path/$options{'contname'}");
+	$generalValidator->defaultSize(\%options, 'rootsz', $config->get_option_from_main('root', 'ROOT_SIZE'));
+	$generalValidator->defaultInt(\%options, 'autostart', 1);
+	$generalValidator->defaultString(\%options, 'roottype', $config->get_option_from_main('root', 'ROOT_TYPE'));
+	$generalValidator->defaultInt(\%options, 'empty', 0);
+	$generalValidator->defaultInt(\%options, 'debug', 0);
+	$generalValidator->defaultInt(\%options, 'save', 1);
 
 	if ($options{'empty'} == 0) {
 		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
@@ -159,21 +158,20 @@ sub check_create_options
 
 	my @domain_tokens = split(/\./, $options{'contname'});
 	my $tmp_hostname = shift @domain_tokens;
-	$options{'hostname'} ||= $tmp_hostname;
-	$options{'searchdomain'} ||= join '.', @domain_tokens;
-	if ($options{'searchdomain'} eq "") {
-		$options{'searchdomain'} = $config->get_option_from_main('set', 'SEARCHDOMAIN');
-	}
+	
+	$generalValidator->defaultString(\%options, 'hostname', $tmp_hostname);
+	$generalValidator->defaultString(\%options, 'searchdomain', join('.', @domain_tokens));
+	$generalValidator->defaultString(\%options, 'searchdomain', $config->get_option_from_main('set', 'SEARCHDOMAIN'));
+	$generalValidator->defaultString(\%options, 'fs', $config->get_option_from_main('fs', 'FS'));
+	$generalValidator->defaultString(\%options, 'mkfsopts', $config->get_option_from_main('fs', 'FS_OPTS'));
+	$generalValidator->defaultString(\%options, 'mountoptions', $config->get_option_from_main('fs', 'FS_MOUNT_OPTS'));
 
 	if ($options{'debug'}) {
 		foreach my $key (sort keys %options) {
 			print "options{$key} = $options{$key} \n";
 		};
 	}
-	$options{'fs'} ||= $config->get_option_from_main('fs', 'FS');
-	$options{'mkfsopts'} ||= $config->get_option_from_main('fs', 'FS_OPTS');
-	$options{'mountoptions'} ||= $config->get_option_from_main('fs', 'FS_MOUNT_OPTS');
-
+die;
 	return $options{'uuid'};
 }
 
@@ -279,7 +277,6 @@ sub deploy_packets
 	return;
 }
 
-
 sub act
 {
 	my $self = shift;
@@ -298,6 +295,7 @@ sub act
 	}
 
 	$self->check_create_options();
+	die "TEST: OK";
 	$self->check_existance();
 	print "Creating container $options{'contname'}...\n";
 	$self->create_root();
@@ -354,11 +352,11 @@ sub new
 
 	$lxc = new Lxc::object;
 
-        #$root_mount_path = $lxc->get_roots_path();
-        #$templates_path = $lxc->get_template_path();
-        #$yaml_conf_dir = $lxc->get_config_path();
-        #$lxc_conf_dir = $lxc->get_lxc_conf_dir();
-        #$vg = $lxc->get_vg();
+        $root_mount_path = $lxc->get_roots_path();
+        $templates_path = $lxc->get_template_path();
+        $yaml_conf_dir = $lxc->get_config_path();
+        $lxc_conf_dir = $lxc->get_lxc_conf_dir();
+        $vg = $lxc->get_vg();
 
 	return $self;
 }

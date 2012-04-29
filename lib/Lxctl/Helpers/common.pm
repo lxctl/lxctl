@@ -165,7 +165,8 @@ sub get_config #(filename, searchstring)
 	return 0;
 }
 
-sub lvcreate{
+sub lvcreate #(name, vgname, size)
+{
 	my ($self, $name, $vg, $size) = @_;
 	my $subname = (caller(0))[3];
 
@@ -177,7 +178,8 @@ sub lvcreate{
 	system("lvcreate -L $size -n $name $vg 1>/dev/null");
 }
 
-sub mkfs{
+sub mkfs #(fstype, devname, opts)
+{
 	my ($self, $fstype, $dev_name, $opts) = @_;
 	my $subname = (caller(0))[3];
 	$opts ||= "";
@@ -215,28 +217,32 @@ sub cidr2ip #(cidr_bits)
 	return join('.', unpack('C4', pack('N', $bits)));
 }
 
-sub get_ip{
-        my ($self, $name) = @_;
-        my $subname = (caller(0))[3];
+sub get_ip #(vm_name)
+{
+	my ($self, $name) = @_;
+	my $subname = (caller(0))[3];
 
-        if (!defined($name)) {
-                die "$subname: No vmname is given\n";
-        }
+	if (!defined($name)) {
+		die "$subname: No vmname is given\n";
+	}
 
-        my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
-        $path = $path . "/etc/network/interfaces";
+	my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
+	$path = $path . "/etc/network/interfaces";
 
-        open my $config_file, '<', "$path" or return "0.0.0.0";
+	open my $config_file, '<', "$path" or return "0.0.0.0";
 
-        my @interfaces = <$config_file>;
-        my @ip = grep { /address / } @interfaces;
+	my @interfaces = <$config_file>;
+	my @ip = grep { /address / } @interfaces;
 	return "0.0.0.0" if (scalar(@ip) == 0);
-        $ip[0] =~ s/  address //;
+	$ip[0] =~ s/  address //;
+
 	close($config_file);
+
 	return "0.0.0.0" if (!defined($ip[0]));
+
 	chop($ip[0]);
 
-        return "$ip[0]";
+	return "$ip[0]";
 }
 
 sub new
