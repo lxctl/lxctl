@@ -1,4 +1,4 @@
-package LxctlHelpers::helper;
+package Lxctl::Helpers::common;
 
 use strict;
 use warnings;
@@ -213,6 +213,30 @@ sub cidr2ip #(cidr_bits)
 
 	$bits = 2**32 - 2**(32-$bits);
 	return join('.', unpack('C4', pack('N', $bits)));
+}
+
+sub get_ip{
+        my ($self, $name) = @_;
+        my $subname = (caller(0))[3];
+
+        if (!defined($name)) {
+                die "$subname: No vmname is given\n";
+        }
+
+        my $path = $self->{'lxc'}->get_conf($name, "lxc.rootfs");
+        $path = $path . "/etc/network/interfaces";
+
+        open my $config_file, '<', "$path" or return "0.0.0.0";
+
+        my @interfaces = <$config_file>;
+        my @ip = grep { /address / } @interfaces;
+	return "0.0.0.0" if (scalar(@ip) == 0);
+        $ip[0] =~ s/  address //;
+	close($config_file);
+	return "0.0.0.0" if (!defined($ip[0]));
+	chop($ip[0]);
+
+        return "$ip[0]";
 }
 
 sub new

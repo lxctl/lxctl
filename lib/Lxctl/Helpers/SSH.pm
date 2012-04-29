@@ -1,4 +1,4 @@
-package LxctlHelpers::SSH;
+package Lxctl::Helpers::SSH;
 
 use strict;
 use warnings;

@@ -9,13 +9,13 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Lxc::object;
 
 use Lxctl::set;
-use LxctlHelpers::config;
-use LxctlHelpers::helper;
+use Lxctl::Helpers::config;
+use Lxctl::Helpers::common;
 use Data::UUID;
 use File::Path;
 
-my $config = new LxctlHelpers::config;
-my $helper = new LxctlHelpers::helper;
+my $config = new Lxctl::Helpers::config;
+my $helper = new Lxctl::Helpers::common;
 
 my %options = ();
 

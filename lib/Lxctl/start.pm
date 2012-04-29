@@ -4,10 +4,10 @@ use strict;
 use warnings;
 
 use Lxc::object;
-use LxctlHelpers::config;
+use Lxctl::Helpers::config;
 use File::Path;
 
-my $config = new LxctlHelpers::config;
+my $config = new Lxctl::Helpers::config;
 
 my %options = ();
 

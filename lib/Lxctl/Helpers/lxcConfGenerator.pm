@@ -1,4 +1,4 @@
-package LxctlHelpers::lxcConfGenerator;
+package Lxctl::Helpers::lxcConfGenerator;
 
 use strict;
 use warnings;

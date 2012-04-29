@@ -6,9 +6,9 @@ use autodie qw(:all);
 use Getopt::Long;
 
 use Lxc::object;
-use LxctlHelpers::helper;
+use Lxctl::Helpers::common;
 use Lxctl::set;
-use LxctlHelpers::config;
+use Lxctl::Helpers::config;
 use File::Path;
 
 my %options = ();
@@ -96,8 +96,8 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = new LxctlHelpers::helper;
-	$self->{'config'} = new LxctlHelpers::config;
+	$self->{'helper'} = new Lxctl::Helpers::common;
+	$self->{'config'} = new Lxctl::Helpers::config;
 
 	$root_mount_path = $self->{'lxc'}->get_roots_path();
 	$yaml_conf_dir = $self->{'lxc'}->get_config_path();

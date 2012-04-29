@@ -11,8 +11,8 @@ use Regexp::IPv6 qw($IPv6_re);
 
 use Lxc::object;
 
-use LxctlHelpers::helper;
-use LxctlHelpers::config;
+use Lxctl::Helpers::common;
+use Lxctl::Helpers::config;
 
 my %options = ();
 
@@ -21,7 +21,7 @@ my $lxc_conf_dir;
 my $root_mount_path;
 my $templates_path;
 my $vg;
-my $config = new LxctlHelpers::config;
+my $config = new Lxctl::Helpers::config;
 
 
 sub mac_create
@@ -413,7 +413,7 @@ sub new
 	bless $self, $class;
 
 	$self->{'lxc'} = Lxc::object->new;
-	$self->{'helper'} = LxctlHelpers::helper->new;
+	$self->{'helper'} = Lxctl::Helpers::common->new;
 
 	$root_mount_path = $self->{'lxc'}->get_roots_path();
 	$templates_path = $self->{'lxc'}->get_template_path();

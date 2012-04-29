@@ -5,8 +5,8 @@ use warnings;
 
 use Getopt::Long;
 use Lxc::object;
-use LxctlHelpers::config;
-use LxctlHelpers::SSH;
+use Lxctl::Helpers::config;
+use Lxctl::Helpers::SSH;
 
 my %options = ();
 
@@ -37,7 +37,7 @@ sub migrate_get_opt
     defined($options{'tohost'}) or 
         die "To which host should I migrate?\n\n";
 
-    $ssh = LxctlHelpers::SSH->connect($options{'tohost'}, $options{'remuser'}, $options{'remport'});
+    $ssh = Lxctl::Helpers::SSH->connect($options{'tohost'}, $options{'remuser'}, $options{'remport'});
 }
 
 sub re_rsync
@@ -145,7 +145,7 @@ sub new
     $templates_path = $self->{'lxc'}->get_template_path();
     $yaml_conf_dir = $self->{'lxc'}->get_config_path();
     $lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
-    $config = new LxctlHelpers::config;
+    $config = new Lxctl::Helpers::config;
 
     return $self;
 }

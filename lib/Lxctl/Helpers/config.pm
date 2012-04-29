@@ -1,4 +1,4 @@
-package LxctlHelpers::config;
+package Lxctl::Helpers::config;
 
 use strict;
 use warnings;

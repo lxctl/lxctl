@@ -6,15 +6,13 @@ use warnings;
 use Getopt::Long;
 
 use Lxc::object;
-use LxctlHelpers::getters;
-use LxctlHelpers::config;
+use Lxctl::Helpers::config;
 use Data::UUID;
 use List::Util qw[max];
 
-my $getters = new LxctlHelpers::getters;
 my %sizes;
 my $sep = "  ";
-my $config_reader = new LxctlHelpers::config;
+my $config_reader = new Lxctl::Helpers::config;
 my @vms;
 
 sub get_cpus
@@ -94,7 +92,7 @@ sub get_all_info
 			$info{'cpushares'} = 1024;
 		};
 		eval {
-			my $ip = $getters->get_ip($vm);
+			my $ip = $self->{helper}->get_ip($vm);
 			($info{'ip'}) = $ip =~ m/(\d+\.\d+\.\d+\.\d+)/;
 			1;
 		} or do {
@@ -218,7 +216,7 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$self->{lxc} = new Lxc::object;
-	$self->{helper} = new LxctlHelpers::helper;
+	$self->{helper} = new Lxctl::Helpers::common;
 	return $self;
 }
 

@@ -5,7 +5,7 @@ use warnings;
 use autodie qw(:all);
 
 use Lxc::object;
-use LxctlHelpers::config;
+use Lxctl::Helpers::config;
 use Getopt::Long;
 use File::Path;
 use List::Util qw[max];
@@ -14,7 +14,7 @@ my %options = ();
 
 my $yaml_conf_dir;
 my $lxc;
-my $config = new LxctlHelpers::config;
+my $config = new Lxctl::Helpers::config;
 my $contname;
 my $root_path;
 
