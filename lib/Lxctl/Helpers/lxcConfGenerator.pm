@@ -8,10 +8,10 @@ use warnings;
 # Add list of allowed devices to config
 # Add interfaces to config
 
-use Lxc:object;
-use LxctlHelpers::config;
+use Lxc::object;
+use Lxctl::Helpers::config;
 
-my $config = new LxctlHelpers::config;
+my $config = new Lxctl::Helpers::config;
 my %options = ();
 
 my $yaml_conf_dir;
@@ -24,7 +24,7 @@ my $lxc_log_level;
 
 sub convert_name
 {
-	my $class = shift;
+	my $self = shift;
 
 	my $o = "lxc.utsname = $options{'contname'}\n";
 
@@ -33,7 +33,7 @@ sub convert_name
 
 sub convert_paths
 {
-	my $class = shift;
+	my $self = shift;
 
 	my $o = "";
 	$o .= "lxc.rootfs = $options{'root'}/rootfs\n";
@@ -44,7 +44,7 @@ sub convert_paths
 
 sub convert_pts
 {
-	my $class = shift;
+	my $self = shift;
 
 	my $o = "";
 	$o .= "lxc.tty = $options{'ttys'}\n";
@@ -55,12 +55,12 @@ sub convert_pts
 
 sub convert_devices
 {
-	my $class = shift;
+	my $self = shift;
 
 	my $o = "";
-	$o .= "lxc.cgroup.devices.deny a\n"
-	for my $d (@$options{'devices'}) {
-		$o .= "lxc.cgroup.devices.allow = $d\n"
+	$o .= "lxc.cgroup.devices.deny a\n";
+	for my $d (@{$options{'devices'}}) {
+		$o .= "lxc.cgroup.devices.allow = $d\n";
 	}
 
 	$self->{'output'} .= $o;
@@ -68,16 +68,16 @@ sub convert_devices
 
 sub convert_network
 {
-	my $class = shift;
+	my $self = shift;
 
 	my $o = "";
-	for my $iface (@$options{'interfaces'}) {
-		$o .= "lxc.network.type = $iface{'type'}\n"
-		$o .= "lxc.network.flags = $iface{'flags'}\n"
-		$o .= "lxc.network.link = $iface{'bridge'}\n"
-		$o .= "lxc.network.name = $iface{'name'}\n"
-		$o .= "lxc.network.mtu = $iface{'mtu'}\n"
-		$o .= "lxc.network.hwaddr = $iface{'mac'}\n"
+	for my $iface (@{$options{'interfaces'}}) {
+		$o .= "lxc.network.type = $$iface{'type'}\n";
+		$o .= "lxc.network.flags = $$iface{'flags'}\n";
+		$o .= "lxc.network.link = $$iface{'bridge'}\n";
+		$o .= "lxc.network.name = $$iface{'name'}\n";
+		$o .= "lxc.network.mtu = $$iface{'mtu'}\n";
+		$o .= "lxc.network.hwaddr = $$iface{'mac'}\n";
 		$o .= "\n";
 	}
 
@@ -86,8 +86,8 @@ sub convert_network
 
 sub convert
 {
-	my $class = shift;
-	%options = push;
+	my $self = shift;
+#	%options = push;
 
 	convert_name;
 	convert_paths;

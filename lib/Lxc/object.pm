@@ -769,7 +769,7 @@ sub init {
 	$self->{CONFIG_PATH} = "/etc/lxctl";
 	$self->{ROOTS_PATH} = "/var/lxc/root";
 	$self->{TEMPLATE_PATH} = "/var/lxc/templates";
-	$self->{LXC_CONF_DIR} = "/var/lib/lxc";
+	$self->{LXC_CONF_DIR} = "/var/lxc/conf";
 	$self->{CGROUP_PATH} = "/cgroup";
 	$self->{VG} = "vg00";
 }

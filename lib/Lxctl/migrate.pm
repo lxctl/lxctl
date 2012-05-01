@@ -97,7 +97,7 @@ sub remote_deploy
 
     print "Creating remote container...\n";
 
-    $extra_opts = "";
+    my $extra_opts = "";
     if (defined($options{'rootsz'})) {
         $extra_opts .= " --rootsz $options{'rootsz'}";
     }

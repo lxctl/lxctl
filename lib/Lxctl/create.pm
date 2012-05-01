@@ -18,8 +18,10 @@ use File::Path;
 
 my $config = new Lxctl::Helpers::config;
 my $helper = new Lxctl::Helpers::common;
+my $generalValidator = new Lxctl::Helpers::generalValidators;
 
 my %options = ();
+my %lxc_opts = ();
 
 my @args;
 my %conf;
@@ -30,26 +32,6 @@ my $yaml_conf_dir;
 my $lxc_conf_dir;
 my $vg;
 my $lxc;
-
-sub check_existance
-{
-	my $self = shift;
-
-	die "Container lxc conf directory $lxc_conf_dir/$options{'contname'} already exists!\n\n" 
-		if -e "$lxc_conf_dir/$options{'contname'}";
-	die "Container root directory $root_mount_path/$options{'contname'} already exists!\n\n"
-		if -e "$root_mount_path/$options{'contname'}";
-	die "Container root logical volume /dev/$vg/$options{'contname'} already exists!\n\n"
-		if -e "/dev/$vg/$options{'contname'}";
-
-	if ($options{'empty'} == 0) {
-		if (! -e "$templates_path/$options{'ostemplate'}.tar.gz") {
-			die "There is no such template: $templates_path/$options{'ostemplate'}.tar.gz\n\n";
-		}
-	}
-
-	return;
-}
 
 sub create_root
 {
@@ -108,7 +90,6 @@ sub create_root
 sub check_create_options
 {
 	my $self = shift;
-	my $generalValidator = new Lxctl::Helpers::generalValidators;
 	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
@@ -138,8 +119,8 @@ sub check_create_options
 	$options{'uuid'} = $ug->create_str();
 	$generalValidator->string(\%options, "contname");
 	$generalValidator->defaultString(\%options, 'ostemplate', $config->get_option_from_main('os', 'OS_TEMPLATE'));
-	$generalValidator->defaultString(\%options, 'config', "$lxc_conf_dir/$options{'contname'}");
-	$generalValidator->defaultString(\%options, 'root', "$root_mount_path/$options{'contname'}");
+	$generalValidator->defaultString(\%options, 'config', "$lxc_opts{'lxc_conf_dir'}/$options{'contname'}");
+	$generalValidator->defaultString(\%options, 'root', "$lxc_opts{'root_mount_path'}/$options{'contname'}");
 	$generalValidator->defaultSize(\%options, 'rootsz', $config->get_option_from_main('root', 'ROOT_SIZE'));
 	$generalValidator->defaultInt(\%options, 'autostart', 1);
 	$generalValidator->defaultString(\%options, 'roottype', $config->get_option_from_main('root', 'ROOT_TYPE'));
@@ -148,6 +129,7 @@ sub check_create_options
 	$generalValidator->defaultInt(\%options, 'save', 1);
 
 	if ($options{'empty'} == 0) {
+		# TODO: Do we really need this warnings?
 		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
 		if (! $options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
 			$options{'netmask'} || print "You did not specify network mask! Using default.\n";
@@ -171,8 +153,28 @@ sub check_create_options
 			print "options{$key} = $options{$key} \n";
 		};
 	}
-die;
+
 	return $options{'uuid'};
+}
+
+sub check_existance
+{
+	my $self = shift;
+
+	die "Container lxc conf directory $lxc_opts{'conf_dir'}/$options{'contname'} already exists!\n\n" 
+		if -e "$lxc_opts{'conf_dir'}/$options{'contname'}";
+	die "Container root directory $lxc_opts{'root_mount_path'}/$options{'contname'} already exists!\n\n"
+		if -e "$lxc_opts{'root_mount_path'}/$options{'contname'}";
+	die "Container root logical volume /dev/$lxc_opts{'vg'}/$options{'contname'} already exists!\n\n"
+		if -e "/dev/$lxc_opts{'vg'}/$options{'contname'}";
+
+	if ($options{'empty'} == 0) {
+		if (! -e "$lxc_opts{'templates_path'}/$options{'ostemplate'}.tar.gz") {
+			die "There is no such template: $lxc_opts{'templates_path'}/$options{'ostemplate'}.tar.gz\n\n";
+		}
+	}
+
+	return;
 }
 
 sub deploy_template
@@ -349,14 +351,21 @@ sub new
 	my $class = shift;
 	my $self = {};
 	bless $self, $class;
-
 	$lxc = new Lxc::object;
 
-        $root_mount_path = $lxc->get_roots_path();
-        $templates_path = $lxc->get_template_path();
-        $yaml_conf_dir = $lxc->get_config_path();
-        $lxc_conf_dir = $lxc->get_lxc_conf_dir();
-        $vg = $lxc->get_vg();
+	$lxc_opts{'root_mount_path'} = $lxc->get_roots_path();
+	$lxc_opts{'templates_path'} = $lxc->get_template_path();
+	$lxc_opts{'yaml_conf_dir'} = $lxc->get_config_path();
+	$lxc_opts{'lxc_conf_dir'} = $lxc->get_lxc_conf_dir();
+	$lxc_opts{'vg'} = $lxc->get_vg();
+
+	$generalValidator->defaultString(\%lxc_opts, 'root_mount_path', '/var/lxc/root');
+	$generalValidator->defaultString(\%lxc_opts, 'templates_path', '/var/lxc/templates');
+	$generalValidator->defaultString(\%lxc_opts, 'lxc_conf_dir', '/var/lxc/conf');
+	$generalValidator->defaultString(\%lxc_opts, 'yaml_conf_dir', '/etc/lxctl');
+	$generalValidator->defaultString(\%lxc_opts, 'vg', 'vg00');
+
+	$lxc = new Lxc::object;
 
 	return $self;
 }

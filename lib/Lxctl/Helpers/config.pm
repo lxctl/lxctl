@@ -44,11 +44,11 @@ sub load_main
 				$self->{'lxc'}->set_yaml_config_path($yaml->[0]->{'paths'}->{'YAML_CONFIG_PATH'});
 			};
 
-			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
-			$self->{'lxc'}->set_lxc_log_path($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'});
-			$self->{'lxc'}->set_lxc_log_level($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'});
-			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
-			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
+			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'}) if defined($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
+			$self->{'lxc'}->set_lxc_log_path($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'}) if defined($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'});
+			$self->{'lxc'}->set_lxc_log_level($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'}) if defined($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'});
+			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'}) if defined($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
+			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'}) if defined($yaml->[0]->{'paths'}->{'VG'});
 
 			my $skip_check = $yaml->[0]->{'check'}->{'skip_kernel_config_check'};
 			if (defined($skip_check)) {
