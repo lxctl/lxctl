@@ -10,6 +10,7 @@ use warnings;
 
 use Lxc::object;
 use Lxctl::Helpers::config;
+use Lxctl::Helpers::generalValidators;
 
 my $config = new Lxctl::Helpers::config;
 my %options = ();
@@ -86,14 +87,15 @@ sub convert_network
 
 sub convert
 {
-	my $self = shift;
-#	%options = push;
+	my ($self, $opts) = @_;
+	die "BUG: Options not passed to lxcConfGenerator!" if (!defined($opts));
+	%options = $$opts;
 
-	convert_name;
-	convert_paths;
-	convert_pts;
-	convert_devices;
-	convert_network;
+	$self->convert_name;
+	$self->convert_paths;
+	$self->convert_pts;
+	$self->convert_devices;
+	$self->convert_network;
 }
 
 sub new
@@ -110,6 +112,7 @@ sub new
 	$lxc_log_level = $lxc->get_lxc_log_level();
 
 	$self->{'output'} = "";
+	$self->{'generalValidator'} = new Lxctl::Helpers::generalValidators;
 
 	return $self;
 }

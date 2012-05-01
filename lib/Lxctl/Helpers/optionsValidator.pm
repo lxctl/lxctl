@@ -1,15 +1,36 @@
-package Lxctl::Helpers::configValidator;
+package Lxctl::Helpers::optionsValidator;
 
-# This is helper for validation container options. First, options from config
-# and command line are merged, then they are validated to correctness and
-# presence.
 
+=pod
+=head1 NAME
+Lxctl::Helpers::optionsValidators - config class.
+
+=head1 SYNOPSIS
+
+TODO
+
+=head1 DESCRIPTION
+
+This is helper for validation container options. First, options from config
+and command line are merged, then they are validated to correctness and
+presence.
+
+=head1 METHODS
+=cut
+
+use Lxctl::Helpers::generalValidators;
 use Data::UUID;
+use Data::Dumper;
 
 my %config;
 my %options;
+my %append;
+my %generalOpts = ();
+my $debug = 1;
 
+=pod
 # Sets default value to given %config key.
+=cut
 sub set_default_value
 {
 	my ($self, $key, $value) = @_;
@@ -19,6 +40,7 @@ sub set_default_value
 	}
 }
 
+=pod
 # Initialize configuration options, wich don't require some complex logic.
 # I've commented out options, which shoul not be written to config because
 # of their lifetime - single session. They should be added from command line
@@ -36,25 +58,29 @@ sub set_default_value
 ## save: 1
 # searchdomain: dev.yandex.net
 # hostname: oxcd8o
+=cut
 sub set_plain_defaults
 {
 	my $self = shift;
 
-	set_default_value('api_ver', 0);
-	set_default_value('autostart', 1);
-	#set_default_value('debug', 0);
-	#set_default_value('empty', 0);
-	set_default_value('mkfsopts', $config{'fs'}->{'FS_OPTS'});
-	set_default_value('mountoptions', $config{'fs'}->{'FS_MOUNT_OPTS'});
-	set_default_value('ostemplate', $config{'os'}->{'OS_TEMPLATE'});
-	set_default_value('rootsz', $config{'root'}->{'ROOT_SIZE'});
-	set_default_value('roottype', $config{'root'}->{'ROOT_TYPE'});
-	#set_default_value('save', 1);
-	set_default_value('searchdomain', $config{'set'}->{'SEARCHDOMAIN'});
-	set_default_value('hostname', $options{'contname'});
+	$self->{'validator'}->validate(\%options, 'api_ver', 'int', 0);
+	$self->{'validator'}->validate(\%options, 'autostart', 'int', 1);
+	$self->{'validator'}->validate(\%options, 'debug', 'int', 0);
+	$self->{'validator'}->validate(\%options, 'empty', 'int', 0);
+	$self->{'validator'}->validate(\%options, 'save', 'int', 1);
+	$self->{'validator'}->validate(\%options, 'contname', 'str', undef);
+	$self->{'validator'}->validate(\%options, 'mkfsopts', 'str', $config{'fs'}->{'FS_OPTS'});
+	$self->{'validator'}->validate(\%options, 'mountoptions', 'str', $config{'fs'}->{'FS_MOUNT_OPTS'});
+	$self->{'validator'}->validate(\%options, 'ostemplate', 'str', $config{'os'}->{'OS_TEMPLATE'});
+	$self->{'validator'}->validate(\%options, 'rootsz', 'str', $config{'root'}->{'ROOT_SIZE'});
+	$self->{'validator'}->validate(\%options, 'roottype', 'str', $config{'root'}->{'ROOT_TYPE'});
+	$self->{'validator'}->validate(\%options, 'searchdomain', 'str', $config{'set'}->{'SEARCHDOMAIN'});
+	$self->{'validator'}->validate(\%options, 'hostname', 'str', $options{'contname'});
 }
 
+=pod
 # contname: oxcd8o.dev.yandex.net
+=cut
 sub validate_contname
 {
 	my $self = shift;
@@ -64,7 +90,9 @@ sub validate_contname
 	}
 }
 
+=pod
 # uuid: 8291d9e6-b2f1-438e-be0b-391e75db1da5
+=cut
 sub validate_uuid
 {
 	my $self = shift;
@@ -75,7 +103,9 @@ sub validate_uuid
 	}
 }
 
+=pod
 # config: '/var/lib/lxc/oxcd8o.dev.yandex.net'
+=cut
 sub validate_config
 {
 	my $self = shift;
@@ -90,7 +120,9 @@ sub validate_config
 	}
 }
 
+=pod
 # root: '/var/lxc/root/oxcd8o.dev.yandex.net'
+=cut
 sub validate_root 
 {
 	my $self = shift;
@@ -105,12 +137,14 @@ sub validate_root
 	}
 }
 
+=pod
 # rootfs_mp:
 #   from: '/dev/vg00/oxcd8o.dev.yandex.net'
 #   fs: ext4
 #   opts: defaults,barrier=0
 #   to: '/var/lxc/root/oxcd8o.dev.yandex.net'
 # TODO: roottype == file
+=cut
 sub validate_root_mp
 {
 	my $self = shift;
@@ -144,13 +178,95 @@ sub validate_root_mp
         }
 }
 
+=pod
+validate_hash(\%what, \%parameters)
+=cut
+sub validate_hash
+{
+	my ($self, $what, $params) = @_;
+	print "validate_hash\n" if ($debug == 1);
+	my %parameters = %{$params};
+
+	for my $key (sort keys %parameters) {
+		print " DEBUG: validate_hash: $key\n" if ($debug == 1);
+		next if (!defined($params->{"$key"}));
+		if (ref($params->{"$key"}) eq "HASH") {
+			if (!defined($what->{"$key"})) {
+				$what->{"$key"} = {};
+			}
+			print "  DEBUG: validating: $key with $parameters{$key}\n" if ($debug == 1);
+			$self->validate_hash($what->{"$key"}, $parameters{"$key"});
+			next;
+		} elsif (ref($params->{"$key"}) ne "ARRAY") {
+			print "=====================BEGIN OF DATA DUMP=====================\n";
+			print "BUG: Unknown type in 'sub validate_hash' reference on key: $key. Please, send following dump to developers:\n\n";
+			print Dumper(%parameters);
+			die "======================END OF DATA DUMP======================\n";
+		}
+		my @val = @{$params->{"$key"}};
+		$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
+	}
+}
+
+=pod
+act
+=cut
 sub act
 {
-	my $self = shift;
+	my ($self, $conf, $opt, $apnd) = @_;
+	my %conf_dummy;
+	%config = %{$conf} if defined($conf);
+	%options = %{$opt} if defined($opt);
+	%append = %{$apnd} if defined($appnd);
+	
+	%configOpts = (
+		'os' => {
+			'CONFIG_DIR' => ['dir', '/var/lxc/conf'],
+			'OS_TEMPLATE' => ['str', 'ubuntu-10.04-amd64'],
+			},
+		'root' => {
+			'ROOT_TYPE' => ['enum', 'lvm', ['lvm', 'file', 'share']],
+			'MOUNT_PATH' => ['dir', '/var/lxc/root'],
+			'ROOT_SIZE' => ['size', '10G'],
+			},
+		'set' => {
+			'SEARCHDOMAIN' => ['str', 'local'],
+			},
+		'fs' => {
+			'FS_OPTS' => ['str', ''],
+			'FS_MOUNT_OPTS' => ['str', 'noatime'],
+			},
+		'lvm' => ['str', 'vg00'],
+		);
+	$self->validate_hash(\%config, \%configOpts);
+	print Dumper(%config);
 
-	validate_contname;
-	set_plain_defaults;
-	validate_config;
+	die "No container name specified\n" if (!defined($options{'contname'}));
+
+	%generalOpts = (
+			'api_ver' => ['int', 0],
+			'autostart' =>  ['int', 1],
+			'debug' =>  ['int', 0],
+			'empty' =>  ['int', 0],
+			'save' =>  ['int', 1],
+			'contname' =>  ['str', undef],
+			'mkfsopts' =>  ['str', $config{'fs'}->{'FS_OPTS'}],
+			'mountoptions' =>  ['str', $config{'fs'}->{'FS_MOUNT_OPTS'}],
+			'ostemplate' =>  ['str', $config{'os'}->{'OS_TEMPLATE'}],
+			'config' => ['dir', "$config{'os'}->{'CONFIG_DIR'}/$options{'contname'}", 0],
+			'root' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", 0],
+			'rootsz' =>  ['str', $config{'root'}->{'ROOT_SIZE'}],
+			'roottype' =>  ['enum', $config{'root'}->{'ROOT_TYPE'}, ['lvm', 'file', 'share']],
+			'searchdomain' =>  ['str', $config{'set'}->{'SEARCHDOMAIN'}],
+			'hostname' =>  ['str', $options{'contname'}],
+	);
+	if (%append) {
+		%generalOpts = (%generalOpts, %append);
+	}
+
+	$self->validate_hash(\%options, \%generalOpts);
+	die "OKOKOK\n";
+	
 	validate_uuid;
 	validate_root;
 	validate_root_mp;
@@ -160,7 +276,12 @@ sub new
 {
 	my $parent = shift;
 	my $self = {};
+	my $debug_tmp = shift;
+	if (defined($debug_tmp)) {
+		$debug = $debug_tmp;
+	}
 	bless $self, $parent;
+	$self->{'validator'} = new Lxctl::Helpers::generalValidators;
 
 	return $self;
 }

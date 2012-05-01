@@ -2,19 +2,35 @@ package Lxctl::Helpers::configValidator;
 
 use Lxctl::Helpers::generalValidators;
 
-# Main purpouse of this helper is to ensure that there are all fields of main
-# config filled. If some of fields (and even blocks) are missed, they will be
-# created with default values.
+=pod
+=head1 NAME
+Lxctl::Helpers::configValidators - config class.
+
+=head1 SYNOPSIS
+
+TODO
+
+=head1 DESCRIPTION
+
+Main purpouse of this helper is to ensure that there are all fields of main
+config filled. If some of fields (and even blocks) are missed, they will be
+created with default values.
+
+=head1 METHODS
+=cut
 
 my $validator;
 my %config;
 
-# paths: Different paths to different files.
-#   yaml: Default path to .yaml files of containers.
-#   lxc: Default path to lxc containers' configs.
-#   root: Default paths to containers' roots. 
-#   template: Default path to templates.
-#   module: Additional modules path.
+=pod
+B<validate_paths()>
+ paths: Different paths to different files.
+   yaml: Default path to .yaml files of containers.
+   lxc: Default path to lxc containers' configs.
+   root: Default paths to containers' roots. 
+   template: Default path to templates.
+   module: Additional modules path.
+=cut
 sub validate_paths
 {
 	my $self = shift;
@@ -35,9 +51,12 @@ sub validate_paths
 	}
 }
 
-# log: Different log settings.
-#   level: Default loglevel.
-#   path: Default path to logs.
+=pod
+B<validate_log()>
+ log: Different log settings.
+   level: Default loglevel.
+   path: Default path to logs.
+=cut
 sub validate_log
 {
 	my $self = shift;
@@ -55,8 +74,11 @@ sub validate_log
 	}
 }
 
-# check: Different checks of compatibility.
-#   kernel_config: Enable (or disable) check for lxc-related kernel features.
+=pod
+B<validate_check()>
+ check: Different checks of compatibility.
+   kernel_config: Enable (or disable) check for lxc-related kernel features.
+=cut
 sub validate_check
 {
 	my $self = shift;
@@ -73,8 +95,11 @@ sub validate_check
 	}
 }
 
-#rsync: Rsync-related ortions.
-#  opts: Default rsync options used at migration.
+=pod
+B<validate_rsync()>
+ rsync: Rsync-related ortions.
+   opts: Default rsync options used at migration.
+=cut
 sub validate_rsync
 {
 	my $self = shift;
@@ -92,10 +117,13 @@ sub validate_rsync
 	}
 }
 
-#root: Different parameters of containers' roots.
-#  root_size: Default root size (only for LVMs).
-#  root_type: Default root type.
-#  fs: Default root filesystem.
+=pod
+B<validate_root()>
+ root: Different parameters of containers' roots.
+   root_size: Default root size (only for LVMs).
+   root_type: Default root type.
+   fs: Default root filesystem.
+=cut
 sub validate_root
 {
 	my $self = shift;
@@ -114,9 +142,12 @@ sub validate_root
 	}
 }
 
-#root_lvm: Default options for rootfs on LVM.
-#  vg: Default volume group.
-#  opts: Default logical volume creation options.
+=pod
+B<validate_root_lvm()>
+ root_lvm: Default options for rootfs on LVM.
+   vg: Default volume group.
+   opts: Default logical volume creation options.
+=cut
 sub validate_root_lvm
 {
 	my $self = shift;
@@ -134,8 +165,11 @@ sub validate_root_lvm
 	}
 }
 
-#root_file: Default options for rootfs in the file.
-#  path: Default volume group.
+=pod
+B<validate_root_file()>
+ root_file: Default options for rootfs in the file.
+   path: Default volume group.
+=cut
 sub validate_root_file
 {
 	my $self = shift;
@@ -152,8 +186,11 @@ sub validate_root_file
 	}
 }
 
-#templates: Templates' settings.
-#  default: Default template.
+=pod
+B<validate_os()>
+ templates: Templates' settings.
+   default: Default template.
+=cut
 sub validate_os
 {
 	my $self = shift;
@@ -170,15 +207,18 @@ sub validate_os
 	}
 }
 
-#network: Different system settings.
-#  type: Default network interface type
-#  flags: Default network interface flags
-#  bridge: Default bridge
-#  name: Default network interface name
-#  mtu: Default MTU
-#  mac_source: Default source for MAC generation
-#  searchdomain: Default searchdomain option in /etc/resolv.conf
-#  ifname: Default external network interface naming convention
+=pod
+B<validate_network()>
+ network: Different system settings.
+   type: Default network interface type
+   flags: Default network interface flags
+   bridge: Default bridge
+   name: Default network interface name
+   mtu: Default MTU
+   mac_source: Default source for MAC generation
+   searchdomain: Default searchdomain option in /etc/resolv.conf
+   ifname: Default external network interface naming convention
+=cut
 sub validate_network
 {
 	my $self = shift;
@@ -202,8 +242,11 @@ sub validate_network
 	}
 }
 
-#list: Different options of container listung.
-#  columns: Default columns for `lxctl list` output.
+=pod
+B<validate_list()>
+ list: Different options of container listung.
+   columns: Default columns for `lxctl list` output.
+=cut
 sub validate_list
 {
 	my $self = shift;
@@ -220,12 +263,16 @@ sub validate_list
 	}
 }
 
-# Get hash and return it validated.
+=pod
+B<validate()>
+ Get hash and return it validated.
+=cut
 sub validate
 {
 	my $self;
+	return %config;
 	($self, $conf) = @_;
-	%config = %$conf;
+	%config = %{$conf};
 
 	validate_paths();
 	validate_log();

@@ -13,3 +13,5 @@ lxctl:
  * Workaround LVB bug with LV names (eg. if LV test exists, creating of test1 will fail) - bug is not working!
  * Check IP correctness.
  * IP-based MAC-address generaton.
+ * Replace eval's with Try::Tiny
+ * Hardcode perl's version

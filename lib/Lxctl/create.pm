@@ -12,6 +12,7 @@ use Lxctl::set;
 use Lxctl::Helpers::config;
 use Lxctl::Helpers::common;
 use Lxctl::Helpers::generalValidators;
+use Lxctl::Helpers::optionsValidator;
 use Lxctl::Helpers::configValidator;
 use Data::UUID;
 use File::Path;
@@ -19,6 +20,7 @@ use File::Path;
 my $config = new Lxctl::Helpers::config;
 my $helper = new Lxctl::Helpers::common;
 my $generalValidator = new Lxctl::Helpers::generalValidators;
+my $optionsValidator = new Lxctl::Helpers::optionsValidator;
 
 my %options = ();
 my %lxc_opts = ();
@@ -99,6 +101,10 @@ sub check_create_options
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
 		'pkgopt=s', 'addpkg=s', 'ifname=s');
 
+	print "RRRRRRRRRRRRRR: \n";
+	$optionsValidator->act(undef, \%options);
+	die;
+
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
 			print "Cannot find config-file $options{'load'}, ignoring...\n";
@@ -117,7 +123,7 @@ sub check_create_options
 
 	my $ug = new Data::UUID;
 	$options{'uuid'} = $ug->create_str();
-	$generalValidator->string(\%options, "contname");
+	$generalValidator->defaultString(\%options, 'contname', undef);
 	$generalValidator->defaultString(\%options, 'ostemplate', $config->get_option_from_main('os', 'OS_TEMPLATE'));
 	$generalValidator->defaultString(\%options, 'config', "$lxc_opts{'lxc_conf_dir'}/$options{'contname'}");
 	$generalValidator->defaultString(\%options, 'root', "$lxc_opts{'root_mount_path'}/$options{'contname'}");
