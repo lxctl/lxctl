@@ -101,7 +101,6 @@ sub check_create_options
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
 		'pkgopt=s', 'addpkg=s', 'ifname=s');
 
-	print "RRRRRRRRRRRRRR: \n";
 	$optionsValidator->act(undef, \%options);
 	die;
 

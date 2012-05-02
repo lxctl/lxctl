@@ -19,8 +19,9 @@ use warnings;
 use strict;
 use 5.010001;
 use feature "switch";
+use Data::UUID;
 
-my $debug = 1;
+my $debug = 0;
 
 =pod
 B<validate(\%hash, 'key_name', 'type', $default_value, @optional_arguments)>
@@ -68,6 +69,9 @@ sub validate
 		when (/(S|size|Size)/) {
 			$self->defaultSize(\%local_hash, 'val', $default);
 		}
+		when (/(U|UUID|uuid)/) {
+			$self->defaultUUID(\%local_hash, 'val', $default);
+		}
 		default {
 			die "Unknown type";
 		}
@@ -80,10 +84,28 @@ sub validate
 	}
 }
 
+sub defaultUUID
+{
+	my ($self, $hash, $key, $gen) = @_;
+
+	if (!defined($hash->{$key})) {
+		if (!defined($gen)) {
+			die "$key is not defined.\n";
+		}
+		if ($gen eq 0) {
+			die "$key is not defined.\n";
+		}
+		my $ug = new Data::UUID;
+		$hash->{$key} = $ug->create_str();
+	} elsif (! $hash->{"$key"} =~ m/[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+/) {
+		die "Incorrect value $hash->{$key}.\n";
+	}
+}
+
 sub defaultEnum
 {
 	my ($self, $hash, $key, $default, @values) = @_;
-	print "DEBUG: defaultEnum: $key, $default\n" if ($debug == 1);
+	print "DEBUG: defaultEnum: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -99,7 +121,7 @@ sub defaultEnum
 sub defaultInt
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultInt: $key, $default\n" if ($debug == 1);
+	print "DEBUG: defaultInt: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -115,7 +137,7 @@ sub defaultInt
 sub defaultBool
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultBool: $key, $default\n" if ($debug == 1);
+	print "DEBUG: defaultBool: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -131,7 +153,7 @@ sub defaultBool
 sub defaultString
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultString: $key\n" if ($debug == 1);
+	print "DEBUG: defaultString: $key\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -150,7 +172,7 @@ sub defaultDir
 	if (!defined($exists)) {
 		$exists = 1;
 	}
-	print "DEBUG: defaultDir: $key, $default\n" if ($debug == 1);
+	print "DEBUG: defaultDir: $key, $default\n" if ($debug >= 1);
 
 	$self->defaultString($hash, $key, $default);
 	if ((! -d "$hash->{$key}") && ($exists == 1)) {
@@ -161,7 +183,7 @@ sub defaultDir
 sub defaultSize
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultSize: $key, $default\n" if ($debug == 1);
+	print "DEBUG: defaultSize: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
