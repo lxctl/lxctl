@@ -101,9 +101,6 @@ sub check_create_options
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
 		'pkgopt=s', 'addpkg=s', 'ifname=s');
 
-	$optionsValidator->act(undef, \%options);
-	die;
-
 	if (defined($options{'load'})) {
 		if ( ! -f $options{'load'}) {
 			print "Cannot find config-file $options{'load'}, ignoring...\n";
@@ -120,18 +117,7 @@ sub check_create_options
 		%options = %opts_new;
 	}
 
-	my $ug = new Data::UUID;
-	$options{'uuid'} = $ug->create_str();
-	$generalValidator->defaultString(\%options, 'contname', undef);
-	$generalValidator->defaultString(\%options, 'ostemplate', $config->get_option_from_main('os', 'OS_TEMPLATE'));
-	$generalValidator->defaultString(\%options, 'config', "$lxc_opts{'lxc_conf_dir'}/$options{'contname'}");
-	$generalValidator->defaultString(\%options, 'root', "$lxc_opts{'root_mount_path'}/$options{'contname'}");
-	$generalValidator->defaultSize(\%options, 'rootsz', $config->get_option_from_main('root', 'ROOT_SIZE'));
-	$generalValidator->defaultInt(\%options, 'autostart', 1);
-	$generalValidator->defaultString(\%options, 'roottype', $config->get_option_from_main('root', 'ROOT_TYPE'));
-	$generalValidator->defaultInt(\%options, 'empty', 0);
-	$generalValidator->defaultInt(\%options, 'debug', 0);
-	$generalValidator->defaultInt(\%options, 'save', 1);
+	$optionsValidator->act(undef, \%options);
 
 	if ($options{'empty'} == 0) {
 		# TODO: Do we really need this warnings?
@@ -145,13 +131,6 @@ sub check_create_options
 
 	my @domain_tokens = split(/\./, $options{'contname'});
 	my $tmp_hostname = shift @domain_tokens;
-	
-	$generalValidator->defaultString(\%options, 'hostname', $tmp_hostname);
-	$generalValidator->defaultString(\%options, 'searchdomain', join('.', @domain_tokens));
-	$generalValidator->defaultString(\%options, 'searchdomain', $config->get_option_from_main('set', 'SEARCHDOMAIN'));
-	$generalValidator->defaultString(\%options, 'fs', $config->get_option_from_main('fs', 'FS'));
-	$generalValidator->defaultString(\%options, 'mkfsopts', $config->get_option_from_main('fs', 'FS_OPTS'));
-	$generalValidator->defaultString(\%options, 'mountoptions', $config->get_option_from_main('fs', 'FS_MOUNT_OPTS'));
 
 	if ($options{'debug'}) {
 		foreach my $key (sort keys %options) {

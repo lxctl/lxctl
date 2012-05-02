@@ -202,8 +202,8 @@ sub new
         my $parent = shift;
         my $self = {};
         bless $self, $parent;
-	$debug = shift;
-	$debug = 1 if (!defined($debug));
+	my $debug_tmp = shift;
+	$debug = $debug_tmp if (defined($debug_tmp));
 
 	return $self;
 }

@@ -10,7 +10,7 @@ use warnings;
 
 use Lxc::object;
 use Lxctl::Helpers::config;
-use Lxctl::Helpers::generalValidators;
+use Lxctl::Helpers::optionsValidator;
 
 my $config = new Lxctl::Helpers::config;
 my %options = ();
@@ -89,6 +89,19 @@ sub convert
 {
 	my ($self, $opts) = @_;
 	die "BUG: Options not passed to lxcConfGenerator!" if (!defined($opts));
+	my %extra = (
+		'interfaces' => {
+			'type' => ['enum', 'veth', ['macvlan','veth']], # TODO: add all other types
+			'flags' => ['str', 'up'],
+			'bridge' => ['str', 'br0'],
+			'name' => ['str', 'eth0'],
+			'mtu' => ['int', '1500'],
+			'mac' => ['str', ''],
+		},
+		'ttys' => ['int', 4],
+		'pts' => ['int', 1024],
+		);
+	$self->{'validator'}->act(undef, $opts, \%extra);
 	%options = $$opts;
 
 	$self->convert_name;
@@ -112,7 +125,7 @@ sub new
 	$lxc_log_level = $lxc->get_lxc_log_level();
 
 	$self->{'output'} = "";
-	$self->{'generalValidator'} = new Lxctl::Helpers::generalValidators;
+	$self->{'validator'} = new Lxctl::Helpers::optionsValidator;
 
 	return $self;
 }

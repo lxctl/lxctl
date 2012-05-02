@@ -84,7 +84,6 @@ act
 sub act
 {
 	my ($self, $conf, $opt, $apnd) = @_;
-	my %conf_dummy;
 	%config = %{$conf} if defined($conf);
 	%options = %{$opt} if defined($opt);
 	%append = %{$apnd} if defined($appnd);
@@ -143,10 +142,6 @@ sub act
 	}
 
 	$self->validate_hash(\%options, \%generalOpts);
-
-#	validate_uuid;
-#	validate_root;
-#	validate_root_mp;
 }
 
 sub new

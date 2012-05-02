@@ -274,16 +274,16 @@ sub validate
 	($self, $conf) = @_;
 	%config = %{$conf};
 
-	validate_paths();
-	validate_log();
-	validate_check();
-	validate_rsync();
-	validate_root();
-	validate_root_lvm();
-	validate_root_file();
-	validate_os();
-	validate_network();
-	validate_list();
+	$self->validate_paths();
+	$self->validate_log();
+	$self->validate_check();
+	$self->validate_rsync();
+	$self->validate_root();
+	$self->validate_root_lvm();
+	$self->validate_root_file();
+	$self->validate_os();
+	$self->validate_network();
+	$self->validate_list();
 
 	return %config;
 }
