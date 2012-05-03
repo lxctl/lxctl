@@ -49,27 +49,35 @@ sub validate
 		$local_hash{'val'} = $hash->{"$key"};
 	}
 
+	print "   DEBUG: validate: $type\n" if ($debug >= 2);
 	given ($type) {
-		when (/(s|str|string)/) {
+		when (/^(s|str|string)$/) {
+			print "   DEBUG: validate: validating '$type' as STRING\n" if ($debug >= 2);
 			$self->defaultString(\%local_hash, 'val', $default);
 		}
-		when (/(i|int|integer)/) {
+		when (/^(i|int|integer)$/) {
+			print "   DEBUG: validate: validating '$type' as INT\n" if ($debug >= 2);
 			$self->defaultInt(\%local_hash, 'val', $default);
 		}
-		when (/(b|bool|boolean)/) {
+		when (/^(b|bool|boolean)$/) {
+			print "   DEBUG: validate: validating '$type' as BOOL\n" if ($debug >= 2);
 			$self->defaultBool(\%local_hash, 'val', $default);
 		}
-		when (/(e|enum)/) {
+		when (/^(e|enum)$/) {
+			print "   DEBUG: validate: validating '$type' as ENUM\n" if ($debug >= 2);
 			$self->defaultEnum(\%local_hash, 'val', $default, @_);
 		}
-		when (/(d|dir|directory)/) {
+		when (/^(d|dir|directory)$/) {
+			print "   DEBUG: validate: validating '$type' as DIR\n" if ($debug >= 2);
 			my ($exists) = @_;
 			$self->defaultDir(\%local_hash, 'val', $default, $exists);
 		}
-		when (/(S|size|Size)/) {
+		when (/^(S|size|Size)$/) {
+			print "   DEBUG: validate: validating '$type' as SIZE\n" if ($debug >= 2);
 			$self->defaultSize(\%local_hash, 'val', $default);
 		}
-		when (/(U|UUID|uuid)/) {
+		when (/^(U|UUID|uuid)$/) {
+			print "   DEBUG: validate: validating '$type' as UUID\n" if ($debug >= 2);
 			$self->defaultUUID(\%local_hash, 'val', $default);
 		}
 		default {
@@ -105,7 +113,7 @@ sub defaultUUID
 sub defaultEnum
 {
 	my ($self, $hash, $key, $default, @values) = @_;
-	print "DEBUG: defaultEnum: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultEnum: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -121,7 +129,7 @@ sub defaultEnum
 sub defaultInt
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultInt: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultInt: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -129,15 +137,15 @@ sub defaultInt
 		} else {
 			$hash->{$key} = $default;
 		}
-	} elsif (! $hash->{$key} =~ m/^[0-9]+$/) {
-		die "Incorrect value $hash->{$key}.\n";
+	} elsif (! ($hash->{$key} =~ m/^[0-9]+$/)) {
+		die "Incorrect value '$hash->{$key}'.\n";
 	}
 }
 
 sub defaultBool
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultBool: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultBool: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
@@ -153,16 +161,17 @@ sub defaultBool
 sub defaultString
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultString: $key\n" if ($debug >= 1);
+	print "     DEBUG: defaultString: $key\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
+			$self->validate(\$default, undef, 'str', $default);
 			$hash->{$key} = $default;
 		}
-	} elsif (! ($hash->{$key} =~ m/^([a-zA-Z0-9_.,'"\*\/\-]|\s)*$/)) {
-		die "Incorrect value $hash->{$key}.\n";
+	} elsif (! ($hash->{$key} =~ m/^([a-zA-Z0-9_.,'"\*\/\-=]|\s)*$/)) {
+		die "Incorrect value: '$hash->{$key}'.\n";
 	}
 }
 
@@ -172,7 +181,7 @@ sub defaultDir
 	if (!defined($exists)) {
 		$exists = 1;
 	}
-	print "DEBUG: defaultDir: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultDir: $key, $default\n" if ($debug >= 1);
 
 	$self->defaultString($hash, $key, $default);
 	if ((! -d "$hash->{$key}") && ($exists == 1)) {
@@ -183,16 +192,16 @@ sub defaultDir
 sub defaultSize
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "DEBUG: defaultSize: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultSize: $key, $default\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
-			$self->defaultSize($default);
+			$self->validate(\$default, undef, 'size', $default);
 			$hash->{$key} = $default;
 		}
-	} elsif (! $hash->{$key} =~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/) {
+	} elsif (! ($hash->{$key} =~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/)) {
 		die "Incorrect value $hash->{$key}.\n";
 	}
 }

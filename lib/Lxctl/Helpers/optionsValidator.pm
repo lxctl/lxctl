@@ -75,6 +75,7 @@ sub validate_hash
 		my @val = @{$params->{"$key"}};
 		print "  DEBUG: $key, $val[0]\n" if ($debug >= 3);
 		$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
+		print "  DEBUG: after validate on '$key' is '".$what->{$key}."'\n" if ($debug >= 2);
 	}
 }
 
@@ -86,7 +87,7 @@ sub act
 	my ($self, $conf, $opt, $apnd) = @_;
 	%config = %{$conf} if defined($conf);
 	%options = %{$opt} if defined($opt);
-	%append = %{$apnd} if defined($appnd);
+	%append = %{$apnd} if defined($apnd);
 	
 	%configOpts = (
 		'os' => {
@@ -137,11 +138,11 @@ sub act
 				'to' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", 0],
 				},
 	);
-	if (%append) {
-		%generalOpts = (%generalOpts, %append);
+	if (keys %append) {
+		@generalOpts{keys %append} = values %append;
 	}
 
-	$self->validate_hash(\%options, \%generalOpts);
+	$self->validate_hash($opt, \%generalOpts);
 }
 
 sub new
