@@ -11,6 +11,7 @@ use warnings;
 use Lxc::object;
 use Lxctl::Helpers::config;
 use Lxctl::Helpers::optionsValidator;
+use Lxctl::set;
 
 my $config = new Lxctl::Helpers::config;
 my %options = ();

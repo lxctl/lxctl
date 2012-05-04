@@ -49,36 +49,50 @@ sub validate
 		$local_hash{'val'} = $hash->{"$key"};
 	}
 
+	my $real_default = $default;
+	if (ref($default) eq "CODE") {
+		print "CODE REF\n";
+		$real_default = &$default();
+	}
+
 	print "   DEBUG: validate: $type\n" if ($debug >= 2);
 	given ($type) {
 		when (/^(s|str|string)$/) {
 			print "   DEBUG: validate: validating '$type' as STRING\n" if ($debug >= 2);
-			$self->defaultString(\%local_hash, 'val', $default);
+			$self->defaultString(\%local_hash, 'val', $real_default);
 		}
 		when (/^(i|int|integer)$/) {
 			print "   DEBUG: validate: validating '$type' as INT\n" if ($debug >= 2);
-			$self->defaultInt(\%local_hash, 'val', $default);
+			$self->defaultInt(\%local_hash, 'val', $real_default);
 		}
 		when (/^(b|bool|boolean)$/) {
 			print "   DEBUG: validate: validating '$type' as BOOL\n" if ($debug >= 2);
-			$self->defaultBool(\%local_hash, 'val', $default);
+			$self->defaultBool(\%local_hash, 'val', $real_default);
 		}
 		when (/^(e|enum)$/) {
 			print "   DEBUG: validate: validating '$type' as ENUM\n" if ($debug >= 2);
-			$self->defaultEnum(\%local_hash, 'val', $default, @_);
+			$self->defaultEnum(\%local_hash, 'val', $real_default, @_);
 		}
 		when (/^(d|dir|directory)$/) {
 			print "   DEBUG: validate: validating '$type' as DIR\n" if ($debug >= 2);
 			my ($exists) = @_;
-			$self->defaultDir(\%local_hash, 'val', $default, $exists);
+			$self->defaultDir(\%local_hash, 'val', $real_default, $exists);
 		}
 		when (/^(S|size|Size)$/) {
 			print "   DEBUG: validate: validating '$type' as SIZE\n" if ($debug >= 2);
-			$self->defaultSize(\%local_hash, 'val', $default);
+			$self->defaultSize(\%local_hash, 'val', $real_default);
 		}
 		when (/^(U|UUID|uuid)$/) {
 			print "   DEBUG: validate: validating '$type' as UUID\n" if ($debug >= 2);
-			$self->defaultUUID(\%local_hash, 'val', $default);
+			$self->defaultUUID(\%local_hash, 'val', $real_default, shift);
+		}
+		when (/^(m|mac)$/) {
+			print "   DEBUG: validate: validating '$type' as MAC\n" if ($debug >= 2);
+			$self->defaultMAC(\%local_hash, 'val', $real_default);
+		}
+		when (/^(ipv4|IPv4|IPV4)$/) {
+			print "   DEBUG: validate: validating '$type' as IPv4\n" if ($debug >= 2);
+			$self->defaultIPv4(\%local_hash, 'val', $real_default);
 		}
 		default {
 			die "Unknown type";
@@ -91,6 +105,41 @@ sub validate
 		$hash->{"$key"} = $local_hash{'val'};
 	}
 }
+
+sub defaultMAC
+{
+	my ($self, $hash, $key, $default) = @_;
+	print "     DEBUG: defaultString: $key\n" if ($debug >= 1);
+
+	if (!defined($hash->{$key})) {
+		if (!defined($default)) {
+			die "$key is not defined.\n";
+		} else {
+			$self->validate(\$default, undef, 'mac', $default);
+			$hash->{$key} = $default;
+		}
+	} elsif ($hash->{$key} !~ m/^([a-fA-F0-9]{2}:){4}[a-fA-F0-9]{2}$/) {
+		die "Incorrect value: '$hash->{$key}'.\n";
+	}
+}
+
+sub defaultIPv4
+{
+	my ($self, $hash, $key, $default) = @_;
+	print "     DEBUG: defaultString: $key\n" if ($debug >= 1);
+
+	if (!defined($hash->{$key})) {
+		if (!defined($default)) {
+			die "$key is not defined.\n";
+		} else {
+			$self->validate(\$default, undef, 'ipv4', $default);
+			$hash->{$key} = $default;
+		}
+	} elsif ($hash->{$key} !~ m/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/) {
+		die "Incorrect value: '$hash->{$key}'.\n";
+	}
+}
+
 
 sub defaultUUID
 {
@@ -105,7 +154,7 @@ sub defaultUUID
 		}
 		my $ug = new Data::UUID;
 		$hash->{$key} = $ug->create_str();
-	} elsif (! $hash->{"$key"} =~ m/[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+/) {
+	} elsif ($hash->{"$key"} !~ m/[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+/) {
 		die "Incorrect value $hash->{$key}.\n";
 	}
 }
@@ -137,7 +186,7 @@ sub defaultInt
 		} else {
 			$hash->{$key} = $default;
 		}
-	} elsif (! ($hash->{$key} =~ m/^[0-9]+$/)) {
+	} elsif ($hash->{$key} !~ m/^[0-9]+$/) {
 		die "Incorrect value '$hash->{$key}'.\n";
 	}
 }
@@ -153,7 +202,7 @@ sub defaultBool
 		} else {
 			$hash->{$key} = $default;
 		}
-	} elsif (! lc($hash->{$key}) =~ m/^(1|0|true|false)$/) {
+	} elsif (lc($hash->{$key}) !~ m/^(1|0|true|false)$/) {
 		die "Incorrect value $hash->{$key}.\n";
 	}
 }
@@ -170,7 +219,7 @@ sub defaultString
 			$self->validate(\$default, undef, 'str', $default);
 			$hash->{$key} = $default;
 		}
-	} elsif (! ($hash->{$key} =~ m/^([a-zA-Z0-9_.,'"\*\/\-=]|\s)*$/)) {
+	} elsif ($hash->{$key} !~ m/^([a-zA-Z0-9_.,'"\*\/\-=:]|\s)*$/) {
 		die "Incorrect value: '$hash->{$key}'.\n";
 	}
 }
@@ -201,7 +250,7 @@ sub defaultSize
 			$self->validate(\$default, undef, 'size', $default);
 			$hash->{$key} = $default;
 		}
-	} elsif (! ($hash->{$key} =~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/)) {
+	} elsif ($hash->{$key} !~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/) {
 		die "Incorrect value $hash->{$key}.\n";
 	}
 }
