@@ -2,6 +2,7 @@ package Lxctl::Helpers::common;
 
 use strict;
 use warnings;
+use 5.010001;
 use autodie qw(:all);
 
 sub fool_proof

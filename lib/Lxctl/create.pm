@@ -2,6 +2,7 @@ package Lxctl::create;
 
 use strict;
 use warnings;
+use 5.010001;
 use autodie qw(:all);
 
 use Getopt::Long qw(GetOptionsFromArray);
@@ -117,7 +118,7 @@ sub check_create_options
 		%options = %opts_new;
 	}
 
-	$optionsValidator->act(undef, \%options);
+	$optionsValidator->act(\%options);
 
 	if ($options{'empty'} == 0) {
 		# TODO: Do we really need this warnings?

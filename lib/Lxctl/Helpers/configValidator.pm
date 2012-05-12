@@ -1,5 +1,6 @@
 package Lxctl::Helpers::configValidator;
 
+use 5.010001;
 use Lxctl::Helpers::generalValidators;
 
 =pod

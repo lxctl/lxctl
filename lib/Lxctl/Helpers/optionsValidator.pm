@@ -18,6 +18,7 @@ presence.
 =head1 METHODS
 =cut
 
+use 5.010001;
 use Lxctl::Helpers::generalValidators;
 use Data::Dumper;
 
@@ -25,7 +26,28 @@ my %config;
 my %options;
 my %append;
 my %generalOpts = ();
-my $debug = 0;
+my $debug = 0; # 1 is usualy enough
+my %configOpts = (
+		'os' => {
+			'CONFIG_DIR' => ['dir', '/var/lxc/conf'],
+			'OS_TEMPLATE' => ['str', 'ubuntu-10.04-amd64'],
+			},
+		'root' => {
+			'ROOT_TYPE' => ['enum', 'lvm', ['lvm', 'file', 'share']],
+			'MOUNT_PATH' => ['dir', '/var/lxc/root'],
+			'ROOT_SIZE' => ['size', '50G'],
+			},
+		'set' => {
+			'SEARCHDOMAIN' => ['str', 'local'],
+			},
+		'fs' => {
+			'FS_OPTS' => ['str', '-b 4096 -E stride=16,stripe-width=32'],
+			'FS_MOUNT_OPTS' => ['str', 'defaults,noatime,barrier=0'],
+			'FS' => ['str', 'ext4'],
+			},
+		'lvm' => ['str', 'vg00'],
+		);
+
 
 =pod
 # Initialize configuration options, wich don't require some complex logic.
@@ -73,9 +95,9 @@ sub validate_hash
 			die "======================END OF DATA DUMP======================\n";
 		}
 		my @val = @{$params->{"$key"}};
-		print "  DEBUG: $key, $val[0]\n" if ($debug >= 3);
+		print "   DEBUG: $key, $val[0]\n" if ($debug >= 1);
 		$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
-		print "  DEBUG: after validate on '$key' is '".$what->{$key}."'\n" if ($debug >= 2);
+		print "   DEBUG: after validate on '$key' is '".$what->{$key}."'\n" if ($debug >= 1);
 	}
 }
 
@@ -84,32 +106,9 @@ act
 =cut
 sub act
 {
-	my ($self, $conf, $opt, $apnd) = @_;
-	%config = %{$conf} if defined($conf);
+	my ($self, $opt, $apnd) = @_;
 	%options = %{$opt} if defined($opt);
 	%append = %{$apnd} if defined($apnd);
-	
-	%configOpts = (
-		'os' => {
-			'CONFIG_DIR' => ['dir', '/var/lxc/conf'],
-			'OS_TEMPLATE' => ['str', 'ubuntu-10.04-amd64'],
-			},
-		'root' => {
-			'ROOT_TYPE' => ['enum', 'lvm', ['lvm', 'file', 'share']],
-			'MOUNT_PATH' => ['dir', '/var/lxc/root'],
-			'ROOT_SIZE' => ['size', '50G'],
-			},
-		'set' => {
-			'SEARCHDOMAIN' => ['str', 'local'],
-			},
-		'fs' => {
-			'FS_OPTS' => ['str', '-b 4096 -E stride=16,stripe-width=32'],
-			'FS_MOUNT_OPTS' => ['str', 'defaults,noatime,barrier=0'],
-			'FS' => ['str', 'ext4'],
-			},
-		'lvm' => ['str', 'vg00'],
-		);
-	$self->validate_hash(\%config, \%configOpts);
 
 	die "No container name specified\n" if (!defined($options{'contname'}));
 
@@ -149,12 +148,18 @@ sub new
 {
 	my $parent = shift;
 	my $self = {};
+	my $conf = shift;
+
 	my $debug_tmp = shift;
 	if (defined($debug_tmp)) {
 		$debug = $debug_tmp;
 	}
+
 	bless $self, $parent;
 	$self->{'validator'} = new Lxctl::Helpers::generalValidators;
+
+	%config = %{$conf} if defined($conf);
+	$self->validate_hash(\%config, \%configOpts);
 
 	return $self;
 }

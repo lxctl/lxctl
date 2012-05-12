@@ -2,6 +2,7 @@ package Lxctl::restart;
 
 use strict;
 use warnings;
+use 5.010001;
 
 use Lxc::object;
 use Lxctl::start;

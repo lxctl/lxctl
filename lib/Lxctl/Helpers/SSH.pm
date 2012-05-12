@@ -2,6 +2,7 @@ package Lxctl::Helpers::SSH;
 
 use strict;
 use warnings;
+use 5.010001;
 
 my $ssh_;
 my $_ssh_user;

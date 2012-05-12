@@ -2,6 +2,7 @@ package Lxctl::Helpers::config;
 
 use strict;
 use warnings;
+use 5.010001;
 
 use YAML::Tiny qw(DumpFile LoadFile);
 

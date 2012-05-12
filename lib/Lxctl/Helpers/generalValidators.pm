@@ -20,6 +20,7 @@ use strict;
 use 5.010001;
 use feature "switch";
 use Data::UUID;
+use Data::Dumper;
 
 my $debug = 0;
 
@@ -41,17 +42,24 @@ S|size|Size
 
 sub validate
 {
-	my ($self, $hash, $key, $type, $default) = @_;
+	my $self = shift;
+	my $hash = shift;
+	my $key = shift;
+	my $type = shift;
+	my $default = shift;
 	my %local_hash = ();
-	if (ref($hash) ne "HASH") {
-		$local_hash{'val'} = ${$hash};
-	} else {
+	if (ref($hash) eq "HASH") {
+		print "Hash...\n";
 		$local_hash{'val'} = $hash->{"$key"};
+	} elsif (ref($hash) eq "ARRAY") {
+		print "Wow! Array ref\n";
+		$local_hash{'val'} = $hash;
+	} else {
+		$local_hash{'val'} = ${$hash};
 	}
 
 	my $real_default = $default;
 	if (ref($default) eq "CODE") {
-		print "CODE REF\n";
 		$real_default = &$default();
 	}
 
@@ -94,15 +102,42 @@ sub validate
 			print "   DEBUG: validate: validating '$type' as IPv4\n" if ($debug >= 2);
 			$self->defaultIPv4(\%local_hash, 'val', $real_default);
 		}
+		when (/^(a|array)$/) {
+			print "   DEBUG: validate: validating '$type' as ARRAY\n" if ($debug >= 2);
+			$self->defaultArray(\%local_hash, 'val', $real_default);
+		}
 		default {
 			die "Unknown type";
 		}
 	}
 
-	if (ref($hash) ne "HASH") {
-		${$hash} = $local_hash{'val'};
-	} else {
+	if (ref($hash) eq "HASH") {
 		$hash->{"$key"} = $local_hash{'val'};
+	} elsif (ref($hash) eq "ARRAY") {
+		@{$hash} = @{$local_hash{'val'}};
+	} else {
+		${$hash} = $local_hash{'val'};
+	}
+}
+
+sub defaultArray
+{
+	my ($self, $hash, $key, $default) = @_;
+	print "     DEBUG: defaultString: $key\n" if ($debug >= 1);
+
+	if (!defined($hash->{$key})) {
+		if (!defined($default)) {
+			die "$key is not defined.\n";
+		} else {
+			$self->validate($default, undef, 'array');
+			@{$hash->{$key}} = @{$default};
+		}
+		return
+	}
+	foreach my $val (@{$hash->{$key}}) {
+		if ($val !~ m/^([a-zA-Z0-9_.,'"\*\/\-=:]|\s)*$/) {
+			die "Incorrect value: '$val'.\n";
+		}
 	}
 }
 
@@ -115,7 +150,7 @@ sub defaultMAC
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
-			$self->validate(\$default, undef, 'mac', $default);
+			$self->validate(\$default, undef, 'mac');
 			$hash->{$key} = $default;
 		}
 	} elsif ($hash->{$key} !~ m/^([a-fA-F0-9]{2}:){4}[a-fA-F0-9]{2}$/) {
@@ -132,7 +167,7 @@ sub defaultIPv4
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
-			$self->validate(\$default, undef, 'ipv4', $default);
+			$self->validate(\$default, undef, 'ipv4');
 			$hash->{$key} = $default;
 		}
 	} elsif ($hash->{$key} !~ m/^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/) {
@@ -162,12 +197,13 @@ sub defaultUUID
 sub defaultEnum
 {
 	my ($self, $hash, $key, $default, @values) = @_;
-	print "     DEBUG: defaultEnum: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultEnum: $key\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
+			$self->validate(\$default, undef, 'enum', undef, @values);
 			$hash->{$key} = $default;
 		}
 	} elsif (! grep { $_ eq $hash->{$key}} @values) {
@@ -178,12 +214,13 @@ sub defaultEnum
 sub defaultInt
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "     DEBUG: defaultInt: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultInt: $key\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
+			$self->validate(\$default, undef, 'int');
 			$hash->{$key} = $default;
 		}
 	} elsif ($hash->{$key} !~ m/^[0-9]+$/) {
@@ -200,6 +237,7 @@ sub defaultBool
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
+			$self->validate(\$default, undef, 'bool');
 			$hash->{$key} = $default;
 		}
 	} elsif (lc($hash->{$key}) !~ m/^(1|0|true|false)$/) {
@@ -216,7 +254,7 @@ sub defaultString
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
-			$self->validate(\$default, undef, 'str', $default);
+			$self->validate(\$default, undef, 'str');
 			$hash->{$key} = $default;
 		}
 	} elsif ($hash->{$key} !~ m/^([a-zA-Z0-9_.,'"\*\/\-=:]|\s)*$/) {
@@ -241,13 +279,13 @@ sub defaultDir
 sub defaultSize
 {
 	my ($self, $hash, $key, $default) = @_;
-	print "     DEBUG: defaultSize: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultSize: $key\n" if ($debug >= 1);
 
 	if (!defined($hash->{$key})) {
 		if (!defined($default)) {
 			die "$key is not defined.\n";
 		} else {
-			$self->validate(\$default, undef, 'size', $default);
+			$self->validate(\$default, undef, 'size');
 			$hash->{$key} = $default;
 		}
 	} elsif ($hash->{$key} !~ m/^([0-9]*.)?[0-9]+[bBkKmMgGtTpPeE]?$/) {

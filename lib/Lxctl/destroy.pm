@@ -2,6 +2,7 @@ package Lxctl::destroy;
 
 use strict;
 use warnings;
+use 5.010001;
 use autodie qw(:all);
 use Getopt::Long;
 

@@ -2,6 +2,7 @@ package Lxctl::Helpers::lxcConfGenerator;
 
 use strict;
 use warnings;
+use 5.010001;
 
 # TODO:
 # Add mac to config
@@ -12,6 +13,8 @@ use Lxc::object;
 use Lxctl::Helpers::config;
 use Lxctl::Helpers::optionsValidator;
 use Lxctl::set;
+use Data::Dumper;
+
 
 my $config = new Lxctl::Helpers::config;
 my %options = ();
@@ -63,8 +66,13 @@ sub convert_devices
 
 	my $o = "";
 	$o .= "lxc.cgroup.devices.deny = a\n";
-	for my $d (@{$options{'devices'}}) {
+	my %devices = %{$options{'devices'}};
+	print Dumper(%devices);
+	for my $d (@{$devices{'allow'}}) {
 		$o .= "lxc.cgroup.devices.allow = $d\n";
+	}
+	for my $d (@{$devices{'deny'}}) {
+		$o .= "lxc.cgroup.devices.deny = $d\n";
 	}
 
 	$o .= "\n";
@@ -78,6 +86,13 @@ sub convert_network
 	my $o = "";
 	my %iface = %{$options{'interfaces'}};
 	$o .= "lxc.network.type = $iface{'type'}\n";
+	if ($iface{'extname'} ne '') {
+		if ($iface{'type'} eq 'veth') {
+			$o .= "lxc.network.veth.pair = $iface{'extname'}\n";
+		} elsif ($iface{'type'} eq 'vlan') {
+			$o .= "lxc.network.vlan.id = $iface{'extname'}\n";
+		}
+	}
 	$o .= "lxc.network.flags = $iface{'flags'}\n";
 	$o .= "lxc.network.link = $iface{'bridge'}\n";
 	$o .= "lxc.network.name = $iface{'name'}\n";

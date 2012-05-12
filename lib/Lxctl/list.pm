@@ -2,6 +2,7 @@ package Lxctl::list;
 
 use strict;
 use warnings;
+use 5.010001;
 
 use Getopt::Long;
 
