@@ -65,14 +65,13 @@ sub convert_devices
 	my $self = shift;
 
 	my $o = "";
-	$o .= "lxc.cgroup.devices.deny = a\n";
 	my %devices = %{$options{'devices'}};
-	print Dumper(%devices);
-	for my $d (@{$devices{'allow'}}) {
-		$o .= "lxc.cgroup.devices.allow = $d\n";
-	}
 	for my $d (@{$devices{'deny'}}) {
 		$o .= "lxc.cgroup.devices.deny = $d\n";
+	}
+
+	for my $d (@{$devices{'allow'}}) {
+		$o .= "lxc.cgroup.devices.allow = $d\n";
 	}
 
 	$o .= "\n";
@@ -108,20 +107,6 @@ sub convert
 	my ($self, $opts) = @_;
 	die "BUG: Options not passed to lxcConfGenerator!" if (!defined($opts));
 
-	# TODO: Just to test. Config should be validated somewhere else.
-#	my %extra = (
-#		'interfaces' => {
-#			'type' => ['enum', 'veth', ['macvlan','veth']], # TODO: add all other types
-#			'flags' => ['str', 'up'],
-#			'bridge' => ['str', 'br0'],
-#			'name' => ['str', 'eth0'],
-#			'mtu' => ['int', '1500'],
-#			'mac' => ['str', ''],
-#		},
-#		'ttys' => ['int', 4],
-#		'pts' => ['int', 1024],
-#		);
-#	$self->{'validator'}->act(undef, $opts, \%extra);
 	%options = %{$opts};
 
 	$self->convert_name;

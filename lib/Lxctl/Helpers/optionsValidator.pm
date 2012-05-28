@@ -85,7 +85,7 @@ sub validate_hash
 			if (!defined($what->{"$key"})) {
 				$what->{"$key"} = {};
 			}
-			print "  DEBUG: validating: $key with $parameters{$key}\n" if ($debug >= 1);
+			print "  DEBUG: validating HASH: $key with $parameters{$key}\n" if ($debug >= 1);
 			$self->validate_hash($what->{"$key"}, $parameters{"$key"});
 			next;
 		} elsif (ref($params->{"$key"}) ne "ARRAY") {
@@ -95,7 +95,7 @@ sub validate_hash
 			die "======================END OF DATA DUMP======================\n";
 		}
 		my @val = @{$params->{"$key"}};
-		print "   DEBUG: $key, $val[0]\n" if ($debug >= 1);
+		print "   DEBUG (ARRAY): $key, $val[0]\n" if ($debug >= 1);
 		$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
 		print "   DEBUG: after validate on '$key' is '".$what->{$key}."'\n" if ($debug >= 1);
 	}
@@ -123,10 +123,10 @@ sub act
 			'mkfsopts' =>  ['str', $config{'fs'}->{'FS_OPTS'}],
 			'mountoptions' =>  ['str', $config{'fs'}->{'FS_MOUNT_OPTS'}],
 			'ostemplate' =>  ['str', $config{'os'}->{'OS_TEMPLATE'}],
-			'config' => ['dir', "$config{'os'}->{'CONFIG_DIR'}/$options{'contname'}", 0],
+			'config' => ['dir', "$config{'os'}->{'CONFIG_DIR'}/$options{'contname'}", [0]],
 			'searchdomain' =>  ['str', $config{'set'}->{'SEARCHDOMAIN'}],
 			'hostname' =>  ['str', $options{'contname'}],
-		 	'root' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", 0],
+		 	'root' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", [0]],
 			'rootsz' =>  ['str', $config{'root'}->{'ROOT_SIZE'}],
 			'roottype' =>  ['enum', $config{'root'}->{'ROOT_TYPE'}, ['lvm', 'file', 'share']],
 			'root_mp' => {
@@ -134,8 +134,9 @@ sub act
 				'from' => ['str', "/dev/$config{'lvm'}/$options{'contname'}"],
 				'fs' => ['str', $config{'fs'}->{'FS'}],
 				'opts' => ['str', $config{'fs'}->{'FS_OPTS'}],
-				'to' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", 0],
+				'to' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", [0]],
 				},
+			
 	);
 	if (keys %append) {
 		@generalOpts{keys %append} = values %append;

@@ -123,7 +123,7 @@ sub check_create_options
 	if ($options{'empty'} == 0) {
 		# TODO: Do we really need this warnings?
 		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
-		if (! $options{'ipaddr'} =~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
+		if ($options{'ipaddr'} !~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
 			$options{'netmask'} || print "You did not specify network mask! Using default.\n";
 		}
 		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
@@ -170,62 +170,6 @@ sub deploy_template
 	print "Deploying template: $template\n";
 
 	system("tar xf $template -C $root_mount_path/$options{'contname'} 1>/dev/null");
-
-	return;
-}
-
-sub create_lxc_conf
-{
-	my $self = shift;
-
-	print "Creating lxc configuration file: $lxc_conf_dir/$options{'contname'}/config\n";	
-
-	mkpath("$lxc_conf_dir/$options{'contname'}");
-
-	my $conf = "\
-lxc.utsname = $options{'contname'}
-
-lxc.tty = 4
-lxc.pts = 1024
-lxc.rootfs = $root_mount_path/$options{'contname'}/rootfs
-lxc.mount  = $lxc_conf_dir/$options{'contname'}/fstab
-
-lxc.cgroup.devices.deny = a
-# /dev/null and zero
-lxc.cgroup.devices.allow = c 1:3 rwm
-lxc.cgroup.devices.allow = c 1:5 rwm
-# consoles
-lxc.cgroup.devices.allow = c 5:1 rwm
-lxc.cgroup.devices.allow = c 5:0 rwm
-lxc.cgroup.devices.allow = c 4:0 rwm
-lxc.cgroup.devices.allow = c 4:1 rwm
-# /dev/{,u}random
-lxc.cgroup.devices.allow = c 1:9 rwm
-lxc.cgroup.devices.allow = c 1:8 rwm
-lxc.cgroup.devices.allow = c 136:* rwm
-lxc.cgroup.devices.allow = c 5:2 rwm
-# rtc
-lxc.cgroup.devices.allow = c 254:0 rwm
-
-lxc.network.type = veth
-lxc.network.flags = up
-lxc.network.link = br0
-lxc.network.name = eth0
-lxc.network.mtu = 1500
-";
-
-	my $fstab = "\
-proc			$root_mount_path/$options{'contname'}/rootfs/proc		 proc	nodev,noexec,nosuid 0 0
-sysfs		   $root_mount_path/$options{'contname'}/rootfs/sys		  sysfs defaults  0 0
-";
-
-	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config";
-	print $config_file $conf;
-	close($config_file);
-
-	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
-	print $fstab_file $fstab;
-	close($fstab_file);
 
 	return;
 }
@@ -280,13 +224,23 @@ sub act
 	} else {
 		shift;
 	}
+	die "Trust me. You dont' want a container named 'lxctl'.\n\n" if ($options{'contname'} eq 'lxctl');
 
 	$self->check_create_options();
-	die "TEST: OK";
 	$self->check_existance();
 	print "Creating container $options{'contname'}...\n";
 	$self->create_root();
-	$self->create_lxc_conf();
+
+	my $fstab = "\
+proc		$root_mount_path/$options{'contname'}/rootfs/proc		proc	nodev,noexec,nosuid	0 0
+sysfs		$root_mount_path/$options{'contname'}/rootfs/sys		sysfs	defaults		0 0
+";
+
+	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
+	print $fstab_file $fstab;
+	close($fstab_file);
+
+	die "A!!!!!";
 
 	if (!defined($options{'ifname'})) {
 		eval {
@@ -296,8 +250,6 @@ sub act
 			$options{'ifname'} = "mac";
 		};
 	}
-
-	die "Trust me. You dont' want a container named 'lxctl'.\n\n" if ($options{'contname'} eq 'lxctl');
 
 	my $setter = Lxctl::set->new(%options);
 	$setter->set_macaddr();

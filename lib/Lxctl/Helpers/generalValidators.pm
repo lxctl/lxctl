@@ -49,10 +49,8 @@ sub validate
 	my $default = shift;
 	my %local_hash = ();
 	if (ref($hash) eq "HASH") {
-		print "Hash...\n";
 		$local_hash{'val'} = $hash->{"$key"};
 	} elsif (ref($hash) eq "ARRAY") {
-		print "Wow! Array ref\n";
 		$local_hash{'val'} = $hash;
 	} else {
 		$local_hash{'val'} = ${$hash};
@@ -268,7 +266,7 @@ sub defaultDir
 	if (!defined($exists)) {
 		$exists = 1;
 	}
-	print "     DEBUG: defaultDir: $key, $default\n" if ($debug >= 1);
+	print "     DEBUG: defaultDir: $key, $default, $exists\n" if ($debug >= 1);
 
 	$self->defaultString($hash, $key, $default);
 	if ((! -d "$hash->{$key}") && ($exists == 1)) {

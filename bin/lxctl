@@ -23,7 +23,7 @@ our $Lxc = Lxc::object->new;
 sub help_me
 {
     my $action = shift;
-    return if !$action;
+    return if !defined($action);
 
     if ($action eq '--version' || $action eq '-v') {
         print "Version: $version\n";
@@ -43,6 +43,7 @@ sub lets_rock
     #$config->load_main();
     my $action = shift @ARGV;
 
+    die "No command specified!\n$usage" if (!defined $action);
     help_me($action);
 
     my $class;

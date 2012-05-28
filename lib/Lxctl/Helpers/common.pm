@@ -4,6 +4,11 @@ use strict;
 use warnings;
 use 5.010001;
 use autodie qw(:all);
+use Exporter;
+use base 'Exporter';
+
+our @EXPORT = qw ($usage);
+our $usage = "Usage:\nlxctl [action] [vmname] [options]\n\nSee lxctl --man or lxctl --help for more info\n";
 
 sub fool_proof
 {
@@ -45,7 +50,7 @@ sub load_module
 	};
 
 	if (!$dest) {
-		die "Unsupported command!\nUsage:\nlxctl [action] [vmname] [options]\n\nSee lxctl --man or lxctl --help for more info\n";
+		die "Unsupported command!\n$usage";
 	}
 
 	eval {
