@@ -83,7 +83,7 @@ See lxctl --help for more info
 
 =item B<--help>
 
-Print a breif help message and exists
+Print a brief help message and exit
 
 =item B<start>
 
@@ -135,7 +135,7 @@ B<Optional arguments:>
 
 	--searchdomain - set a custom searchdomain in /etc/resolv.conf
 
-	--macaddr - set the custom mac adress of the container
+	--macaddr - set the custom mac address of the container
 
 	--autostart - autostart container each reboot host machine
 
@@ -173,11 +173,11 @@ B<Optional arguments:>
 
         --searchdomain - set a custom searchdomain in /etc/resolv.conf
 
-        --macaddr - set the custom mac adress if the machine
+        --macaddr - set the custom mac address if the machine
 
 	--userpasswd user:passwd - sets password for given user
 
-	--onboot {yes,no} - makes containet [do not] start at boot
+	--onboot {yes,no} - makes container [do not] start at boot
 
         --tz - set custom timezone (Europe/Moscow, UTC, etc)
 

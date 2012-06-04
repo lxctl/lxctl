@@ -63,7 +63,7 @@ sub create_root
 			my $bs = 4096;
 			my $count = $lxc->convert_size($options{'rootsz'}, 'b')/$bs;
 
-			# Creating empty file of desired size. It's a bit slower then system dd, but still rather fast (around 10% slower then dd)
+			# Creating empty file of desired size. It's a bit slower than system dd, but still rather fast (around 10% slower than dd)
 			system("dd if=/dev/zero of=$root_mount_path/$options{'contname'}.raw bs=$bs count=$count");
 #			open my $raw_file, '>' , "$root_mount_path/$options{'contname'}.raw";
 #			print $raw_file "\0" x($count*$bs);
@@ -88,7 +88,7 @@ sub create_root
 			$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
 			$additional_opts=",loop";
 		}
-		# TODO: We disscused and decieded to keep all mounts in array of hashes in yaml file and apply on start.
+		# TODO: We discussed and decided to keep all mounts in array of hashes in yaml file and apply on start.
 		my %root_mp = (
 			'from' => "$what_to_mount",
 			'to' => "$root_mount_path/$options{'contname'}",
