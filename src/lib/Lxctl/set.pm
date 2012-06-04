@@ -27,9 +27,32 @@ sub mac_create
 {
 	my ($self, $data) = @_;
 
+	# First 3 bytes of macaddr are the OUI (Organisationally Unique Identifier)
+	my $mac_prefix = $config->get_option_from_main('set', 'MAC_PREFIX');
+
+	# If there isn't already one, then generate a random one and save it
+	if (!$mac_prefix) {
+		# Bit 0 of the first octet: 0=unicast, 1=multicast (must be 0)
+		# Bit 1 of the first octet: 1=Locally Administered OUI
+		my @bytes = (int(rand(256)), int(rand(256)), int(rand(256)));
+		$bytes[0] &= 0xfe;
+		$bytes[0] |= 0x02;
+		$mac_prefix = sprintf("%02x:%02x:%02x", @bytes);
+		$config->set_option_to_main('set', 'MAC_PREFIX', $mac_prefix);
+	} else {
+		# Check validity of mac_prefix
+		if ($mac_prefix !~ m/^[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]:[0-9a-f][0-9a-f]$/i) {
+			die "Invalid MAC_PREFIX: $mac_prefix (need xx:xx:xx)";
+		}
+
+		if ($mac_prefix !~ m/^.[02468ace]/i) {
+			die "Invalid MAC_PREFIX: 2nd hex digit must be in [02468ace]";
+		}
+	}
+
 	my $mac = sha1_hex($data);
-	$mac =~ s/(..)(..)(..)(..).*/FC:$1:$2:$3:$4/;	
-	return $mac;
+	$mac =~ m/(..)(..)(..)/;
+	return "${mac_prefix}:$1:$2:$3";
 }
 
 sub set_hostname
@@ -89,7 +112,7 @@ sub set_macaddr
 	}
 	defined($options{'contname'}) or return;
 
-	my $mac = $self->mac_create($options{'contname'}) . ":01";
+	my $mac = $self->mac_create($options{'contname'});
 	print "Setting MAC: $mac\n";
 	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
 	$options{'macaddr'} = $mac;
