@@ -235,7 +235,7 @@ sub set_conf_check {
 }
 
 # Internal function
-# Check if 2-nd param is set to y or m in file by 1-st param
+# Check if 2nd param is set to y or m in file by 1st param
 sub is_inconfig {
 	my ($self, $config_ref, $find) = @_;
 	my $subname = (caller(0))[3];
@@ -279,8 +279,8 @@ sub check {
 		return
 	}
 	# 5-dim array with kernel's config options.
-	# 1-st - option name
-	# 2-nd - is it required or optional
+	# 1st - option name
+	# 2nd - is it required or optional
 	# 3-5 is kernel version, when this option was removed from config.
 	# if optional CONFIG is missing it'll result in warning
 	my @config_opts = (
@@ -348,7 +348,7 @@ sub check {
 	}
 }
 
-# Get state for VMName givven in first parameter.
+# Get state for VMName given in first parameter.
 # if no parameter is given returns empty string.
 sub status {
 	my ($self, $name) = @_;
@@ -404,7 +404,7 @@ sub ls {
 	return @list;
 }
 
-# Attachs to running container. Equivalent to vzctl enter
+# Attaches to running container. Equivalent to vzctl enter
 # Returns 0 on success and NO_NAME or output on failure.
 sub attach {
 	my ($self, $name) = @_;
@@ -454,7 +454,7 @@ sub unfreeze {
 	}
 }
 
-# Kills 1-st process of container $NAME with signal $SIG
+# Kills 1st process of container $NAME with signal $SIG
 # Requires 2 parameters.
 # Returns NO_NAME, NO_SIG or output if error and 0 on success.
 # Signal can be either number or name
@@ -553,8 +553,8 @@ sub stop {
 }
 
 # Get parameter from VM's config
-# 1-st param is vmname
-# 2-nd param is what config field to get
+# 1st param is vmname
+# 2nd param is what config field to get
 sub get_conf {
 	my ($self, $name, $param) = @_;
 	my $subname = (caller(0))[3];
@@ -825,7 +825,7 @@ get_conf($container_name, $parameter_name)
 set_conf($container_name, $parameter_name, $value)
 _deprecated_ get_ip($container_name) # Will be removed in future version
 get_cgroup($container_name, $parameter)
-set_cgroup($container_name, $parameter_name, $value, $force): If force is specified, set cgroup param in config even if machine is stoped
+set_cgroup($container_name, $parameter_name, $value, $force): If force is specified, set cgroup param in config even if machine is stopped
 convert_size($from, $to): Converts from bytes/kib/mib/gib/pib/eib to what was specified. Ex: convert_size("20KB", "MB");
 
 =head1 AUTHOR

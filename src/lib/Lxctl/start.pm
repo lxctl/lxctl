@@ -27,7 +27,7 @@ sub _actual_start
 	$lxc->start($contname, $daemon, $lxc_conf_dir."/".$contname."/config", $lxc_real_log_path, $lxc_log_level);
 }
 
-# At 0.3.0 we mount root from config at start. Make shure we have it there, not in fstab.
+# At 0.3.0 we mount root from config at start. Make sure we have it there, not in fstab.
 sub check_root_in_config
 {
 	my ($self, %vm_options) = @_;
@@ -133,7 +133,7 @@ sub do
 		print "It seems that \"$contname\" was started.\n";
 	} or do {
 		print "$@";
-		# We should check $@ to analyize some common errors, such as:
+		# We should check $@ to analyze some common errors, such as:
 		# 1) No cgroups mounter
 		# 2) if it tries to mount proc to /usr/lib/lxc//proc - it's usualy forgotten /proc in container's rootfs. Check same for dev and sys
 		# 3) ... Maybe more in future.
