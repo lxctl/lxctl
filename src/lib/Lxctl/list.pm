@@ -85,7 +85,7 @@ sub get_all_info
 			$info{'cpu'} = chomp($self->{lxc}->get_cgroup($vm, "cpuset.cpus"));
 			1;
 		} or do {
-			# By default pid will got all CPUs
+			# By default pid will get all CPUs
 			$info{'cpu'} = "All";
 		};
 		eval {

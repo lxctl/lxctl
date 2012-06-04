@@ -371,7 +371,7 @@ sub do
 		$options{'mem'} = $self->{'lxc'}->convert_size($options{'mem'}, "B");
 	}
 
-	# Dirty hack. set_macaddr used from create and should be able to work without --maccaddr option.
+	# Dirty hack. set_macaddr used from create and should be able to work without --macaddr option.
 	$self->set_macaddr() if defined($options{'macaddr'});
 	$self->set_ipaddr();
 	$self->set_netmask();

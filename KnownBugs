@@ -7,4 +7,4 @@ Fix before 0.1:
 
 Fix somewhere before public release:
  * Lxc.pm does not always detect errors. (maybe won't fix, becouse when daemonizing container, all output is surpassed, as work-around we can try to eval status and start container not in daemon mode to get normal output from it.)
- * Distros other then ubuntu may have different default location for lxc's config (e.x. Gentoo). Handle this properly.
+ * Distros other than ubuntu may have different default location for lxc's config (e.x. Gentoo). Handle this properly.
