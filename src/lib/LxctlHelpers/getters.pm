@@ -17,15 +17,14 @@ sub get_ip{
         $path = $path . "/etc/network/interfaces";
 
         open my $config_file, '<', "$path" or return "0.0.0.0";
-
         my @interfaces = <$config_file>;
-        my @ip = grep { /address / } @interfaces;
-	return "0.0.0.0" if (scalar(@ip) == 0);
-        $ip[0] =~ s/  address //;
-	close($config_file);
-	return "0.0.0.0" if (!defined($ip[0]));
-	chop($ip[0]);
+        close($config_file);
 
+        my @ip = grep { /^\s+address\s+/ } @interfaces;
+        return "0.0.0.0" if (scalar(@ip) == 0);
+        $ip[0] =~ s/^\s+address\s+//;
+        return "0.0.0.0" if (!defined($ip[0]));
+        chop($ip[0]);
 
         return "$ip[0]";
 }
