@@ -36,7 +36,7 @@ sub migrate_get_opt
 		or die "You should specify the name of the VZ container!\n\n";
 
 	defined($options{'fromhost'}) or 
-		die "To which host shold I migrate?\n\n";
+		die "To which host should I migrate?\n\n";
 }
 
 sub re_rsync
