@@ -269,6 +269,39 @@ B<Optional arguments>
 
 	--dns - DNS server
 
+=item B<backup>
+
+Create or restore backup container with use remote host.
+
+B<Required arguments for create backup>
+
+	--create - create backup
+
+	--tohost - remote host for store backup
+
+	--todir - remote dir for store backup
+
+B<Required arguments for restore backup>
+
+	--restore - restore backup
+
+	--fromhost - remote host from restore backup
+
+	--fromdir - remote dir from restore backup
+
+B<Optional arguments>
+
+	--remuser - remote username for ssh
+
+	--remport - remote port for ssh
+
+	--remname - remote container name
+
+	--userpasswd - 'user:password' formatted password for user
+	
+	--afterstart - start local container after restore backup
+
+
 =item B<vz2lxc>
 
 Migrate VZ-container from remote host to local LXC container.
