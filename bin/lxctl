@@ -9,10 +9,11 @@ use Getopt::Long;
 use Exporter 'import';
 use YAML::Tiny qw(LoadFile);
 
+use Data::Dumper;
 use Lxc::object;
 
 use Lxctl::Helpers::common;
-use Lxctl::Helpers::configValidator;
+use Lxctl::Helpers::optionsValidator;
 
 
 our $version = "0.4.0";
@@ -48,16 +49,21 @@ sub lets_rock
 
     my $class;
     my $helper = new Lxctl::Helpers::common;
-    my $validator = new Lxctl::Helpers::configValidator;
+    
 
     my $config_yaml = YAML::Tiny->read('/etc/lxctl/lxctl.yaml');
-    my %config = $validator->validate($config_yaml->[0]);
+    my $validator = new Lxctl::Helpers::optionsValidator;
+    my %config = %{$config_yaml->[0]};
+#    print Dumper(%config);
+    $validator->validate_hash(\%config, $validator->confOpts());
+    $validator->setLxcConfig(\%config);
+#    print Dumper(%config);
 
     eval {
         $helper->load_module("Lxctl/$action.pm");
         $action = "Lxctl::$action";
         $action->import;
-        $class = new $action;
+        $class = $action->new(\%config, \$validator);
     } or do {
         #die "Unsupported command!\n\n$@\n\n";
         die "$@";

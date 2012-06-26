@@ -28,6 +28,23 @@ my %append;
 my %generalOpts = ();
 my $debug = 0; # 1 is usualy enough
 my %configOpts = (
+		'paths' => {
+			'YAML_CONFIG_PATH' => ['dir', '/etc/lxctl'],
+			'LXC_CONF_DIR' => ['dir', '/var/lib/lxc/conf'],
+			'ROOT_MOUNT_PATH' => ['dir', '/var/lib/lxc/root'],
+			'TEMPLATE_PATH' => ['dir', '/var/lib/lxc/templates'],
+			'LXC_LOG_PATH' => ['str', '/var/log/lxc/%CONTNAME%.log'], 
+			'LXC_LOG_LEVEL' => ['str', 'NOTICE'],
+		},
+		'check' => {
+			'skip_kernel_config_check' => ['int', '0'],
+		},
+		'rsync' => {
+			'RSYNC_OPTS' => ['str', "'-aH --delete --numeric-ids --exclude 'proc/*' --exclude 'sys/*'"],
+		},
+		'list' => {
+			'COLUMNS' => ['str', 'name,hostname,status,memory_mb,disksize_mb,disk_free_mb,ip,template'],
+		},
 		'os' => {
 			'CONFIG_DIR' => ['dir', '/var/lxc/conf'],
 			'OS_TEMPLATE' => ['str', 'ubuntu-10.04-amd64'],
@@ -39,13 +56,16 @@ my %configOpts = (
 			},
 		'set' => {
 			'SEARCHDOMAIN' => ['str', 'local'],
+			'IFNAME' => ['str', 'ip'], 
 			},
 		'fs' => {
 			'FS_OPTS' => ['str', '-b 4096 -E stride=16,stripe-width=32'],
 			'FS_MOUNT_OPTS' => ['str', 'defaults,noatime,barrier=0'],
 			'FS' => ['str', 'ext4'],
 			},
-		'lvm' => ['str', 'vg00'],
+		'lvm' => {
+			'VG' => ['str', 'vg00'],
+		},
 		);
 
 
@@ -68,6 +88,27 @@ my %configOpts = (
 # searchdomain: dev.yandex.net
 # hostname: oxcd8o
 =cut
+
+=pod
+confOpts
+
+returns confopts
+=cut
+sub confOpts
+{
+	return \%configOpts;
+}
+
+=pod
+setLxcConfig(\%config)
+
+sets lxc config
+=cut
+sub setLxcConfig
+{
+	my ($self, $configRef) = @_;
+	%config = %{$configRef};
+}
 
 =pod
 validate_hash(\%what, \%parameters)
@@ -131,7 +172,7 @@ sub act
 			'roottype' =>  ['enum', $config{'root'}->{'ROOT_TYPE'}, ['lvm', 'file', 'share']],
 			'root_mp' => {
 				'roottype' => ['enum', 'lvm', ['lvm', 'file', 'share']],
-				'from' => ['str', "/dev/$config{'lvm'}/$options{'contname'}"],
+				'from' => ['str', "/dev/$config{'lvm'}->{'VG'}/$options{'contname'}"],
 				'fs' => ['str', $config{'fs'}->{'FS'}],
 				'opts' => ['str', $config{'fs'}->{'FS_OPTS'}],
 				'to' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", [0]],
@@ -158,9 +199,6 @@ sub new
 
 	bless $self, $parent;
 	$self->{'validator'} = new Lxctl::Helpers::generalValidators;
-
-	%config = %{$conf} if defined($conf);
-	$self->validate_hash(\%config, \%configOpts);
 
 	return $self;
 }

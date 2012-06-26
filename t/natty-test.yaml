@@ -1,0 +1,27 @@
+---
+api_ver: 1
+autostart: 1
+config: '/var/lib/lxc/conf/natty-test'
+contname: natty-test
+debug: 0
+defgw: 172.16.0.1
+dns: 192.168.0.1
+empty: 0
+fs: ext4
+hostname: natty-test
+ipaddr: 172.16.0.2
+mkfsopts: '-b 4096 -E stride=16,stripe-width=32'
+mountoptions: defaults,barrier=0
+netmask: 255.255.255.0
+ostemplate: ubuntu-11.04-amd64
+root: '/var/lib/lxc/root/natty-test'
+rootfs_mp:
+  from: '/dev/nb-vg00/natty-test'
+  fs: ext4
+  opts: defaults,barrier=0
+  to: '/var/lib/lxc/root/natty-test'
+rootsz: 10G
+roottype: lvm
+save: 1
+searchdomain: yandex.ru
+uuid: 95D959CC-E629-11E0-B252-868E7CDC9A21

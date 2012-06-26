@@ -24,7 +24,7 @@ my $generalValidator = new Lxctl::Helpers::generalValidators;
 my $optionsValidator = new Lxctl::Helpers::optionsValidator;
 
 my %options = ();
-my %lxc_opts = ();
+my %lxc_conf;
 
 my @args;
 my %conf;
@@ -42,9 +42,9 @@ sub create_root
 
 	if ($options{'rootsz'} ne 'share') {
 		if (lc($options{'roottype'}) eq 'lvm') {
-			$helper->lvcreate($options{'contname'}, $vg, $options{'rootsz'});
+			$helper->lvcreate($options{'contname'}, $lxc_conf{'lvm'}->{'VG'}, $options{'rootsz'});
 
-			$helper->mkfs($options{'fs'}, "/dev/$vg/$options{'contname'}",   $options{'mkfsopts'});
+			$helper->mkfs($options{'fs'}, "/dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'}",   $options{'mkfsopts'});
 		} elsif (lc($options{'roottype'}) eq 'file') {
 			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
@@ -118,12 +118,13 @@ sub check_create_options
 		%options = %opts_new;
 	}
 
-	$optionsValidator->act(\%options);
+	$self->{'validator'}->act(\%options);
 
 	if ($options{'empty'} == 0) {
 		# TODO: Do we really need this warnings?
-		$options{'ipaddr'} || print "You did not specify IP address! Using default.\n";
-		if ($options{'ipaddr'} !~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
+		if (!defined($options{'ipaddr'})) { 
+			print "You did not specify IP address! Using default.\n";
+		} elsif ($options{'ipaddr'} !~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
 			$options{'netmask'} || print "You did not specify network mask! Using default.\n";
 		}
 		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
@@ -145,17 +146,17 @@ sub check_create_options
 sub check_existance
 {
 	my $self = shift;
-
-	die "Container lxc conf directory $lxc_opts{'conf_dir'}/$options{'contname'} already exists!\n\n" 
-		if -e "$lxc_opts{'conf_dir'}/$options{'contname'}";
-	die "Container root directory $lxc_opts{'root_mount_path'}/$options{'contname'} already exists!\n\n"
-		if -e "$lxc_opts{'root_mount_path'}/$options{'contname'}";
-	die "Container root logical volume /dev/$lxc_opts{'vg'}/$options{'contname'} already exists!\n\n"
-		if -e "/dev/$lxc_opts{'vg'}/$options{'contname'}";
+	
+	die "Container lxc conf directory $lxc_conf{'paths'}->{'LXC_CONF_DIR'}/$options{'contname'} already exists!\n\n" 
+		if -e "$lxc_conf{'paths'}->{'LXC_CONF_DIR'}/$options{'contname'}";
+	die "Container root directory $lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'}/$options{'contname'} already exists!\n\n"
+		if -e "$lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'}/$options{'contname'}";
+	die "Container root logical volume /dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'} already exists!\n\n"
+		if -e "/dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'}";
 
 	if ($options{'empty'} == 0) {
-		if (! -e "$lxc_opts{'templates_path'}/$options{'ostemplate'}.tar.gz") {
-			die "There is no such template: $lxc_opts{'templates_path'}/$options{'ostemplate'}.tar.gz\n\n";
+		if (! -e "$lxc_conf{'paths'}->{'TEMPLATE_PATH'}/$options{'ostemplate'}.tar.gz") {
+			die "There is no such template: $lxc_conf{'paths'}->{'TEMPLATE_PATH'}/$options{'ostemplate'}.tar.gz\n\n";
 		}
 	}
 
@@ -229,6 +230,7 @@ sub act
 	$self->check_create_options();
 	$self->check_existance();
 	print "Creating container $options{'contname'}...\n";
+	die "TEST DONE";
 	$self->create_root();
 
 	my $fstab = "\
@@ -289,18 +291,10 @@ sub new
 	my $self = {};
 	bless $self, $class;
 	$lxc = new Lxc::object;
-
-	$lxc_opts{'root_mount_path'} = $lxc->get_roots_path();
-	$lxc_opts{'templates_path'} = $lxc->get_template_path();
-	$lxc_opts{'yaml_conf_dir'} = $lxc->get_config_path();
-	$lxc_opts{'lxc_conf_dir'} = $lxc->get_lxc_conf_dir();
-	$lxc_opts{'vg'} = $lxc->get_vg();
-
-	$generalValidator->defaultString(\%lxc_opts, 'root_mount_path', '/var/lxc/root');
-	$generalValidator->defaultString(\%lxc_opts, 'templates_path', '/var/lxc/templates');
-	$generalValidator->defaultString(\%lxc_opts, 'lxc_conf_dir', '/var/lxc/conf');
-	$generalValidator->defaultString(\%lxc_opts, 'yaml_conf_dir', '/etc/lxctl');
-	$generalValidator->defaultString(\%lxc_opts, 'vg', 'vg00');
+	my $tmp = shift;
+	%lxc_conf = %{$tmp};
+	$tmp = shift;
+	$self->{'validator'} = ${$tmp};
 
 	$lxc = new Lxc::object;
 

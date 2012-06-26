@@ -255,7 +255,7 @@ sub defaultString
 			$self->validate(\$default, undef, 'str');
 			$hash->{$key} = $default;
 		}
-	} elsif ($hash->{$key} !~ m/^([a-zA-Z0-9_.,'"\*\/\-=:]|\s)*$/) {
+	} elsif ($hash->{$key} !~ m/^([a-zA-Z0-9_.,'"%\*\/\-=:]|\s)*$/) {
 		die "Incorrect value: '$hash->{$key}'.\n";
 	}
 }
