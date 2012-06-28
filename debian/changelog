@@ -1,3 +1,9 @@
+lxctl (0.3.2) lucid; urgency=low
+
+  * Added rename module
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Fri, 25 May 2012 20:24:14 +0400
+
 lxctl (0.3.1-19) lucid; urgency=low
 
   * One more UUID fix
