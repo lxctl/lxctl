@@ -8,6 +8,7 @@ src/etc/bash_completion.d/lxctl_freeze /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_list /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_migrate /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_mount /etc/bash_completion.d/
+src/etc/bash_completion.d/lxctl_rename /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_restart /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_set /etc/bash_completion.d/
 src/etc/bash_completion.d/lxctl_start /etc/bash_completion.d/
@@ -24,6 +25,7 @@ src/lib/Lxctl/list.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/migrate.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/mount.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/pid.pm /usr/lib/perl/5.10/Lxctl/
+src/lib/Lxctl/rename.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/restart.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/set.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/Lxctl/start.pm /usr/lib/perl/5.10/Lxctl/
