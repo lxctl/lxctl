@@ -35,4 +35,4 @@ src/lib/Lxctl/vz2lxc.pm /usr/lib/perl/5.10/Lxctl/
 src/lib/LxctlHelpers/config.pm /usr/lib/perl/5.10/LxctlHelpers/
 src/lib/LxctlHelpers/getters.pm /usr/lib/perl/5.10/LxctlHelpers/
 src/lib/LxctlHelpers/helper.pm /usr/lib/perl/5.10/LxctlHelpers/
-src/lib/LxctlHelpers/SSH.pm /usr/lib/perl/5.10/LxctlHelpers/
+src/lib/LxctlHelpers/SSH.pm /usr/lib/perl/5.10/LxctlHelpers
