@@ -1,0 +1,3 @@
+LXCTL_PLUGINS="$LXCTL_PLUGINS backup"
+LXCTL_PLUGIN_backup="--create --tohost --todir --restore --fromhost --fromdir --remuser --remport --remname --afterstart"
+LXCTL_PLUGIN_USE_VMNAME_backup="yes"

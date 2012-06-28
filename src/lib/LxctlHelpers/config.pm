@@ -10,6 +10,36 @@ use Lxc::object;
 # @main_config_paths should be hardcoded, at least for now.
 my @main_config_paths = ("/etc/lxctl", "/etc", ".");
 
+# Return the pathname of an existing config file to read/write.
+# If called with an argument, set the pathname.
+
+sub _pathname {
+	my ($self, $pathname) = @_;
+
+	if ($pathname) {
+		$self->{'pathname'} = $pathname;
+		return;
+	}
+
+	$pathname = $self->{'pathname'};
+
+	if ($pathname) {
+		return $pathname;
+	}
+
+	# Find the first existing file
+	foreach my $path (@main_config_paths) {
+		my $file = "$path/lxctl.yaml";
+
+		if (-f $file) {
+			$self->{'pathname'} = $file;
+			return $file;
+		}
+	}
+
+	return undef;
+}
+
 sub print_warn #(message)
 {
 	use Term::ANSIColor;
@@ -25,57 +55,51 @@ sub load_main
 {
 	my ($self) = @_;
 
-	foreach my $path (@main_config_paths) {
-		if ( -f "$path/lxctl.yaml" ) {
-			my $yaml = YAML::Tiny->new;
-			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
-			# For compatibility reasons. Remove somewhere in 0.3+
-			eval {
-				$self->{'lxc'}->set_roots_path($yaml->[0]->{'paths'}->{'ROOTS_PATH'});
-				$self->print_warn("$path/lxctl.yaml: ROOTS_PATH is deprecated. Please rename to ROOT_MOUNT_PATH\n");
-			} or do {
-				$self->{'lxc'}->set_root_mount_path($yaml->[0]->{'paths'}->{'ROOT_MOUNT_PATH'});
-			};
+	my $pathname = $self->_pathname() || return;
 
-			eval {
-				$self->{'lxc'}->set_config_path($yaml->[0]->{'paths'}->{'CONFIG_PATH'});
-				$self->print_warn("$path/lxctl.yaml: CONFIG_PATH is deprecated. Please rename to YAML_CONFIG_PATH\n");
-			} or do {
-				$self->{'lxc'}->set_yaml_config_path($yaml->[0]->{'paths'}->{'YAML_CONFIG_PATH'});
-			};
+	my $yaml = YAML::Tiny->new;
+	$yaml = YAML::Tiny->read($pathname);
 
-			$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
-			$self->{'lxc'}->set_lxc_log_path($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'});
-			$self->{'lxc'}->set_lxc_log_level($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'});
-			$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
-			$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
+	# For compatibility reasons. Remove somewhere in 0.3+
+	eval {
+		$self->{'lxc'}->set_roots_path($yaml->[0]->{'paths'}->{'ROOTS_PATH'});
+		$self->print_warn("$pathname: ROOTS_PATH is deprecated. Please rename to ROOT_MOUNT_PATH\n");
+	} or do {
+		$self->{'lxc'}->set_root_mount_path($yaml->[0]->{'paths'}->{'ROOT_MOUNT_PATH'});
+	};
 
-			my $skip_check = $yaml->[0]->{'check'}->{'skip_kernel_config_check'};
-			if (defined($skip_check)) {
-				$self->{'lxc'}->set_conf_check($skip_check);
-			}
-			last;
-		}
+	eval {
+		$self->{'lxc'}->set_config_path($yaml->[0]->{'paths'}->{'CONFIG_PATH'});
+		$self->print_warn("$pathname: CONFIG_PATH is deprecated. Please rename to YAML_CONFIG_PATH\n");
+	} or do {
+		$self->{'lxc'}->set_yaml_config_path($yaml->[0]->{'paths'}->{'YAML_CONFIG_PATH'});
+	};
+
+	$self->{'lxc'}->set_lxc_conf_dir($yaml->[0]->{'paths'}->{'LXC_CONF_DIR'});
+	$self->{'lxc'}->set_lxc_log_path($yaml->[0]->{'paths'}->{'LXC_LOG_PATH'});
+	$self->{'lxc'}->set_lxc_log_level($yaml->[0]->{'paths'}->{'LXC_LOG_LEVEL'});
+	$self->{'lxc'}->set_template_path($yaml->[0]->{'paths'}->{'TEMPLATE_PATH'});
+	$self->{'lxc'}->set_vg($yaml->[0]->{'lvm'}->{'VG'});
+
+	my $skip_check = $yaml->[0]->{'check'}->{'skip_kernel_config_check'};
+	if (defined($skip_check)) {
+		$self->{'lxc'}->set_conf_check($skip_check);
 	}
-
-	return;
 }
 
 sub get_option_from_main #($section, $option_name)
 {
 	my ($self, $section, $option_name) = @_;
 	my $result = '';
-	foreach my $path (@main_config_paths) {
-		if ( -f "$path/lxctl.yaml" ) {
-			my $yaml = YAML::Tiny->new;
-			$yaml = YAML::Tiny->read("$path/lxctl.yaml");
 
-			eval {
-				$result = $yaml->[0]->{"$section"}->{"$option_name"};
-			};
-			last;
-		}
-	}
+	my $pathname = $self->_pathname() || return;
+
+	my $yaml = YAML::Tiny->new;
+	$yaml = YAML::Tiny->read($pathname);
+
+	eval {
+		$result = $yaml->[0]->{"$section"}->{"$option_name"};
+	};
 
 	return $result;
 }
@@ -139,7 +163,7 @@ sub get_api_ver
 	return 1;
 }
 
-# Loads hash from file, then modifys it whti hash from 1-st arg
+# Loads hash from file, then modifies it with hash from 1st arg
 # After that writes back to file.
 sub change_hash
 {
@@ -162,6 +186,24 @@ sub change_hash
 	$self->save_hash(\%tmp_hash, $filename);
 
 	return;
+}
+
+sub set_option_to_main
+{
+	my ($self, $section, $option_name, $value) = @_;
+
+	my $pathname = $self->_pathname() || return;
+
+	my $yaml = YAML::Tiny->new;
+	$yaml = YAML::Tiny->read($pathname);
+
+	if (defined $value) {
+		$yaml->[0]->{$section}->{$option_name} = $value;
+	} else {
+		delete $yaml->[0]->{$section}->{$option_name};
+	}
+
+	$yaml->write($pathname);
 }
 
 sub new

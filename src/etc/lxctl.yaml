@@ -1,29 +1,29 @@
 ---
-lvm:
-  VG: vg00
-paths:
-  YAML_CONFIG_PATH: '/etc/lxctl'
-  LXC_CONF_DIR: '/var/lib/lxc'
-  ROOT_MOUNT_PATH: '/var/lxc/root'
-  TEMPLATE_PATH: '/var/lxc/templates'
-  LXC_LOG_PATH: '/var/log/lxc.log'
-  LXC_LOG_LEVEL: 'DEBUG'
 check:
   skip_kernel_config_check: 1
-rsync:  
-  RSYNC_OPTS: -aH --delete --numeric-ids --exclude 'rootfs/proc/*' --exclude 'rootfs/sys/*' -e ssh
-  VZ_RSYNC_OPTS: -aH --delete --numeric-ids --exclude '/proc/*' --exclude '/sys/*' -e ssh
+fs:
+  FS: ext4
+  FS_MOUNT_OPTS: defaults,barrier=0,noatime
+  FS_OPTS: '-b 4096'
+list:
+  COLUMNS: name,disk_free_mb,status,ip,hostname
+lvm:
+  VG: vg00
+os:
+  OS_TEMPLATE: ubuntu-10.04-amd64
+paths:
+  LXC_CONF_DIR: '/var/lib/lxc'
+  LXC_LOG_LEVEL: DEBUG
+  LXC_LOG_PATH: '/var/log/lxc.log'
+  ROOT_MOUNT_PATH: '/var/lxc/root'
+  TEMPLATE_PATH: '/var/lxc/templates'
+  YAML_CONFIG_PATH: '/etc/lxctl'
 root:
   ROOT_SIZE: 50G
   ROOT_TYPE: lvm
-fs:
-  FS: ext4
-  FS_OPTS: -b 4096
-  FS_MOUNT_OPTS: defaults,barrier=0,noatime
-os:
-  OS_TEMPLATE: ubuntu-10.04-amd64
+rsync:
+  RSYNC_OPTS: "-aH --delete --numeric-ids --exclude 'rootfs/proc/*' --exclude 'rootfs/sys/*' -e ssh"
+  VZ_RSYNC_OPTS: "-aH --delete --numeric-ids --exclude '/proc/*' --exclude '/sys/*' -e ssh"
 set:
+  IFNAME: none
   SEARCHDOMAIN: ru
-  IFNAME: 'none'
-list:
-  COLUMNS: 'name,disk_free_mb,status,ip,hostname'

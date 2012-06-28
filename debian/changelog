@@ -10,6 +10,12 @@ lxctl (0.3.2) lucid; urgency=low
 
  -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Fri, 25 May 2012 20:24:14 +0400
 
+lxctl (0.3.1-20) lucid; urgency=low
+
+  * Added plugin for backup containers.
+
+ -- root <root@paulus.dev.yandex.net>  Mon, 25 Jun 2012 16:14:07 +0400
+
 lxctl (0.3.1-19) lucid; urgency=low
 
   * One more UUID fix
