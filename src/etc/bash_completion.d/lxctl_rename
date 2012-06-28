@@ -1,0 +1,3 @@
+LXCTL_PLUGINS="$LXCTL_PLUGINS rename"
+LXCTL_PLUGIN_rename="--to"
+LXCTL_PLUGIN_USE_VMNAME_rename="yes"
