@@ -118,8 +118,9 @@ sub validate_hash
 	my ($self, $what, $params) = @_;
 	print "validate_hash\n" if ($debug >= 1);
 	my %parameters = %{$params};
+	my $key;
 
-	for my $key (sort keys %parameters) {
+	for $key (sort keys %parameters) {
 		print " DEBUG: validate_hash: $key\n" if ($debug >= 2);
 		next if (!defined($params->{"$key"}));
 		if (ref($params->{"$key"}) eq "HASH") {
@@ -127,7 +128,12 @@ sub validate_hash
 				$what->{"$key"} = {};
 			}
 			print "  DEBUG: validating HASH: $key with $parameters{$key}\n" if ($debug >= 1);
-			$self->validate_hash($what->{"$key"}, $parameters{"$key"});
+			eval {
+				$self->validate_hash($what->{"$key"}, $parameters{"$key"});
+				1;
+			} or do {
+				die "$key\:\:$@";
+			};
 			next;
 		} elsif (ref($params->{"$key"}) ne "ARRAY") {
 			print "=====================BEGIN OF DATA DUMP=====================\n";
@@ -137,7 +143,12 @@ sub validate_hash
 		}
 		my @val = @{$params->{"$key"}};
 		print "   DEBUG (ARRAY): $key, $val[0]\n" if ($debug >= 1);
-		$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
+		eval {
+			$self->{'validator'}->validate($what, "$key", $val[0], $val[1], @{$val[2]});
+			1;
+		} or do {
+			die "$key\:\:$@";
+		};
 		print "   DEBUG: after validate on '$key' is '".$what->{$key}."'\n" if ($debug >= 1);
 	}
 }
@@ -178,13 +189,18 @@ sub act
 				'opts' => ['str', $config{'fs'}->{'FS_OPTS'}],
 				'to' => ['dir', "$config{'root'}->{'MOUNT_PATH'}/$options{'contname'}", [0]],
 				},
-			
+			'ipaddr' => ['ipv4', '192.168.0.250' ],
 	);
 	if (keys %append) {
 		@generalOpts{keys %append} = values %append;
 	}
 
-	$self->validate_hash($opt, \%generalOpts);
+	eval {
+		$self->validate_hash($opt, \%generalOpts);
+		1;
+	} or do {
+		die "Error while validating parameters: $@";
+	};
 }
 
 sub new

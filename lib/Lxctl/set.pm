@@ -16,6 +16,7 @@ use Lxctl::Helpers::common;
 use Lxctl::Helpers::config;
 
 my %options = ();
+my %lxc_conf;
 
 my $yaml_conf_dir;
 my $lxc_conf_dir;
@@ -23,7 +24,6 @@ my $root_mount_path;
 my $templates_path;
 my $vg;
 my $config = new Lxctl::Helpers::config;
-
 
 sub mac_create
 {
@@ -100,14 +100,14 @@ sub set_macaddr
 
 	if (defined($options{'macaddr'})) {
 		print "Setting MAC: $options{'macaddr'}\n";
-		$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $options{'macaddr'});
+		# $self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $options{'macaddr'});
 		return;	
 	}
 	defined($options{'contname'}) or return;
 
 	my $mac = "01:" . $self->mac_create($options{'contname'});
 	print "Setting MAC: $mac\n";
-	$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
+	#$self->{'lxc'}->set_conf($options{'contname'}, "lxc.network.hwaddr", $mac);
 	$options{'macaddr'} = $mac;
 	return;
 } 
@@ -145,14 +145,9 @@ sub set_ifname
 	defined($options{'ifname'}) or return;
 
 	if ($options{'ifname'} eq "mac") {
-		$options{'ifname'} = $options{'mac'};
+		$options{'ifname'} = $options{'macaddr'};
 		if (!defined($options{'ifname'})) {
 			$options{'ifname'} = $config->get_option_from_yaml("$yaml_conf_dir/$options{'contname'}.yaml", "", "macaddr");
-		}
-
-		if (!defined($options{'ifname'})) {
-			$options{'ifname'} = $self->{'lxc'}->get_conf($options{'contname'}, "lxc.network.hwaddr");
-			$options{'macaddr'} = $options{'ifname'};
 		}
 
 		$options{'ifname'} =~ s/^..:(.*)/$1/;
@@ -323,7 +318,8 @@ sub set_cgroup
 	eval {
 		$self->{'lxc'}->set_cgroup($options{'contname'}, $value, $options{$name}, 1);
 
-		$self->{'lxc'}->set_conf($options{'contname'}, "lxc.cgroup." . $value, $options{$name});
+#		$self->{'lxc'}->set_conf($options{'contname'}, "lxc.cgroup." . $value, $options{$name});
+		1;
 	} or do {
 		print "$@";
 		die "Failed to change $name share!\n\n";
@@ -364,10 +360,10 @@ sub set_tz()
 	cp("$cont_root_path/usr/share/zoneinfo/$options{'tz'}", "$cont_root_path/etc/localtime");
 }
 
-sub do
+sub act
 {
 	my $self = shift;
-	my $config = shift;
+	%options = @_;
 
 	$options{'contname'} = shift
 		or die "Name the container please!\n\n";
@@ -412,17 +408,22 @@ sub new
 	my $class = shift;	
 	my $self = {};
 	bless $self, $class;
+	my $tmp = shift;
+	%lxc_conf = %{$tmp};
+	$tmp = shift;
+	$self->{'validator'} = ${$tmp};
+	$tmp = shift;
+	if (defined($tmp)) {
+		%options = %{$tmp};
+	}
 
 	$self->{'lxc'} = Lxc::object->new;
 	$self->{'helper'} = Lxctl::Helpers::common->new;
-
-	$root_mount_path = $self->{'lxc'}->get_roots_path();
-	$templates_path = $self->{'lxc'}->get_template_path();
-	$yaml_conf_dir = $self->{'lxc'}->get_config_path();
-	$lxc_conf_dir = $self->{'lxc'}->get_lxc_conf_dir();
-	$vg = $self->{'lxc'}->get_vg();
-
-	%options = @_;
+	$root_mount_path = $lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'};
+	$templates_path = $lxc_conf{'paths'}->{'TEMPLATE_PATH'};
+	$yaml_conf_dir = $lxc_conf{'paths'}->{'YAML_CONFIG_PATH'};
+	$lxc_conf_dir = $lxc_conf{'paths'}->{'LXC_CONF_DIR'};
+	$vg = $lxc_conf{'lvm'}->{'VG'};
 
 	return $self;
 }

@@ -37,6 +37,27 @@ sub convert_name
 	$self->{'output'} .= $o;
 }
 
+sub convert_cgroup
+{
+	my $self = shift;
+	my $o;
+
+	if (defined($options{'cpu-shapres'})) {
+		$o .= "lxc.cgroup.cpu.shares = $options{'cpu-shapres'}\n";
+	}
+	if (defined($options{'cpus'})) {
+		$o .= "lxc.cgroup.cpuset.cpus = $options{'cpus'}\n";
+	}
+	if (defined($options{'mem'})) {
+		$o .= "lxc.cgroup.memory.limit_in_bytes = $options{'mem'}\n";
+	}
+	if (defined($options{'io'})) {
+		$o .= "lxc.cgroup.blkio.weight = $options{'io'}\n";
+	}
+
+	$self->{'output'} .= $o;
+}
+
 sub convert_paths
 {
 	my $self = shift;

@@ -17,7 +17,8 @@ my %options = (
 );
 my $result = $config->load_file($options{'contname'});
 my %hash = %{$result};
-my $setter = new Lxctl::set;
+my %lxc_conf;
+my $setter = Lxctl::set->new(\%lxc_conf, \$validator, \%options);
 
 print STDERR "Validating hash...\n";
 

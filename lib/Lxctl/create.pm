@@ -127,10 +127,22 @@ sub check_create_options
 		if (!defined($options{'ipaddr'})) { 
 			print "You did not specify IP address! Using default.\n";
 		} elsif ($options{'ipaddr'} !~ m/\d+\.\d+\.\d+\.\d+\/\d+/ ) {
-			$options{'netmask'} || print "You did not specify network mask! Using default.\n";
+			if (defined($options{'netmask'})) {
+				
+			} else {
+				print "You did not specify network mask! Using default.\n";
+			}
+		} else {
+			
 		}
-		$options{'defgw'} || print "You did not specify default gateway! Using default.\n";
-		$options{'dns'} || print "You did not specify DNS! Using default.\n";
+		if (defined($options{'defgw'})) {
+		} else {
+			print "You did not specify default gateway! Using default.\n";
+		}
+		if (defined($options{'dns'})) {
+		} else {
+			print "You did not specify DNS! Using default.\n";
+		}
 	}
 
 	my @domain_tokens = split(/\./, $options{'contname'});
@@ -214,9 +226,9 @@ sub deploy_packets
 sub act
 {
 	my $self = shift;
-        my $config = shift;
+        my $conf_ref = shift;
         @args = @_;
-        %conf = %{$config};
+        %conf = %{$conf_ref};
 
 	$options{'contname'} = $args[0]
 		or die "Name the container please!\n\n";
@@ -240,7 +252,7 @@ proc		$root_mount_path/$options{'contname'}/rootfs/proc		proc	nodev,noexec,nosui
 sysfs		$root_mount_path/$options{'contname'}/rootfs/sys		sysfs	defaults		0 0
 ";
 
-	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
+	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab" or die "Can't create container's fstab";
 	print $fstab_file $fstab;
 	close($fstab_file);
 
@@ -253,13 +265,12 @@ sysfs		$root_mount_path/$options{'contname'}/rootfs/sys		sysfs	defaults		0 0
 		};
 	}
 
-	my $setter = Lxctl::set->new(%options);
+	my $setter = Lxctl::set->new(\%lxc_conf, \$self->{'validator'}, \%options);
 	$setter->set_macaddr();
 
 	if ($options{'empty'} == 0) {
 		$self->deploy_template();
 		$self->create_ssh_keys();
-
 		$setter->set_ipaddr();
 		$setter->set_netmask();
 		$setter->set_defgw();
@@ -273,7 +284,6 @@ sysfs		$root_mount_path/$options{'contname'}/rootfs/sys		sysfs	defaults		0 0
 
 		$self->deploy_packets();
 	}
-
 	$setter->set_autostart();
 
 	$options{'api_ver'} = $config->get_api_ver();
