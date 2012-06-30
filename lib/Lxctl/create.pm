@@ -6,6 +6,7 @@ use 5.010001;
 use autodie qw(:all);
 
 use Getopt::Long qw(GetOptionsFromArray);
+use Data::Dumper;
 
 use Lxc::object;
 
@@ -44,7 +45,7 @@ sub create_root
 		if (lc($options{'roottype'}) eq 'lvm') {
 			$helper->lvcreate($options{'contname'}, $lxc_conf{'lvm'}->{'VG'}, $options{'rootsz'});
 
-			$helper->mkfs($options{'fs'}, "/dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'}",   $options{'mkfsopts'});
+			$helper->mkfs($options{'fs'}, "/dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'}", $options{'mkfsopts'});
 		} elsif (lc($options{'roottype'}) eq 'file') {
 			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
@@ -85,6 +86,7 @@ sub create_root
 		print "Mounting FS...\n";
 
 		system("mount -t $root_mp{'fs'} -o $root_mp{'opts'} $root_mp{'from'} $root_mp{'to'} 1>/dev/null");
+		system("mkdir -p $lxc_conf_dir/$options{'contname'}");
 	}
 
 	return;
@@ -147,16 +149,16 @@ sub check_existance
 {
 	my $self = shift;
 	
-	die "Container lxc conf directory $lxc_conf{'paths'}->{'LXC_CONF_DIR'}/$options{'contname'} already exists!\n\n" 
-		if -e "$lxc_conf{'paths'}->{'LXC_CONF_DIR'}/$options{'contname'}";
-	die "Container root directory $lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'}/$options{'contname'} already exists!\n\n"
-		if -e "$lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'}/$options{'contname'}";
+	die "Container lxc conf directory $lxc_conf_dir/$options{'contname'} already exists!\n\n" 
+		if -e "$lxc_conf_dir/$options{'contname'}";
+	die "Container root directory $root_mount_path/$options{'contname'} already exists!\n\n"
+		if -e "$root_mount_path/$options{'contname'}";
 	die "Container root logical volume /dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'} already exists!\n\n"
 		if -e "/dev/$lxc_conf{'lvm'}->{'VG'}/$options{'contname'}";
 
 	if ($options{'empty'} == 0) {
-		if (! -e "$lxc_conf{'paths'}->{'TEMPLATE_PATH'}/$options{'ostemplate'}.tar.gz") {
-			die "There is no such template: $lxc_conf{'paths'}->{'TEMPLATE_PATH'}/$options{'ostemplate'}.tar.gz\n\n";
+		if (! -e "$templates_path/$options{'ostemplate'}.tar.gz") {
+			die "There is no such template: $templates_path/$options{'ostemplate'}.tar.gz\n\n";
 		}
 	}
 
@@ -230,7 +232,7 @@ sub act
 	$self->check_create_options();
 	$self->check_existance();
 	print "Creating container $options{'contname'}...\n";
-	die "TEST DONE";
+
 	$self->create_root();
 
 	my $fstab = "\
@@ -241,8 +243,6 @@ sysfs		$root_mount_path/$options{'contname'}/rootfs/sys		sysfs	defaults		0 0
 	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
 	print $fstab_file $fstab;
 	close($fstab_file);
-
-	die "A!!!!!";
 
 	if (!defined($options{'ifname'})) {
 		eval {
@@ -295,6 +295,11 @@ sub new
 	%lxc_conf = %{$tmp};
 	$tmp = shift;
 	$self->{'validator'} = ${$tmp};
+	$root_mount_path = $lxc_conf{'paths'}->{'ROOT_MOUNT_PATH'};
+	$templates_path = $lxc_conf{'paths'}->{'TEMPLATE_PATH'};
+	$yaml_conf_dir = $lxc_conf{'paths'}->{'YAML_CONFIG_PATH'};
+	$lxc_conf_dir = $lxc_conf{'paths'}->{'LXC_CONF_DIR'};
+	$vg = $lxc_conf{'lvm'}->{'VG'};
 
 	$lxc = new Lxc::object;
 

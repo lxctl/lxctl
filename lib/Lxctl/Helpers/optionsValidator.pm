@@ -161,6 +161,7 @@ sub act
 			'save' => ['int', 1],
 			'uuid' => ['uuid', 1],
 			'contname' =>  ['str', undef],
+			'fs' => ['str', $config{'fs'}->{'FS'}],
 			'mkfsopts' =>  ['str', $config{'fs'}->{'FS_OPTS'}],
 			'mountoptions' =>  ['str', $config{'fs'}->{'FS_MOUNT_OPTS'}],
 			'ostemplate' =>  ['str', $config{'os'}->{'OS_TEMPLATE'}],
