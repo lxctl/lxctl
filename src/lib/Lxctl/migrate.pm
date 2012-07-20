@@ -118,7 +118,7 @@ sub remote_deploy
 
     eval {
         #Next line is a very ugly and useful only for us hack. Don't pay any attention to it.
-        $ssh->execute("ls /usr/lib/perl/5.10/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}");
+        $ssh->execute("ls /usr/share/perl5/Lxctl/conduct.pm 1>/dev/null 2>/dev/null && lxctl conduct $options{'remname'}");
     } or do {
         print "Meow...\n";
     };
