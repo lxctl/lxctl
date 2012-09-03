@@ -1,3 +1,9 @@
+lxctl (0.3.3) lucid; urgency=low
+
+  * Moved all modules to /usr/share/perl5/
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Fri, 20 Jul 2012 20:54:12 +0400
+
 lxctl (0.3.2-1) lucid; urgency=low
 
   * Fix against teran

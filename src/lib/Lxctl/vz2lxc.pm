@@ -30,7 +30,7 @@ sub migrate_get_opt
 	$options{'remuser'} ||= 'root';
 	$options{'remport'} ||= '22';
 	$options{'afterstart'} ||= 0;
-	$options{'rootsz'} ||= (`echo -n \$(ssh $options{'remuser'}\@$options{'fromhost'} "egrep DISKSPACE /etc/vz/conf/$options{'remname'}.conf | cut -d= -f2 | cut -d: -f1 | cut -d'\\"' -f2")`) . "K";
+	$options{'rootsz'} ||= (`echo -n \$(ssh $options{'remuser'}\@$options{'fromhost'} "egrep DISKSPACE /etc/vz/conf/$options{'remname'}.conf | cut -d= -f2 | cut -d: -f1 | cut -d'\\"' -f2")` || 0) / 1024 || '30G';
 
 	defined($options{'remname'})
 		or die "You should specify the name of the VZ container!\n\n";
