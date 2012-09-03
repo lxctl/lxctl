@@ -2,29 +2,29 @@
 # lxc containers starter script
 # based on skeleton from Debian GNU/Linux
 ### BEGIN INIT INFO
-# Provides:          lxc
+# Provides:          lxctl
 # Required-Start:    $syslog $remote_fs mdadm
 # Required-Stop:     $syslog $remote_fs mdadm
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Linux Containers
-# Description:       Linux Containers
+# Short-Description: lxctl script for starting Linux Containers
+# Description:       lxctl script for starting Linux Containers
 ### END INIT INFO
 
-NAME=lxc
+NAME=lxctl
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
 DESC="LXC containers"
 
-SCRIPTNAME="/etc/init.d/lxc"
+SCRIPTNAME="/etc/init.d/lxctl"
 
 . /lib/lsb/init-functions
 
-if [ -f /etc/default/$NAME ] ; then
-  . /etc/default/$NAME
+if [ -f /etc/default/lxc ] ; then
+  . /etc/default/lxc
 fi
 
 if [ "x$RUN" != "xyes" ] ; then
-  log_success_msg "$NAME init script disabled; edit /etc/default/$NAME"
+  log_success_msg "lxc init script disabled; edit /etc/default/lxc"
   exit 0
 fi
 
