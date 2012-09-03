@@ -1,3 +1,9 @@
+lxctl (0.3.4) lucid; urgency=low
+
+  * Added lxctl init script
+
+ -- Rashit Azizbaev <syndicut@yandex-team.ru>  Mon, 03 Sep 2012 18:04:41 +0400
+
 lxctl (0.3.3) lucid; urgency=low
 
   * Moved all modules to /usr/share/perl5/
