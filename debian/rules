@@ -12,3 +12,5 @@ export DESTDIR=debian/tmp
 
 %:
 	dh $@ 
+override_dh_installinit:
+	dh_installinit --no-restart-on-upgrade --no-start
