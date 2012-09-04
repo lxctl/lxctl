@@ -9,8 +9,13 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 export DESTDIR=debian/tmp
+DEBVERS := $(shell dpkg-parsechangelog | sed -n -e 's/^Version: //p')
+VERSION := $(shell echo '$(DEBVERS)' | sed -e 's/^[[:digit:]]*://' -e 's/[~-].*//')
 
 %:
 	dh $@ 
 override_dh_installinit:
 	dh_installinit --no-restart-on-upgrade --no-start
+override_dh_auto_build:
+	sed -i 's/our $$version = ".*";/our $$version = "${VERSION}";/g' src/bin/lxctl
+	dh_auto_build
