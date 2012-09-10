@@ -1,5 +1,5 @@
 /var/log/lxc.log {
-    rotate 12
+    rotate 14
     daily
     compress
     missingok
