@@ -1,3 +1,9 @@
+lxctl (0.3.5) lucid; urgency=low
+
+  * Added logrotate file
+
+ -- Rashit Azizbaev <syndicut@yandex-team.ru>  Fri, 14 Sep 2012 14:05:21 +0400
+
 lxctl (0.3.4) lucid; urgency=low
 
   * Added lxctl init script
