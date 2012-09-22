@@ -11,8 +11,8 @@ sub new
     my $class = ref($this) || $this;
 
     my $self = {};
-    $$self{'Network'} = Lxctl::Core::VirtualMachine::Network->new();
-    return bless $self;
+    $$self{'Network'} = new Lxctl::Core::VirtualMachine::Network;
+    return bless $self, class;
 }
 
 
