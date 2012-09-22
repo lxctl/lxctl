@@ -101,7 +101,7 @@ sub commit
     # MTU: should be in range [1, 9000] and not be different with bridge's MTU
     my $mtu = $self->getMTU();
     if ($self->getType() eq 'veth') {
-        print "> Interface type 'veth' was used. Setting MTU to bridge's one.\n";
+        print "> Interface " . $self->getName() . " has type 'veth'. Setting MTU to bridge's one.\n";
         $mtu = $self->getBridgeMTU();
     }
     $$self{'mtu'}->{'conf'} = $mtu;
