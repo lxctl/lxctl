@@ -31,22 +31,22 @@ sub commit
     # mem_soft_limit: should be > 0
     my $mem_soft_limit = $self->getMemSoftLimit();
     $mem_soft_limit > 0
-        or die "mem_soft_limit should be positive integer";
+        or die "mem_soft_limit should be positive integer\n";
 
     # mem_limit: should be > 0
     my $mem_limit = $self->getMemLimit();
     $mem_limit > 0
-        or die "mem_limit should be positive integer";
+        or die "mem_limit should be positive integer\n";
 
     # mem_swap_limit: should be > 0
     my $mem_swap_limit = $self->getMemSwapLimit();
     $mem_swap_limit > 0
-        or die "mem_swap_limit should be positive integer";
+        or die "mem_swap_limit should be positive integer\n";
 
     # mem_swappiness: should be > 0
     my $mem_swappiness = $self->getMemSwapiness();
     $mem_swappiness > 0
-        or die "mem_swappiness should be positive integer";
+        or die "mem_swappiness should be positive integer\n";
 }
 
 sub dumpConfig
