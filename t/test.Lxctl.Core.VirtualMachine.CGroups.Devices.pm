@@ -2,7 +2,7 @@
 
 use strict;
 
-use Lxctl::Core::VirtualMachine::Devices;
+use Lxctl::Core::VirtualMachine::CGroups::Devices;
 
 my $defaultsConf = {};
 print "Using defaults:\n";
