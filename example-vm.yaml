@@ -1,0 +1,71 @@
+---
+virtual_machine:
+    name: 'blahvm'
+    lxc_config: '/tmp/lxctl/blahvm.lxc.conf' # not nesessary
+    log_path: '/var/log/lxctl/blahvm.log'
+
+    runtime:
+        autostart: 1
+
+    network:
+        mac_generation: 'random'
+        interfaces:
+          - type: 'veth'
+            flags: 'up'
+            bridge: 'br0'
+            name: 'eth0'
+            mtu: 9000
+            mac: 'aa:bb:cc:dd:ee:ff'
+          - type: 'veth'
+            flags: 'up'
+            bridge: 'br1'
+            name: 'eth1'
+            mtu: 1500
+            mac: 'aa:bb:cc:ff:ee:ff'
+
+    system:
+        root:
+            fs_type: 'ext4'
+            mnt_fs_opts: 'defaults,barrier=0,noatime'
+            mkfs_opts: '-b 4096'
+            root_size: 53687091200
+            root_type: 'lvm'
+            lvm_vg: 'vg00'
+            mount_point: '/var/lib/lxctl/root/blahvm' # not nesessary, shoud be able to generate from default path and name
+            root_location: '/dev/vg00/blahvm' # not nesessary, shoud be able to generate from default path, vg and name
+        mounts:
+          - fs_type: 'ext4'
+            mnt_fs_opts: 'defaults,barrier=0,noatime'
+            mount_location: '/dev/vg00/blahshelf'
+            mount_point: '/var/'
+        os:
+            template: 'ubuntu-10.04-amd64'
+            hostname: 'blahvm.lxc.tl' # generally same as name
+            os_type: 'ubuntu' # shoud be able to find it out from template
+
+
+    cgroups:
+        cgroup_path: '/cgroups/' # concatenated with name should be enough
+        cpu:
+            cpus: '0-3'
+            cpus_exclusive: 1
+        devices:
+            device_polycy: 'deny'
+            devices:
+              - 'c 1:3 rwm'
+              - 'c 1:5 rwm'
+              - 'c 5:1 rwm'
+              - 'c 5:0 rwm'
+              - 'c 4:0 rwm'
+              - 'c 4:1 rwm'
+              - 'c 1:9 rwm'
+              - 'c 1:8 rwm'
+              - 'c 136:* rwm'
+              - 'c 5:2 rwm'
+              - 'c 254:0 rwm'
+              - 'c 10:229 rwm'
+        memory:
+            mem_soft_limit: 53687091200
+            mem_limit: 53687091200
+            mem_swap_limit: 53687091200
+            mem_swappiess: 0

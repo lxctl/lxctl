@@ -10,8 +10,8 @@ sub new
 
     # 'conf' is for value from vm config
     # 'default' if for value from defaults config
+    # TODO: get cgroup_path from config
     my $online_change = (-d "$cgroup_path/$cgroup_name" ? 1 : 0);
-    my $self = {};
     $$self{'Devices'} = new Lxctl::Core::VirtualMachine::CGroups::Devices($$conf{'devices'}, $$defaults{'devices'}, $cgroup_path, $cgroup_name, $online_change);
     $$self{'Memory'} = new Lxctl::Core::VirtualMachine::CGroups::Memory($$conf{'memory'}, $$defaults{'memory'}, $cgroup_path, $cgroup_name, $online_change);
     $$self{'CPU'} = new Lxctl::Core::VirtualMachine::CGroups::CPU($$conf{'cpu'}, $$defaults{'cpu'}, $cgroup_path, $cgroup_name, $online_change);
