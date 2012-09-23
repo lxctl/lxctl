@@ -1,11 +1,11 @@
-package Lxctl::Core::VirtualMachine::Devices;
+package Lxctl::Core::VirtualMachine::CGroups::Devices;
 
 use strict;
 
 ## Constructor
 sub new
 {
-    my ($this, $conf, $defaults, $cgroup_path, $cgroup_name) = @_;
+    my ($this, $conf, $defaults, $cgroup_path, $cgroup_name, $online_change) = @_;
     my $class = ref($this) || $this;
 
     # 'conf' is for value from vm config
@@ -18,6 +18,7 @@ sub new
     };
     $$self{'cgroup_path'} = $cgroup_path;
     $$self{'cgroup_name'} = $cgroup_name;
+    $$self{'online_change'} = $online_change;
 
     bless $self, $class;
     return $self;
@@ -89,6 +90,9 @@ sub parseDeviceName
 sub allowOrDenyDevice
 {
     my ($self, $device, $action) = @_;
+
+    return if ($$self{'online_change'} != 0);
+
     my $file = "$$self{'cgroup_path'}/$$self{'cgroup_name'}/devices.$action";
     open my $cgrp_dev_allow, ">$file"
         or die "Failed to open $file for writing\n";
