@@ -97,10 +97,14 @@ sub get_all_info
 		eval {
 			my $ip = $getters->get_ip($vm);
 			($info{'ip'}) = $ip =~ m/(\d+\.\d+\.\d+\.\d+)/;
+			# check if it's ipv6 address
+			if (!defined($info{'ip'})) {
+				($info{'ip'}) = $ip =~ m/(([0-9a-zA-Z]*:)+[0-9a-zA-Z]*)/;
+			}
 			1;
-		} or do {
-			$info{'ip'} = "N/A";
 		};
+		$info{'ip'} ||= "N/A";
+
 		eval {
 			$info{'hostname'} = $self->{lxc}->get_conf($vm, "lxc.utsname");
 			1;
