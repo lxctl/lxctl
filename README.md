@@ -8,12 +8,6 @@ Contributing
 
 http://bugs.lxc.tl/
 
-Installation
------------
-
-    make DESTDIR="/usr/local/" install
-
-
 Usage
 -----
 
