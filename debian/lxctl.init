@@ -30,22 +30,21 @@ fi
 
 start_one() {
   name=$1
-  if [ -f "$CONF_DIR/$name/config" ]; then
-    exec 12<&-
-    if [[ $(grep autostart /etc/lxctl/"$name".yaml | awk '{print $2}') == 1 ]]; then
-      lxctl start $name 
-    fi
-  else
-    log_failure_msg "Can't find config file $CONF_DIR/$name.conf"
+  if [[ $(grep autostart /etc/lxctl/"$name".yaml | awk '{print $2}') == 1 ]]; then
+     exec 12<&-
+     lxctl start $name 
   fi
 }
 
 action_all() {
   action=$1
   nolog=$2
-  for i in $(lxctl list --noheader --columns name | xargs); do
-    [ -n "$nolog" ] || log_progress_msg "$i"
-    $action $i
+  for i in /etc/lxctl/*.yaml; do
+    name=$(grep contname $i|awk '{print $2}')
+    if [ "$name" != "" ]; then
+       [ -n "$nolog" ] || log_progress_msg "$i"
+       $action $name
+    fi
   done
   [ -n "$nolog" ] || log_end_msg 0
 }
