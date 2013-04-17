@@ -118,6 +118,9 @@ sub do
                         }
 			$cmd .= " -o $mp{'mountoptions'} $from $to";
 			system("$cmd");
+			if ( $? != 0 ) {
+				die "Can't mount $from to $mp{'to'} !";
+			}
 		}
 	} } else {
 		print "Meow...\n";
