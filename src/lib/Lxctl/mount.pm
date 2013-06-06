@@ -28,6 +28,9 @@ sub add
 	$options{'from'} || die "Don't know what to mount.\n\n";
 	$options{'to'} || die "Don't know where to mount.\n\n";
 
+	# Strip ending slashes
+	$options{'to'} =~ s/\/*$//g;
+
         -e $options{'from'} || $options{'from'} =~ m/^UUID/ || die "You are trying to mount void. Lxctl does not able to do it. Yet.\n\n";
 
 	if (!defined($options{'mountoptions'})) {
