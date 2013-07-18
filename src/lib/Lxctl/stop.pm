@@ -62,7 +62,7 @@ sub do
 	}
 
 	if (defined $vm_options{'rootfs_mp'}{'to'}) {
-		my $to = quotemeta("$root_path/$options{'contname'}/rootfs");
+		my $to = quotemeta("$vm_options{'rootfs_mp'}{'to'}");
 		if ($mount_result =~ /on $to/) {
 			my $cmd = "umount $vm_options{'rootfs_mp'}{'to'}";
 			system("$cmd");
