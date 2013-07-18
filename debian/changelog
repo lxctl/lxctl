@@ -1,3 +1,9 @@
+lxctl (0.3.6) natty; urgency=low
+
+  * Some fixes
+
+ -- Pavel Potapenkov <oxcd8o@yandex-team.ru>  Wed, 17 Jul 2013 17:41:00 +0400
+
 lxctl (0.3.5) lucid; urgency=low
 
   * Added logrotate file

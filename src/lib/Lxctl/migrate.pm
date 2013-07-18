@@ -167,6 +167,7 @@ sub do
         $self->clone();
         system("lxctl start $options{'contname'}");
     } else {
+        $ssh->put_file("$lxc_conf_dir/$options{'contname'}/config", "$lxc_conf_dir/$options{'contname'}/config");
         system("lxctl set $options{'contname'} --autostart 0");
     }
 }
