@@ -7,6 +7,7 @@ use Getopt::Long;
 use Lxc::object;
 use LxctlHelpers::config;
 use LxctlHelpers::SSH;
+use Lxctl::start;
 
 my %options = ();
 
@@ -48,6 +49,42 @@ sub migrate_get_opt
 
     $ssh = LxctlHelpers::SSH->connect($options{'tohost'}, $options{'remuser'}, $options{'remport'});
 }
+
+sub check_mount_and_mount
+{
+	my $sefl = shift;
+        my $vm_option_ref;
+        my %vm_options;
+        $vm_option_ref = $config->load_file("$yaml_conf_dir/$options{'contname'}.yaml");
+        %vm_options = %$vm_option_ref;
+
+        my $mount_result = `mount`;
+        # mount root
+        if (!defined($vm_options{'rootsz'}) || $vm_options{'rootsz'} ne 'share') {
+                my $mp_ref = $vm_options{'rootfs_mp'};
+                my %mp = %$mp_ref;
+                if ($mount_result !~ m/on $mp{'to'}/) {
+			print "Mount rootfs for migrate\n";
+                        (system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") == 0) or die "Failed to mount $mp{'from'} to $mp{'to'}\n\n";
+                }
+        }
+}
+
+sub unmount_cont
+{
+	my $self = shift;
+	my $vm_option_ref = $config->load_file("$yaml_conf_dir/$options{'contname'}.yaml");
+	my %vm_options = %$vm_option_ref;
+
+        my $mount_result = `mount`;
+        my $mp_ref = $vm_options{'rootfs_mp'};
+        my %mp = %$mp_ref;
+        if ($mount_result =~ m/on $mp{'to'}/) {
+		print "Unmount rootfs after migrate\n";
+                (system("umount $mp{'to'}") == 0) or print "Failed to unmount $mp{'to'}\n\n";
+	}
+}
+	
 
 sub re_rsync
 {
@@ -162,6 +199,7 @@ sub do
         or die "Name the container please!\n\n";
 
     $self->migrate_get_opt();
+    $self->check_mount_and_mount();
     $self->remote_deploy();
     if ($options{'clone'}) {
         $self->clone();
@@ -169,6 +207,7 @@ sub do
     } else {
         $ssh->put_file("$lxc_conf_dir/$options{'contname'}/config", "$lxc_conf_dir/$options{'contname'}/config");
         system("lxctl set $options{'contname'} --autostart 0");
+    	$self->unmount_cont();
     }
 }
 
