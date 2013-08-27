@@ -7,7 +7,6 @@ use Getopt::Long;
 use Lxc::object;
 use LxctlHelpers::config;
 use LxctlHelpers::SSH;
-use Lxctl::start;
 
 my %options = ();
 
@@ -64,7 +63,7 @@ sub check_mount_and_mount
                 my $mp_ref = $vm_options{'rootfs_mp'};
                 my %mp = %$mp_ref;
                 if ($mount_result !~ m/on $mp{'to'}/) {
-			print "Mount rootfs for migrate\n";
+                        print "Mount rootfs for migrate\n";
                         (system("mount -t $mp{'fs'} -o $mp{'opts'} $mp{'from'} $mp{'to'}") == 0) or die "Failed to mount $mp{'from'} to $mp{'to'}\n\n";
                 }
         }
@@ -76,12 +75,12 @@ sub unmount_cont
 	my $vm_option_ref = $config->load_file("$yaml_conf_dir/$options{'contname'}.yaml");
 	my %vm_options = %$vm_option_ref;
 
-        my $mount_result = `mount`;
-        my $mp_ref = $vm_options{'rootfs_mp'};
-        my %mp = %$mp_ref;
-        if ($mount_result =~ m/on $mp{'to'}/) {
+	my $mount_result = `mount`;
+	my $mp_ref = $vm_options{'rootfs_mp'};
+	my %mp = %$mp_ref;
+	if ($mount_result =~ m/on $mp{'to'}/) {
 		print "Unmount rootfs after migrate\n";
-                (system("umount $mp{'to'}") == 0) or print "Failed to unmount $mp{'to'}\n\n";
+		(system("umount $mp{'to'}") == 0) or print "Failed to unmount $mp{'to'}\n\n";
 	}
 }
 	
