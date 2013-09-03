@@ -28,7 +28,7 @@ sub do
 	if ($self->{'lxc'}->status($options{'contname'}) ne 'STOPPED') {
 		die "Container $options{'contname'} is running!\n\n";
 	}
-	GetOptions(\%options, 'force', 'debug', 'configs');
+	GetOptions(\%options, 'force', 'debug');
 
 	$self->{'helper'}->fool_proof() if (!$options{force});
 
@@ -68,9 +68,7 @@ sub do
 	}
 	rmtree("$root_mount_path/$options{'contname'}");
 	rmtree("$lxc_conf_dir/$options{'contname'}");
-	if (defined($options{'configs'})) {
-		rmtree("$yaml_conf_dir/$options{'contname'}.yaml");
-	}
+	rmtree("$yaml_conf_dir/$options{'contname'}.yaml");
 
 	open(my $fstab_file, '<', "/etc/fstab");
 	my @fstab = <$fstab_file>;
