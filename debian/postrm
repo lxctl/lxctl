@@ -21,6 +21,8 @@ set -e
 
 case "$1" in
     remove)
+        dpkg-divert --remove --package lxctl --rename /etc/init.d/lxc
+    	
         update-rc.d -f lxctl remove
         update-rc.d lxc defaults
     ;;
