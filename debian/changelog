@@ -1,3 +1,9 @@
+lxctl (0.3.8) precise; urgency=low
+
+  * fixed previous release (link wasn't created). sorry.
+
+ -- Anna Martynova <broom@yandex-team.ru>  Thu, 19 Sep 2013 18:17:09 +0400
+
 lxctl (0.3.7) precise; urgency=low
 
   * diversion of 'lxc' init script and link /etc/init.d/lxc -> /etc/init.d/lxctl
