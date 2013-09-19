@@ -1,3 +1,10 @@
+lxctl (0.3.7) precise; urgency=low
+
+  * diversion of 'lxc' init script and link /etc/init.d/lxc -> /etc/init.d/lxctl
+  * remove container's yaml config while destroying container
+
+ -- Anna Martynova <broom@yandex-team.ru>  Thu, 19 Sep 2013 17:18:22 +0400
+
 lxctl (0.3.6) natty; urgency=low
 
   * Some fixes
