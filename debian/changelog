@@ -1,3 +1,9 @@
+lxctl (0.3.9) precise; urgency=low
+
+  * fixed previous fix :)
+
+ -- Anna Martynova <broom@yandex-team.ru>  Thu, 24 Oct 2013 19:20:42 +0400
+
 lxctl (0.3.8) precise; urgency=low
 
   * fixed previous release (link wasn't created). sorry.

@@ -17,10 +17,12 @@ set -e
 # for details, see http://www.debian.org/doc/debian-policy/ or
 # the debian-policy package
 
-
 case "$1" in
     configure)
+
         update-rc.d -f lxc remove
+	dpkg-divert --package lxctl --divert /etc/init.d/lxc.orig --rename /etc/init.d/lxc
+	[ ! -e /etc/init.d/lxc ] && cd /etc/init.d/ && ln -s lxctl lxc		
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -1,3 +1,0 @@
-#!/bin/sh
-
-dpkg-divert --rename --add --package lxctl --divert /etc/init.d/lxc.orig /etc/init.d/lxc

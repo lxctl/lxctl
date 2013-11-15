@@ -21,8 +21,11 @@ set -e
 
 case "$1" in
     remove)
-        dpkg-divert --remove --package lxctl --rename /etc/init.d/lxc
+	# remove link that we created in postinst
+	[ -L /etc/init.d/lxc ] && rm /etc/init.d/lxc
     	
+	dpkg-divert --package lxctl --rename --remove /etc/init.d/lxc
+
         update-rc.d -f lxctl remove
         update-rc.d lxc defaults
     ;;
