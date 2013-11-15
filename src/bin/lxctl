@@ -16,7 +16,7 @@ use LxctlHelpers::helper;
 use LxctlHelpers::config;
 
 
-our $version = "0.3.6";
+our $version = "0.3.9";
 our $api_ver = 1;
 
 our $Lxc = Lxc::object->new;
