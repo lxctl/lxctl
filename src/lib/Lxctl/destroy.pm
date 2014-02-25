@@ -42,6 +42,10 @@ sub do
 		$mounted_path = "$root_mount_path/$options{'contname'}.raw";
 	}
 
+	if (lc($old_conf{'roottype'}) eq 'raw') {
+		$mounted_path = $old_conf{'device'};
+	}
+
 	if (defined($options{'debug'})) {
 		foreach my $key (sort keys %old_conf) {
 			print "$key = $old_conf{$key}\n";
