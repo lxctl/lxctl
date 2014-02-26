@@ -59,6 +59,11 @@ Options:
 
                     --root - path to root file system, by default /var/lxc/<container name> is used
 
+                    --roottype - storage type for root file system. Available values: 
+                        lvm (default)   - create new logical value on default VG
+                        file            - create disk image on host FS
+                        raw             - use raw device specified by '--device' option
+
                     --addpkg - list of additional packages (comma-separated)
 
                     --pkgopt - list of additional packet manager options (space-separated, but as one argument)
