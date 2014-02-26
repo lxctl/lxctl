@@ -45,6 +45,20 @@ sub check_existance
 		}
 	}
 
+	if ($options{'roottype'} eq 'raw') {
+		die "Specify raw device using '--device' option!\n" unless $options{'device'};
+		my $device = $options{'device'};
+		if (! -e $device ) {
+			die "No such device: $device\n";
+		} else {
+			open(my $mounts, "<", "/proc/mounts");
+			while(<$mounts>) {
+				die "$device is already mounted, please double check your options!\n" if /$device/;
+			}
+			close($mounts);
+		}
+	}
+
 	return;
 }
 
@@ -57,6 +71,8 @@ sub create_root
 			$helper->lvcreate($options{'contname'}, $vg, $options{'rootsz'});
 
 			$helper->mkfs($options{'fs'}, "/dev/$vg/$options{'contname'}",   $options{'mkfsopts'});
+		} elsif (lc($options{'roottype'}) eq 'raw') {
+			$helper->mkfs($options{'fs'}, $options{'device'}, $options{'mkfsopts'});
 		} elsif (lc($options{'roottype'}) eq 'file') {
 			print "Creating root in file: $root_mount_path/$options{'contname'}.raw\n";
 
@@ -84,6 +100,8 @@ sub create_root
 		my $additional_opts = "";
 		if (lc($options{'roottype'}) eq 'lvm') {
 			$what_to_mount = "/dev/$vg/$options{'contname'}";
+		} elsif (lc($options{'roottype'}) eq 'raw') {
+			$what_to_mount = $options{'device'};
 		} elsif (lc($options{'roottype'}) eq 'file') {
 			$what_to_mount = "$root_mount_path/$options{'contname'}.raw";
 			$additional_opts=",loop";
@@ -111,7 +129,7 @@ sub check_create_options
 	$Getopt::Long::passthrough = 1;
 
 	GetOptions(\%options, 'ipaddr=s', 'hostname=s', 'ostemplate=s', 
-		'config=s', 'roottype=s', 'root=s', 'rootsz=s', 'netmask|mask=s',
+		'config=s', 'roottype=s', 'device=s', 'root=s', 'rootsz=s', 'netmask|mask=s',
 		'defgw|gw=s', 'dns=s', 'macaddr=s', 'autostart=s', 'empty!',
 		'save!', 'load=s', 'debug', 'searchdomain=s', 'tz=s',
 		'fs=s', 'mkfsopts=s', 'mountoptions=s', 'mtu=i', 'userpasswd=s',
