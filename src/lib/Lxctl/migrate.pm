@@ -26,7 +26,7 @@ sub migrate_get_opt
     my $self = shift;
 
     GetOptions(\%options, 
-        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!', 'clone!');
+        'rootsz=s',  'tohost=s', 'remuser=s', 'remport=s', 'remname=s', 'afterstart!', 'delete!', 'clone!', 'continue!');
 
     $options{'remuser'} ||= 'root';
     $options{'remport'} ||= '22';
@@ -34,6 +34,7 @@ sub migrate_get_opt
     $options{'afterstart'} ||= 1;
     $options{'delete'} ||= 0;
     $options{'clone'} ||= 0;
+    $options{'continue'} ||= 0;
 
     if ($options{'clone'}) {
         $options{'afterstart'} = 0;
@@ -97,16 +98,16 @@ sub re_rsync
         die "Failed to get status for container $options{'contname'}!\n\n";
     };
 
-    if ($status ne 'RUNNING') {
+    if ($status eq 'RUNNING') {
+        eval {
+            print "Stopping container $options{'contname'}...\n";
+            $self->{'lxc'}->stop($options{'contname'});
+        } or do {
+            die "Failed to stop container $options{'contname'}.\n\n";
+        };
+    } else {
         return if $first_pass;
-        die "Aborting due to rsync error.\n\n" if !$first_pass;
-    }
-
-    eval {
-        print "Stopping container $options{'contname'}...\n";
-        $self->{'lxc'}->stop($options{'contname'});
-    } or do {
-        die "Failed to stop container $options{'contname'}.\n\n";
+        print "WARNING: container $options{'contname'} was already stopped.\n\n";
     };
 
     print "Start second rsync pass...\n";
@@ -139,16 +140,22 @@ sub sync_data {
 sub remote_deploy
 {
     my $self = shift;
+    my $first_pass;
 
-    $self->copy_config();
+    if ($options{'continue'} == 0) {
 
-    print "Creating remote container...\n";
+        $self->copy_config();
 
-    $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml")
-        or die "Failed to create remote container.\n\n";
+        print "Creating remote container...\n";
 
-    print "Start first rsync pass...\n";
-    my $first_pass = $self->sync_data();
+        $ssh->execute("lxctl create $options{'remname'} --empty --load /tmp/$options{'contname'}.yaml")
+            or die "Failed to create remote container.\n\n";
+
+        print "Start first rsync pass...\n";
+        $first_pass = $self->sync_data();
+    } else {
+        $first_pass = 0;
+    };
 
     $self->re_rsync($first_pass);
 
