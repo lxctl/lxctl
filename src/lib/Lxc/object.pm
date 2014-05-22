@@ -358,11 +358,16 @@ sub status {
 		return "";
 	}
 	my $status = `lxc-info --name $name 2>&1`;
-	my $lxc_upstream_version = `lxc-version`;
+	my $lxc_upstream_version = `lxc-version 2>&1`;
+	if (!defined($lxc_upstream_version)) {
+		$lxc_upstream_version = `lxc-info --version`;
+	}
 	$lxc_upstream_version =~ s#.*\s+(\d.*)#$1#;
 	my @lxc_version_tokens = split(/\./, $lxc_upstream_version);
 	my $match;
-	if ($lxc_version_tokens[0] eq 0 && ($lxc_version_tokens[1] > 7 || ($lxc_version_tokens[1] eq 7 && $lxc_version_tokens[2] > 4))) {
+	if ($lxc_version_tokens[0] eq 1) {
+		($match) = $status =~ m/State:\s+([A-Z]+)/;
+	} elsif ($lxc_version_tokens[0] eq 0 && ($lxc_version_tokens[1] > 7 || ($lxc_version_tokens[1] eq 7 && $lxc_version_tokens[2] > 4))) {
 		($match) = $status =~ m/state:\s+([A-Z]+)/;
 	} else {
 		($match) = $status =~ m/([A-Z]+$)/;
