@@ -80,6 +80,7 @@ sub set_hostname
 	}
 
 	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/hosts", '127.0.0.1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
+	$self->{'helper'}->change_config("$root_mount_path/$options{'contname'}/rootfs/etc/hosts", '::1', "$options{'hostname'}.$searchdomain $options{'hostname'} localhost");
 
 	return;
 }
