@@ -1,3 +1,17 @@
+lxctl (0.3.11) trusty; urgency=low
+
+  * removed default config from create.pm. New place /etc/lxctl/conf.d/00-main.conf
+  * include configs from /etc/lxctl/conf.d/*.conf (00-main.conf by default)
+
+ -- Vyacheslav Agapov <vyacheslav@yandex-team.ru>  Tue, 25 Oct 2016 17:01:24 +0300
+
+lxctl (0.3.10) precise; urgency=low
+
+  * Added '--roottype raw' option for installing container to raw storage
+    device
+
+ -- Migalin Daniil <dmiga@yandex-team.ru>  Tue, 15 Jul 2014 14:21:25 +0400
+
 lxctl (0.3.9) precise; urgency=low
 
   * fixed previous fix :)
