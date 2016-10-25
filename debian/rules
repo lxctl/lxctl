@@ -19,3 +19,5 @@ override_dh_installinit:
 override_dh_auto_build:
 	sed -i 's/our $$version = ".*";/our $$version = "${VERSION}";/g' src/bin/lxctl
 	dh_auto_build
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip

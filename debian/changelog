@@ -1,3 +1,9 @@
+lxctl (0.3.12) trusty; urgency=medium
+
+  * fixed lucid compatibility
+
+ -- Vyacheslav Agapov <vyacheslav@yandex-team.ru>  Wed, 26 Oct 2016 00:52:15 +0300
+
 lxctl (0.3.11) trusty; urgency=low
 
   * removed default config from create.pm. New place /etc/lxctl/conf.d/00-main.conf
