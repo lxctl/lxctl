@@ -383,6 +383,7 @@ sub ls {
 	my $confpath;
 	my $tmp;
 	my $key;
+	my @netstat;
 	my $subname = (caller(0))[3];
 
 	opendir (my $vm_dir, $self->{LXC_CONF_DIR}) or die "$subname: $self->{LXC_CONF_DIR}: $!";
@@ -397,12 +398,13 @@ sub ls {
 	}
 
 	# Listing all running vm and defining key in hash for them
-	@list = `netstat -xa`;
-	@list = grep /$self->{LXC_CONF_DIR}/, @list;
-	foreach $key (@list)
+	@netstat = `netstat -xa`;
+	foreach my $line (@netstat)
 	{
-		($tmp) = $key =~ m%$self->{LXC_CONF_DIR}/(.*)/command%;
-		$vms{$tmp} = '';
+		($tmp) = $line =~ m%$self->{LXC_CONF_DIR}/(.*)/command%;
+		if (defined($tmp)) {
+			$vms{$tmp} = '';
+		}
 	}
 
 	@list = sort keys %vms;
