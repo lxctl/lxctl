@@ -224,46 +224,32 @@ sub create_lxc_conf
 
 	mkpath("$lxc_conf_dir/$options{'contname'}");
 
-	my $conf = "\
-lxc.utsname = $options{'contname'}
+        my $confdir = '/etc/lxctl/conf.d/';
+        opendir(my $dh, $confdir) || die "Can't open directory $confdir: $!\n";
+        my @configs = grep { /\.conf$/ && -f "$confdir/$_" } readdir($dh);
+        my $conftmpl = "$lxc_conf_dir/$options{'contname'}/config.tmpl";
+        my $confmain = "$lxc_conf_dir/$options{'contname'}/config";
+        if (-f $confmain) {
+            unlink $confmain
+        }
 
-lxc.tty = 4
-lxc.pts = 1024
-lxc.rootfs = $root_mount_path/$options{'contname'}/rootfs
-lxc.mount  = $lxc_conf_dir/$options{'contname'}/fstab
-
-lxc.cgroup.devices.deny = a
-# /dev/null and zero
-lxc.cgroup.devices.allow = c 1:3 rwm
-lxc.cgroup.devices.allow = c 1:5 rwm
-# consoles
-lxc.cgroup.devices.allow = c 5:1 rwm
-lxc.cgroup.devices.allow = c 5:0 rwm
-lxc.cgroup.devices.allow = c 4:0 rwm
-lxc.cgroup.devices.allow = c 4:1 rwm
-# /dev/{,u}random
-lxc.cgroup.devices.allow = c 1:9 rwm
-lxc.cgroup.devices.allow = c 1:8 rwm
-lxc.cgroup.devices.allow = c 136:* rwm
-lxc.cgroup.devices.allow = c 5:2 rwm
-# rtc
-lxc.cgroup.devices.allow = c 254:0 rwm
-
-lxc.network.type = veth
-lxc.network.flags = up
-lxc.network.link = br0
-lxc.network.name = eth0
-lxc.network.mtu = 1500
-";
+        open(MAINCONF, '>>', $confmain) || die "Can't open file $confmain for write: $!\n";
+        foreach my $conf (@configs) {
+            open (FH, '<', "/etc/lxctl/conf.d/$conf") or die "Can't read file $conf: $!\n";
+            while (my $line = <FH>) {
+                $line =~ s/_CT_NAME_/$options{'contname'}/g;
+                $line =~ s/_ROOTFS_PATH_/$root_mount_path\/$options{'contname'}\/rootfs/g;
+                $line =~ s/_MOUNT_FSTAB_/$lxc_conf_dir\/$options{'contname'}\/fstab/g;
+                print MAINCONF $line;
+            }
+            close(FH);
+        }
+        close(MAINCONF);
 
 	my $fstab = "\
 proc			$root_mount_path/$options{'contname'}/rootfs/proc		 proc	nodev,noexec,nosuid 0 0
 sysfs		   $root_mount_path/$options{'contname'}/rootfs/sys		  sysfs defaults  0 0
 ";
-
-	open my $config_file, '>', "$lxc_conf_dir/$options{'contname'}/config";
-	print $config_file $conf;
-	close($config_file);
 
 	open my $fstab_file, '>', "$lxc_conf_dir/$options{'contname'}/fstab";
 	print $fstab_file $fstab;

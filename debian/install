@@ -1,5 +1,6 @@
 src/bin/lxctl /usr/bin/
 src/etc/lxctl.yaml /etc/lxctl/
+src/etc/00-main.conf /etc/lxctl/conf.d/
 src/etc/bash_completion.d/* /etc/bash_completion.d/
 src/lib/Lxc/*.pm /usr/share/perl5/Lxc/
 src/lib/Lxctl/*.pm /usr/share/perl5/Lxctl/

@@ -5,3 +5,5 @@
 /usr/lib/perl/5.10/LxctlHelpers
 /var/lxc/templates
 /var/lxc/root
+/etc/lxctl
+/etc/lxctl/conf.d
